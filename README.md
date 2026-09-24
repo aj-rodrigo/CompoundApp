@@ -23,10 +23,20 @@ Your financial data is never uploaded. The hosted files are only the app itself;
 - Deleting the Home Screen app, or clearing Safari website data, erases it.
 - If you forget your passcode, you’ll need to erase the app’s data and restore a backup.
 
+## Live prices
+
+1. Create a free account at finnhub.io/register and copy your API key from the Finnhub dashboard.
+1. In Compound, open **Settings → Live prices** and paste the key.
+1. Prices then update when you open the app, or when you tap **Refresh** on the Invest tab.
+
+- Use exact tickers (VTI, AAPL). In a Crypto account, use the coin symbol (BTC, ETH).
+- Mutual funds and many 401(k) funds aren’t covered on the free plan. They keep the price you enter. Turn on **Set the price myself** for those holdings to skip them.
+- The free plan allows 60 lookups a minute. Large portfolios update in batches.
+
 ## Good to know
 
 - **Passcode, not Face ID.** Home Screen web apps can’t use Face ID, so the app uses a 4-digit passcode (stored hashed) and locks after a minute in the background.
 - **Alerts show inside the app.** Over-budget, stale balances, limit pace and upcoming bills appear on the Dashboard. iOS doesn’t allow true push notifications without a server.
-- **Balances are manual.** Update them weekly (the app reminds you), or import a CSV from your bank’s website under Budget → Transactions.
+- **Stock prices can update live** with a free Finnhub key (see above). Cash balances and share counts are still entered by you, or imported from your bank’s CSV under Budget → Transactions.
 - **Taxes are estimates.** Federal brackets, FICA and 2026 contribution limits (401(k) $24,500, IRA $7,500, HSA $4,400 / $8,750) are built in. State taxes use simplified brackets and exclude local taxes.
 - Projections are simulations, not predictions. Nothing here is financial or tax advice.
