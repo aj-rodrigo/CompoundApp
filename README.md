@@ -62,3 +62,23 @@ Upload the new `index.html` (and `sw.js` if it changed) to GitHub. The next time
 Tap **+** to log a purchase in two taps: type the amount, then tap a category (or a recent merchant). To have Quick expense open every time you launch Compound, turn it on in **Settings → Automation**.
 
 A note on Siri: on iPhone, links opened by Siri or Shortcuts go to Safari, which keeps its own separate copy of website data. The Home Screen app has its own copy, so the reliable fast path is the Home Screen icon with Quick expense on launch.
+
+## Getting around
+
+- **Today**: safe to spend, payday checklist, savings score, alerts and milestones.
+- **Spending**: overview, transactions (swipe left to delete, right to recategorize), bills & goals, and the cash-flow calendar.
+- **Investing**: accounts, holdings, live prices and contribution limits.
+- **Plan**: your future, debt, next dollar, and Tools (What if, Big purchase, Paycheck, Annual checkup, Refinance).
+
+Pull down on any screen to refresh. Search understands phrases like “dining in August” or “over $100 last month”.
+
+## Practice mode and the tour
+
+Settings → Help and planning lets you take the tour, build your money plan, or explore with sample data. Practice mode keeps your real data safe and restores it when you exit.
+
+## Face ID, badges, receipts
+
+- **Face ID unlock** uses a passkey stored in your iCloud Keychain. Set a passcode first, then turn on Face ID in Settings → Security. Open Compound from its Home Screen icon.
+- **App icon badge** asks for notification permission once and shows how many things need you.
+- **Receipt scanner** reads photos on your phone. The first scan downloads the text reader (about 10 MB), so use Wi-Fi.
+- **Change history** in Settings keeps restore points before every import, delete and bulk change, plus a daily snapshot.

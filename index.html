@@ -206,6 +206,77 @@ input[type=range]{width:100%;accent-color:var(--acc);margin:12px 0 6px}
 @media print{#app,#sheets,#lock,#toast{display:none!important}html,body{background:#fff}#print{display:block;color:#000;font:12px -apple-system,system-ui,sans-serif}#print h1{font-size:20px}#print h2{font-size:15px;margin-top:18px}#print table{width:100%;border-collapse:collapse}#print td,#print th{border-bottom:1px solid #ccc;padding:4px;text-align:left}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.draw{stroke-dasharray:none}}
 @media (max-width:360px){.big{font-size:34px}.grid3{grid-template-columns:1fr 1fr}.top h1{font-size:26px}}
+
+/* ===== v4: calmer, consistent type scale (34 / 22 / 16 / 13) ===== */
+body{font-size:16px}
+.top h1{font-size:34px;letter-spacing:-.025em}
+.big{font-size:34px}
+.mid{font-size:22px}
+.card{padding:16px}.card.hero{padding:18px}
+.card h2{font-size:16px;margin-bottom:12px}
+.stat .v,.grid3 .stat .v{font-size:16px}
+.li .t{font-size:16px}
+.sm,.xs,.li .s,.stat .l,.legend,.fld label,.fld .hint,.seg button,.chip,.card h2 small,.tbl,.tbl th,.tag,.alert,.tgl .xs,.pnav .lbl+button{font-size:13px}
+.tgl label{font-size:16px}
+.alert{font-size:14px}
+details.more{margin-top:10px}
+details.more>summary{list-style:none;cursor:pointer;color:var(--acc);font-size:13px;font-weight:600;padding:4px 0;display:inline-flex;align-items:center;gap:6px}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary::after{content:"\25BE";transition:transform .2s}
+details.more[open]>summary::after{transform:rotate(180deg)}
+.chip.back{align-self:flex-start;box-shadow:none;background:var(--surf2)}
+/* cleaner transaction rows + swipe */
+.txl .dh{font-size:13px;color:var(--mute);font-weight:600;margin:14px 0 2px}
+.swrow{position:relative;overflow:hidden;touch-action:pan-y;border-top:1px solid var(--line)}
+.txl .dh+.swrow{border-top:0}
+.swrow .li{border-top:0;background:var(--surf);position:relative;z-index:1;padding:10px 0;will-change:transform}
+.swbg{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;opacity:0}
+.swbg span{display:flex;align-items:center;gap:6px;padding:0 14px;height:100%}
+.swbg svg{width:16px;height:16px}
+.swbg .l{background:var(--c3);color:#fff;flex:1}
+.swbg .r{background:var(--neg);color:#1a1205;flex:1;justify-content:flex-end}
+.swrow.show-l .swbg,.swrow.show-r .swbg{opacity:1}
+.swrow.show-l .swbg .r,.swrow.show-r .swbg .l{visibility:hidden}
+.swrow.armed .swbg span{filter:brightness(1.12)}
+.av{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;flex:none;font-weight:800;font-size:15px;color:#07162E}
+.li .amt .rt{display:block;font-size:12px;color:var(--mute);font-weight:500;margin-top:1px}
+.clip{font-size:12px}
+/* search */
+.qchips{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 8px}
+.qchips .tag{background:var(--surf);color:var(--acc)}
+.qsum{display:flex;justify-content:space-between;background:var(--surf);border-radius:12px;padding:10px 12px;margin-bottom:6px;font-size:14px}
+/* pull to refresh */
+#ptr{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 6px);transform:translate(-50%,0);width:36px;height:36px;border-radius:50%;background:var(--surf);box-shadow:var(--shadow);display:grid;place-items:center;opacity:0;z-index:30;color:var(--mute);pointer-events:none}
+#ptr svg{width:18px;height:18px}
+#ptr.ready{color:var(--acc)}
+#ptr.spin{opacity:1!important;animation:ptrspin .8s linear infinite}
+@keyframes ptrspin{to{transform:translate(-50%,40px) rotate(360deg)}}
+/* practice bar */
+#practiceBar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(66px + env(safe-area-inset-bottom));z-index:22;background:var(--c3);color:#0d0a24;border-radius:999px;padding:7px 8px 7px 14px;font-size:13px;font-weight:650;display:flex;gap:10px;align-items:center;box-shadow:var(--shadow);white-space:nowrap}
+#practiceBar button{background:#0d0a24;color:#fff;border-radius:999px;padding:4px 10px;font-weight:700}
+body.practicing #fab{bottom:calc(112px + env(safe-area-inset-bottom))}
+/* celebration */
+.celebrate{position:fixed;inset:0;z-index:300;background:rgba(3,8,18,.55);display:grid;place-items:center;padding:24px;animation:fi .25s}
+.confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.confetti i{position:absolute;top:-12px;width:8px;height:14px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{top:105%;transform:rotate(720deg) translateX(40px)}}
+.cel-card{position:relative;background:var(--surf);border-radius:24px;padding:26px 22px 18px;text-align:center;max-width:340px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.45);animation:pop .45s cubic-bezier(.2,.8,.2,1)}
+.cel-e{font-size:52px;line-height:1}
+.cel-t{font-size:22px;font-weight:750;margin:12px 0 6px;letter-spacing:-.01em}
+.cel-s{font-size:14px;color:var(--mute);margin-bottom:18px}
+/* score sparkline */
+.spark{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:14px;height:64px;align-items:end}
+.spark div{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px}
+.spark i{display:block;width:100%;max-width:26px;border-radius:5px 5px 2px 2px;min-height:3px}
+.spark span{font-size:11px;color:var(--mute);font-weight:700}
+/* checkup boxes as buttons */
+.chk-row button.box{width:26px;height:26px;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;flex:none;font-weight:800;color:var(--acc-ink);background:none}
+.chk-row.done button.box{background:var(--pos);border-color:var(--pos)}
+/* coach marks */
+.coach{position:fixed;inset:0;z-index:250}
+.coach-hole{position:fixed;border-radius:16px;box-shadow:0 0 0 9999px rgba(3,8,18,.72);transition:all .25s;pointer-events:none}
+.coach-tip{position:fixed;left:16px;right:16px;max-width:420px;margin:0 auto;background:var(--surf);border-radius:18px;padding:14px 16px;box-shadow:0 16px 40px rgba(0,0,0,.45)}
+@media (prefers-reduced-motion:reduce){.confetti{display:none}}
 </style>
 </head>
 <body>
@@ -213,9 +284,9 @@ input[type=range]{width:100%;accent-color:var(--acc);margin:12px 0 6px}
   <main id="main" aria-live="polite"></main>
   <button id="fab" data-act="fab" aria-label="Add"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14 M5 12h14"/></svg></button>
   <nav id="tabs" aria-label="Sections">
-    <button data-tab="dash"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4z M13 4h7v4h-7z M13 10h7v10h-7z M4 13h7v7H4z"/></svg>Dashboard</button>
-    <button data-tab="invest"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19l5-6 4 3 7-9 M15 7h5v5"/></svg>Invest</button>
-    <button data-tab="budget"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M3 7l12-4 2 4 M16.5 13.5h.01"/></svg>Budget</button>
+    <button data-tab="dash"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4z M13 4h7v4h-7z M13 10h7v10h-7z M4 13h7v7H4z"/></svg>Today</button>
+    <button data-tab="invest"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19l5-6 4 3 7-9 M15 7h5v5"/></svg>Investing</button>
+    <button data-tab="budget"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M3 7l12-4 2 4 M16.5 13.5h.01"/></svg>Spending</button>
     <button data-tab="plan"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M12 12h.01"/></svg>Plan</button>
   </nav>
 </div>
@@ -953,12 +1024,12 @@ const agoText = s => { const d = daysAgo(s); return d === Infinity ? 'Never upda
 function alertsList() {
   const out = [];
   const stale = S.accounts.filter(a => daysAgo(a.updated) > 7);
-  if (stale.length) out.push({ t: `Update balances for ${stale.slice(0, 3).map(a => a.name).join(', ')}${stale.length > 3 ? ' and ' + (stale.length - 3) + ' more' : ''}. They haven't been updated in over a week.`, act: 'goInvest' });
+  if (stale.length) out.push({ t: `Update balances for ${stale.slice(0, 3).map(a => a.name).join(', ')}${stale.length > 3 ? ' and ' + (stale.length - 3) + ' more' : ''}. They haven't been updated in over a week.`, act: 'goInvest', info: true });
   S.cats.forEach(c => { const a = catAvail(c, 0); if (num(c.budget) > 0 && a.spent > a.avail + .5) out.push({ t: `${c.name} is ${money(a.spent - a.avail)} over budget this period.`, act: 'goBudget' }); });
   const un = spentIn(uncategorized(), period(0)); if (un > 0) out.push({ t: `${money(un)} of spending is uncategorized this period.`, act: 'goTx', info: true });
-  if (S.settings.paceAlerts) { const L = limitsInfo(); ['k401', 'ira', 'hsa'].forEach(k => { const x = L[k]; if (x.has && x.planned + 1 < x.limit && x.ytd < x.limit * L.frac - 1) out.push({ t: `${x.label} is ${money(x.limit * L.frac - x.ytd)} behind the pace to max out this year.`, act: 'goInvest' }); }); }
+  if (S.settings.paceAlerts) { const L = limitsInfo(); ['k401', 'ira', 'hsa'].forEach(k => { const x = L[k]; if (x.has && x.planned + 1 < x.limit && x.ytd < x.limit * L.frac - 1) out.push({ t: `${x.label} is ${money(x.limit * L.frac - x.ytd)} behind the pace to max out this year.`, act: 'goInvest', info: true }); }); }
   S.bills.forEach(b => { const d = nextDue(b); if (d && (d - stripTime(new Date())) / 864e5 <= 3 && (d - stripTime(new Date())) > 0) out.push({ t: `${b.name} (${money(b.amount)}) is due ${fmtShort(d)}.`, info: true, act: 'goBills' }); });
-  if (S.accounts.length && daysAgo(S.settings.lastBackup) > 30) out.push({ t: S.settings.lastBackup ? `It\u2019s been ${daysAgo(S.settings.lastBackup)} days since your last backup. Tap to back up now.` : 'Your data only lives on this phone. Tap to make your first backup.', act: 'backup' });
+  if (S.accounts.length && daysAgo(S.settings.lastBackup) > 30) out.push({ t: S.settings.lastBackup ? `It\u2019s been ${daysAgo(S.settings.lastBackup)} days since your last backup. Tap to back up now.` : 'Your data only lives on this phone. Tap to make your first backup.', act: 'backup', info: true });
   return out.concat(extraAlerts());
 }
 
@@ -983,7 +1054,7 @@ const W = {
     }
     const nw = netWorth(), past = Object.entries(S.history).filter(([d]) => d <= iso(addDays(new Date(), -30))).sort().pop();
     const ch = past ? nw - past[1] : null;
-    return card('', `${toggle}<div style="margin-top:14px" class="mute sm">${S.profile.name ? esc(S.profile.name) + '\u2019s net worth' : 'Net worth'}</div><div class="big">${money(nw)}</div>${ch != null ? `<div class="sm ${ch < 0 ? 'neg' : 'pos'}" style="margin-top:4px">${money(ch, { sign: true })} over the last 30 days</div>` : ''}${dayChange(S.accounts) ? `<div class="sm" style="margin-top:2px">${dayLine(dayChange(S.accounts), 'on investments today')}</div>` : ''}<div class="grid2" style="margin-top:12px">${stat('Assets', money(assetsTotal()))}${stat('Debts', money(debtTotal()), debtTotal() ? 'neg' : '')}</div>`, '', 'hero');
+    return card('', `${toggle}<div style="margin-top:14px" class="mute sm">${S.profile.name ? esc(S.profile.name) + '\u2019s net worth' : 'Net worth'}</div><div class="big">${money(nw)}</div>${ch != null ? `<div class="sm ${ch < 0 ? 'neg' : 'pos'}" style="margin-top:4px">${money(ch, { sign: true })} over the last 30 days</div>` : ''}${dayChange(S.accounts) ? `<div class="sm" style="margin-top:2px">${dayLine(dayChange(S.accounts), 'on investments today')}</div>` : ''}<div class="grid2" style="margin-top:12px">${stat('Assets', money(assetsTotal()))}${stat('Debts', money(debtTotal()))}</div>`, '', 'hero');
   },
   alerts() {
     const a = alertsList();
@@ -994,7 +1065,7 @@ const W = {
     return card('Net worth history', `${seg('nwRange', [['1M', '1M'], ['6M', '6M'], ['1Y', '1Y'], ['5Y', '5Y'], ['All', 'All']], UI.nwRange)}<div class="chart" id="c-nw" style="margin-top:12px"></div>`);
   },
   allocation() {
-    const c = calcPay(); if (!c.G) return card('Where your pay goes', '<div class="empty">Add your salary in Budget, then Paycheck.</div>');
+    const c = calcPay(); if (!c.G) return card('Where your pay goes', '<div class="empty">Add your salary in Plan, Tools, Paycheck.</div>');
     const inv = c.k + c.r + c.h + num(S.pay.ira) * 12, tax = c.fed + c.fica + c.stax, ben = c.hi + c.o, rest = Math.max(0, c.G - inv - tax - ben);
     AFTER.push(() => pieChart($('#c-alloc'), { donut: true, center: pct(inv / c.G, 0), sub: 'to investing', label: 'Share of gross pay', items: [{ label: 'Investing', value: inv, color: 'var(--c2)' }, { label: 'Taxes', value: tax, color: 'var(--c7)' }, { label: 'Benefits', value: ben, color: 'var(--c3)' }, { label: 'Take-home for spending', value: rest, color: 'var(--c1)' }] }));
     return card('Where your pay goes', `<div class="chart" id="c-alloc"></div><div class="sm mute" style="margin-top:8px">${money(inv)} a year from your pay goes to 401(k), HSA and IRA. With the employer match that's ${pct((inv + c.match) / c.G, 0)} of gross pay.</div>`, '<small>Planned, yearly</small>');
@@ -1007,7 +1078,7 @@ const W = {
   debt() {
     if (!S.debts.length) return card('Debt', '<div class="sm mute">No debts added. Add one with the + button.</div>');
     const pf = payoff(S.debts, S.settings.extra, 'avalanche'), mi = sum(S.debts.map(d => num(d.balance) * num(d.apr) / 1200));
-    return card('Debt', `<div class="row" style="align-items:flex-end"><div><div class="sm mute">Debt-free</div><div class="mid">${pf.never ? 'Not on current payments' : fmtMonYr(monthsFromNow(pf.months))}</div></div><button class="chip" data-act="goDebt">Plan</button></div><div class="grid2" style="margin-top:12px">${stat('Total debt', money(debtTotal()))}${stat('Interest this month', money(mi), 'neg')}</div>`);
+    return card('Debt', `<div class="row" style="align-items:flex-end"><div><div class="sm mute">Debt-free</div><div class="mid">${pf.never ? 'Not on current payments' : fmtMonYr(monthsFromNow(pf.months))}</div></div><button class="chip" data-act="goDebt">Plan</button></div><div class="grid2" style="margin-top:12px">${stat('Total debt', money(debtTotal()))}${stat('Interest this month', money(mi))}</div>`);
   },
   retire() {
     if (!S.accounts.length && !num(S.pay.salary)) return card('Retirement', '<div class="sm mute">Add accounts to see if you\u2019re on track.</div>');
@@ -1026,7 +1097,7 @@ const W = {
     const gross = c.G / 12 + other, needs = byB('needs'), wants = byB('wants'), sav = byB('savings');
     const taxes = (c.fed + c.fica + c.stax) / 12, inv = (c.k + c.r + c.h) / 12, ben = (c.hi + c.o) / 12;
     const left = Math.max(0, gross - taxes - inv - ben - needs - wants - sav);
-    AFTER.push(() => sankey($('#c-sk'), { targets: [{ label: 'Taxes', value: taxes, color: 'var(--c7)' }, { label: 'Payroll investing', value: inv, color: 'var(--c2)' }, { label: 'Benefits', value: ben, color: 'var(--c3)' }, { label: 'Needs', value: needs, color: 'var(--c1)' }, { label: 'Wants', value: wants, color: 'var(--c6)' }, { label: 'Savings & debt', value: sav, color: 'var(--c5)' }, { label: 'Not spent yet', value: left, color: 'var(--c4)' }], empty: 'Add your salary to see cash flow.' }));
+    AFTER.push(() => sankey($('#c-sk'), { targets: [{ label: 'Taxes', value: taxes, color: 'var(--c7)' }, { label: 'Payroll investing', value: inv, color: 'var(--c2)' }, { label: 'Benefits', value: ben, color: 'var(--c3)' }, { label: 'Needs', value: needs, color: 'var(--c1)' }, { label: 'Wants', value: wants, color: 'var(--c6)' }, { label: 'Savings & debt', value: sav, color: 'var(--c5)' }, { label: 'Not spent yet', value: left, color: 'var(--c5)' }], empty: 'Add your salary to see cash flow.' }));
     return card('Cash flow', `<div class="sm mute" style="margin:-4px 0 8px">${compact(gross)} coming in this month</div><div class="chart" id="c-sk"></div>`, `<small>${MONTHS[new Date().getMonth()]}</small>`);
   }
 };
@@ -1035,17 +1106,17 @@ function limitsHtml() {
   if (!g.length) return '<div class="sm mute">Add a 401(k), Roth IRA or HSA account to track contribution limits.</div>';
   return g.map(x => {
     const pace = x.limit * L.frac, behind = x.ytd + 1 < pace;
-    return `<div style="margin:6px 0 14px"><div class="row sm"><b>${x.label}</b><span>${money(x.ytd)} <span class="mute">of ${money(x.limit)}</span></span></div><div style="margin-top:6px">${bar(x.ytd / x.limit, behind ? 'var(--neg)' : 'var(--pos)', L.frac)}</div><div class="xs mute" style="margin-top:5px">${behind ? `${money(pace - x.ytd)} behind the pace to max out.` : 'On pace to max out.'} Planned this year: ${money(x.planned)}.</div></div>`;
-  }).join('') + '<div class="xs mute">The tick mark shows where you\u2019d be today if you were on pace to max out. Year to date counts contributions you\u2019ve logged.</div>';
+    return `<div style="margin:6px 0 14px"><div class="row sm"><b>${x.label}</b><span>${money(x.ytd)} <span class="mute">of ${money(x.limit)}</span></span></div><div style="margin-top:6px">${bar(x.ytd / x.limit, behind ? 'var(--acc)' : 'var(--pos)', L.frac)}</div><div class="xs mute" style="margin-top:5px">${behind ? `${money(pace - x.ytd)} behind the pace to max out.` : 'On pace to max out.'} Planned this year: ${money(x.planned)}.</div></div>`;
+  }).join('') + '<details class="more"><summary>What does the tick mark mean?</summary><div class="xs mute">It shows where you\u2019d be today if you were on pace to max out. Year to date counts contributions you\u2019ve logged.</div></details>';
 }
 function scrDash() {
-  let h = header('Dashboard');
+  let h = header('Today');
   h += `<div class="row" style="margin:-6px 0 10px"><span class="sm mute">${fmtDate(new Date())}</span><button class="chip" data-act="dashEdit">${UI.editDash ? 'Done' : 'Edit layout'}</button></div><div class="stack">`;
   const ord = S.settings.dash;
   if (UI.editDash) {
     h += card('Arrange your dashboard', ord.map((id, i) => { const off = S.settings.dashHidden.includes(id); return `<div class="w-edit li"><span class="${off ? 'mute' : ''}">${DASH_NAMES[id]}</span><div class="btns"><button data-act="wUp" data-i="${i}" aria-label="Move up" ${i === 0 ? 'disabled' : ''}>${I('up')}</button><button data-act="wDown" data-i="${i}" aria-label="Move down" ${i === ord.length - 1 ? 'disabled' : ''}>${I('down')}</button><button data-act="wHide" data-id="${id}" aria-label="${off ? 'Show' : 'Hide'}">${I(off ? 'eyeOff' : 'eye')}</button></div></div>`; }).join(''));
   } else {
-    ord.forEach(id => { if (!S.settings.dashHidden.includes(id) && W[id]) h += W[id](); });
+    ord.forEach(id => { if (!S.settings.dashHidden.includes(id) && W[id]) { const w = W[id](); if (w) h += w.replace('<section ', `<section data-w="${id}" `); } });
   }
   return h + '</div>';
 }
@@ -1055,7 +1126,7 @@ function scrInvest() {
   const inv = S.accounts.filter(a => typeOf(a).inv);
   const total = sum(inv.map(acctValue)), cost = sum(inv.map(acctCost)), gain = total - cost;
   const tags = {}; inv.forEach(a => { const t = typeOf(a).tax; tags[t] = (tags[t] || 0) + acctValue(a); });
-  let h = header('Invest') + '<div class="stack">';
+  let h = header('Investing') + '<div class="stack">';
   h += card('', `<div class="mute sm">Invested</div><div class="big">${money(total)}</div><div class="sm ${gain < 0 ? 'neg' : 'pos'}" style="margin-top:4px">${money(gain, { sign: true })} (${cost ? (gain >= 0 ? '+' : '') + pct(gain / cost) : '0%'}) all-time gain on holdings</div>${(() => { const dc = dayChange(inv); return S.settings.quoteKey ? `<div class="row sm" style="margin-top:10px"><div>${dc ? dayLine(dc, 'today') : '<span class="mute">No live prices yet</span>'}<div class="xs mute">${quoteAsOf() || 'Tap Refresh to get prices'}</div></div><button class="chip" data-act="refreshQuotes">Refresh</button></div>` : `<div class="row sm" style="margin-top:10px"><span class="mute">Prices are entered by hand</span><button class="chip" data-act="quoteSetup">Get live prices</button></div>`; })()}${Object.keys(tags).length ? `<div class="grid3" style="margin-top:12px">${Object.entries(tags).map(([t, v]) => stat(t, compact(v))).join('')}</div>` : ''}<div class="grid2" style="margin-top:14px"><button class="btn" data-act="logPay">Log paycheck</button><button class="btn ghost" data-act="addContrib">Add contribution</button></div>`, '', 'hero');
   h += card('Contribution limits', limitsHtml(), `<small>${new Date().getFullYear()}</small>`);
   // allocation
@@ -1091,7 +1162,7 @@ function acctForm(a) {
     title: isNew ? 'Add account' : 'Edit account', focus: isNew, fields: [
       { k: 'type', label: 'Account type', type: 'select', opts: Object.entries(TYPES).map(([k, t]) => [k, t.label]), v: a.type, other: true, otherPh: 'e.g. 403(b), 529 plan, Pension' },
       { k: 'tax', label: 'Tax treatment', type: 'select', opts: [['Pre-tax', 'Pre-tax'], ['Roth', 'Roth'], ['HSA', 'HSA'], ['Taxable', 'Taxable'], ['Cash', 'Cash']], v: a.tax || 'Taxable', other: true, when: v => !TYPES[v.type] },
-      { k: 'inv', label: 'Count as invested', type: 'toggle', v: a.inv !== false, hint: 'Invested accounts show in Invest totals and allocation.', when: v => !TYPES[v.type] },
+      { k: 'inv', label: 'Count as invested', type: 'toggle', v: a.inv !== false, hint: 'Invested accounts show in Investing totals and allocation.', when: v => !TYPES[v.type] },
       { k: 'name', label: 'Name', type: 'text', v: a.name, ph: 'e.g. Fidelity Roth IRA' },
       { k: 'cash', label: 'Current balance or cash', type: 'money', v: a.cash, hint: isNew ? 'For investment accounts you can add individual holdings next, or just enter the total here.' : '' },
       { k: 'ef', label: 'Counts as emergency fund', type: 'toggle', v: a.ef ?? (a.type === 'savings'), when: v => ['savings', 'checking'].includes(v.type) || (!TYPES[v.type] && v.tax === 'Cash') },
@@ -1146,7 +1217,7 @@ function contribForm(c, acctId) {
       v.lim = v.kind === 'employer' ? false : !!v.lim;
       if (isNew) { S.contribs.push({ id: uid(), acct: v.acct, amount: v.amount, date: v.date || todayISO(), kind: v.kind, lim: v.lim }); if (v.add) { const a = S.accounts.find(x => x.id === v.acct); if (a) { a.cash = num(a.cash) + v.amount; a.updated = todayISO(); } } }
       else Object.assign(c, { acct: v.acct, amount: v.amount, date: v.date, kind: v.kind, lim: v.lim });
-      commit(); toast(made ? `Added ${made} as a new account. Change its type in Invest.` : isNew ? 'Contribution added' : 'Contribution saved');
+      commit(); toast(made ? `Added ${made} as a new account. Change its type in Investing.` : isNew ? 'Contribution added' : 'Contribution saved');
     }
   });
 }
@@ -1273,7 +1344,7 @@ function budOverview() {
   h += card('Categories', `<div class="list">${groups}</div><button class="btn ghost block" style="margin-top:10px" data-act="addCat">Add category</button>`, `<small>${S.settings.period === 'paycheck' ? 'per paycheck' : 'per month'}</small>`);
   // emergency fund
   const nm = needsMonthly(), ef = efTotal(), efm = num(S.settings.efMonths) || 6, months = nm > 0 ? ef / nm : 0;
-  h += card('Emergency fund', `<div class="row"><div><div class="mid">${nm > 0 ? months.toFixed(1) : '0'} months</div><div class="sm mute">of essential expenses covered</div></div><div class="sm" style="text-align:right">${money(ef)}<br><span class="mute">goal ${efm} months</span></div></div><div style="margin-top:10px">${bar(months / efm, months < 1 ? 'var(--neg)' : 'var(--pos)')}</div>${nm > 0 ? '' : '<div class="xs mute" style="margin-top:6px">Set budgets for your Needs categories to measure this.</div>'}${ef > 0 ? '' : '<div class="xs mute" style="margin-top:6px">Mark a savings account as an emergency fund in Invest to count it here.</div>'}`);
+  h += card('Emergency fund', `<div class="row"><div><div class="mid">${nm > 0 ? months.toFixed(1) : '0'} months</div><div class="sm mute">of essential expenses covered</div></div><div class="sm" style="text-align:right">${money(ef)}<br><span class="mute">goal ${efm} months</span></div></div><div style="margin-top:10px">${bar(months / efm, months < 1 ? 'var(--neg)' : 'var(--pos)')}</div>${nm > 0 ? '' : '<div class="xs mute" style="margin-top:6px">Set budgets for your Needs categories to measure this.</div>'}${ef > 0 ? '' : '<div class="xs mute" style="margin-top:6px">Mark a savings account as an emergency fund in Investing to count it here.</div>'}`);
   // trend
   const ms = [5, 4, 3, 2, 1, 0].map(i => monthRange(-i)), vals = ms.map(m => sum(S.txns.filter(t => t.type === 'expense' && inRange(t.date, m)).map(t => num(t.amount))));
   const mb = sum(S.cats.map(c => num(c.budget)));
@@ -1349,9 +1420,9 @@ function budPay() {
 function renderPayRes() {
   const el = $('#payres'); if (!el) return;
   const c = calcPay(), n = c.n, st = STATES[S.profile.state] || STATES.TX;
-  el.innerHTML = `<div class="mute sm">Take-home pay</div><div class="grid2" style="margin-top:6px"><div><div class="mid">${money(c.net / n)}</div><div class="xs mute">per paycheck</div></div><div><div class="mid">${money(c.net / 12)}</div><div class="xs mute">per month</div></div></div><div class="sm" style="margin-top:10px">Effective tax rate <b>${pct(c.eff)}</b> <span class="mute">of ${money(c.G)} gross</span></div><div class="chart" id="c-wf" style="margin-top:12px"></div>
-  <table class="tbl" style="margin-top:8px"><tr><th></th><th class="r">Per paycheck</th><th class="r">Per year</th></tr>${[['Gross pay', c.G], ['401(k)', -c.k], ['Roth 401(k)', -c.r], ['HSA', -c.h], ['Health premiums', -c.hi], ['Other pre-tax', -c.o], ['Federal income tax', -c.fed], ['Social Security', -c.ss], ['Medicare', -c.med], [st[0] + ' income tax', -c.stax], ['Take-home', c.net]].filter(([l, v]) => Math.abs(v) > .004 || ['Gross pay', 'Take-home', 'Federal income tax'].includes(l) || l.includes('income tax')).map(([l, v]) => `<tr><td${l === 'Take-home' ? ' style="font-weight:700"' : ''}>${l}</td><td class="r">${money(v / n)}</td><td class="r">${money(v)}</td></tr>`).join('')}</table>${st[2].length ? '' : `<div class="xs mute" style="margin-top:6px">${st[0]} has no state income tax on wages.</div>`}<div class="xs mute" style="margin-top:4px">Employer match adds ${money(c.match)} a year on top.</div>`;
-  const old = UI.anim; waterfall($('#c-wf'), [{ label: 'Gross', value: c.G, kind: 'total', color: 'var(--c7)' }, { label: 'Pre-tax', value: c.pre, color: 'var(--c2)' }, { label: 'Federal', value: c.fed, color: 'var(--c4)' }, { label: 'FICA', value: c.fica, color: 'var(--c4)' }, { label: 'State', value: c.stax, color: 'var(--c4)' }, { label: 'Roth', value: c.r, color: 'var(--c2)' }, { label: 'Take-home', value: c.net, kind: 'total', color: 'var(--acc)' }].filter(x => x.kind === 'total' || x.value > .5)); UI.anim = old;
+  el.innerHTML = `<div class="mute sm">Take-home pay</div><div class="grid2" style="margin-top:6px"><div><div class="mid">${money(c.net / n)}</div><div class="xs mute">per paycheck</div></div><div><div class="mid">${money(c.net / 12)}</div><div class="xs mute">per month</div></div></div><div class="sm" style="margin-top:10px">Effective tax rate <b>${pct(c.eff)}</b> <span class="mute">of ${money(c.G)} gross</span></div><details class="more"><summary>Show the full breakdown</summary><div class="chart" id="c-wf" style="margin-top:12px"></div>
+  <table class="tbl" style="margin-top:8px"><tr><th></th><th class="r">Per paycheck</th><th class="r">Per year</th></tr>${[['Gross pay', c.G], ['401(k)', -c.k], ['Roth 401(k)', -c.r], ['HSA', -c.h], ['Health premiums', -c.hi], ['Other pre-tax', -c.o], ['Federal income tax', -c.fed], ['Social Security', -c.ss], ['Medicare', -c.med], [st[0] + ' income tax', -c.stax], ['Take-home', c.net]].filter(([l, v]) => Math.abs(v) > .004 || ['Gross pay', 'Take-home', 'Federal income tax'].includes(l) || l.includes('income tax')).map(([l, v]) => `<tr><td${l === 'Take-home' ? ' style="font-weight:700"' : ''}>${l}</td><td class="r">${money(v / n)}</td><td class="r">${money(v)}</td></tr>`).join('')}</table>${st[2].length ? '' : `<div class="xs mute" style="margin-top:6px">${st[0]} has no state income tax on wages.</div>`}<div class="xs mute" style="margin-top:4px">Employer match adds ${money(c.match)} a year on top.</div></details>`;
+  const old = UI.anim; waterfall($('#c-wf'), [{ label: 'Gross', value: c.G, kind: 'total', color: 'var(--c7)' }, { label: 'Pre-tax', value: c.pre, color: 'var(--c2)' }, { label: 'Federal', value: c.fed, color: 'var(--c3)' }, { label: 'FICA', value: c.fica, color: 'var(--c3)' }, { label: 'State', value: c.stax, color: 'var(--c3)' }, { label: 'Roth', value: c.r, color: 'var(--c2)' }, { label: 'Take-home', value: c.net, kind: 'total', color: 'var(--acc)' }].filter(x => x.kind === 'total' || x.value > .5)); UI.anim = old;
   renderRaise();
 }
 function renderRaise() {
@@ -1383,8 +1454,8 @@ function ensureCat(v, key = 'cat') {
   const c = { id: uid(), name: v[key], bucket: 'wants', icon: 'tag', budget: 0, rollover: true, created: iso(new Date(new Date().getFullYear(), new Date().getMonth(), 1)) };
   S.cats.push(c); return c.id;
 }
-function txForm(t, type) {
-  const isNew = !t; t = t || { type: type || 'expense', amount: '', date: todayISO(), cat: uncategorized(), note: '', src: 'bonus', receipt: '' };
+function txForm(t, type, pre) {
+  const isNew = !t; t = t || Object.assign({ type: type || 'expense', amount: '', date: todayISO(), cat: uncategorized(), note: '', src: 'bonus', receipt: '' }, pre || {});
   openForm({
     title: isNew ? (t.type === 'income' ? 'Add income' : 'Add expense') : 'Edit transaction', focus: isNew, fields: [
       { k: 'type', label: 'Type', type: 'select', opts: [['expense', 'Expense'], ['income', 'Income'], ['payment', 'Card payment (not spending or income)']], v: t.type },
@@ -1411,7 +1482,7 @@ function txForm(t, type) {
       commit();
       if (isNew && o.type === 'expense') { const a = catAvail(catById(o.cat), 0); if (a.spent > a.avail + .5 && a.avail > 0 && inRange(o.date, period(0))) toast(`${catById(o.cat).name} is now ${money(a.spent - a.avail)} over budget`); else toast('Expense added'); }
       else toast(isNew ? 'Income added' : 'Transaction saved');
-      if (nc) setTimeout(() => toast(`Added the ${catById(o.cat).name} category under Wants. Set its budget in Budget.`), 2900);
+      if (nc) setTimeout(() => toast(`Added the ${catById(o.cat).name} category under Wants. Set its budget in Spending.`), 2900);
     }
   });
 }
@@ -1466,7 +1537,7 @@ const bindTgl = (path, label, hint = '') => `<div class="tgl"><label for="p-${pa
 function planProj() {
   let h = card('Projected net worth', `${seg('projH', [['10', '10 years'], ['20', '20 years'], ['30', '30 years']], String(UI.projH))}<div class="chart" id="c-proj" style="margin-top:14px"></div><div class="grid3" id="projStats" style="margin-top:12px"></div>`, '', 'hero');
   h += card('Retirement check', `<div id="retRes"></div><div class="grid3" style="margin-top:10px">${bindInp('profile.age', 'Your age')}${bindInp('profile.retireAge', 'Retire at')}${bindInp('profile.retireSpend', 'Yearly spend')}</div>`);
-  h += card('Assumptions', `<div class="grid2">${bindInp('settings.ret', 'Annual return %')}${bindInp('settings.infl', 'Inflation %')}${bindInp('settings.vol', 'Volatility %', 'How much returns swing year to year. 15% is typical for a stock-heavy mix.')}${bindInp('settings.raise', 'Yearly raise %')}</div>${bindTgl('settings.real', 'Show in today\u2019s dollars', 'Adjusts for inflation so future amounts are comparable to now.')}${bindTgl('settings.escalate', 'Raise 401(k) contribution each year')}<div class="grid2" id="escRow" style="${S.settings.escalate ? '' : 'display:none'}">${bindInp('settings.escStep', 'Increase by % a year')}${bindInp('settings.escCap', 'Stop at %')}</div><div class="xs mute">The range comes from 1,000 simulated markets. Contributions follow your Paycheck settings.</div>`);
+  h += card('Assumptions', `<details class="more"><summary>${num(S.settings.ret)}% return, ${num(S.settings.infl)}% inflation, ${num(S.settings.raise)}% raises${S.settings.escalate ? ', auto-increase on' : ''}</summary><div class="grid2" style="margin-top:10px">${bindInp('settings.ret', 'Annual return %')}${bindInp('settings.infl', 'Inflation %')}${bindInp('settings.vol', 'Volatility %', 'How much returns swing year to year. 15% is typical for a stock-heavy mix.')}${bindInp('settings.raise', 'Yearly raise %')}</div>${bindTgl('settings.real', 'Show in today\u2019s dollars', 'Adjusts for inflation so future amounts are comparable to now.')}${bindTgl('settings.escalate', 'Raise 401(k) contribution each year')}<div class="grid2" id="escRow" style="${S.settings.escalate ? '' : 'display:none'}">${bindInp('settings.escStep', 'Increase by % a year')}${bindInp('settings.escCap', 'Stop at %')}</div><div class="xs mute">The range comes from 1,000 simulated markets. Contributions follow your Paycheck settings.</div></details>`);
   h += card('Scenarios', `<div id="scnList"></div><button class="btn ghost block" style="margin-top:10px" data-act="saveScn">Save current plan as a scenario</button>`);
   AFTER.push(renderProj); LIVE = renderProj;
   return h;
@@ -1496,14 +1567,14 @@ function planDebt() {
   const th = num(S.settings.threshold), ret = num(S.settings.ret);
   const chk = S.debts.filter(d => d.link);
   if (chk.length) h += card('Check against your statement', `<div class="sm mute" style="margin:-4px 0 10px">Compare a card\u2019s running total with its latest statement.</div>${chk.map(d => `<button class="li" data-act="stmtCheck" data-id="${d.id}"><span class="ic">${I('doc')}</span><span class="main"><span class="t">${esc(d.name)}</span><span class="s">${d.lastStmt ? (Math.abs(d.lastStmt.diff) < .01 ? `Matched the ${fmtShort(d.lastStmt.date)} statement` : `Off by ${money(Math.abs(d.lastStmt.diff))} on ${fmtShort(d.lastStmt.date)}`) : 'Not checked yet'}</span></span><span class="chip">Check</span></button>`).join('')}`);
-  h += card('Pay down or invest?', `<table class="tbl"><tr><th>Debt</th><th>APR</th><th>Rule of thumb</th><th>By the math</th></tr>${S.debts.filter(d => num(d.balance) > 0).map(d => { const apr = num(d.apr); return `<tr><td>${esc(d.name)}</td><td>${apr}%</td><td class="${apr > th ? 'neg' : 'pos'}">${apr > th ? 'Pay first' : 'Invest'}</td><td class="${apr > ret ? 'neg' : 'pos'}">${apr > ret ? `Pay: ${(apr - ret).toFixed(1)}% better` : `Invest: ${(ret - apr).toFixed(1)}% better`}</td></tr>`; }).join('')}</table>${bindInp('settings.threshold', 'Rule of thumb: pay off debt above this APR (%)')}<div class="xs mute">By the math compares each APR with your ${ret}% expected return. Paying debt is a guaranteed return, investing isn\u2019t, so many people pay off anything close to the line. Always get the full employer match first.</div>`);
+  h += card('Pay down or invest?', `<details class="more"><summary>Compare each debt with investing</summary><table class="tbl" style="margin-top:8px"><tr><th>Debt</th><th>APR</th><th>Rule of thumb</th><th>By the math</th></tr>${S.debts.filter(d => num(d.balance) > 0).map(d => { const apr = num(d.apr); return `<tr><td>${esc(d.name)}</td><td>${apr}%</td><td class="${apr > th ? 'neg' : 'pos'}">${apr > th ? 'Pay first' : 'Invest'}</td><td class="${apr > ret ? 'neg' : 'pos'}">${apr > ret ? `Pay: ${(apr - ret).toFixed(1)}% better` : `Invest: ${(ret - apr).toFixed(1)}% better`}</td></tr>`; }).join('')}</table>${bindInp('settings.threshold', 'Rule of thumb: pay off debt above this APR (%)')}<div class="xs mute">By the math compares each APR with your ${ret}% expected return. Paying debt is a guaranteed return, investing isn\u2019t, so many people pay off anything close to the line. Always get the full employer match first.</div></details>`);
   AFTER.push(renderDebt);
   return h;
 }
 function renderDebt() {
   const x = num(S.settings.extra), av = payoff(S.debts, x, 'avalanche'), sn = payoff(S.debts, x, 'snowball'), base = payoff(S.debts, 0, 'avalanche');
   const mi = sum(S.debts.map(d => num(d.balance) * num(d.apr) / 1200));
-  const ds = $('#debtSum'); if (ds) ds.innerHTML = `<div class="mute sm">Debt-free date</div><div class="big">${av.never ? 'Not on track' : fmtMonYr(monthsFromNow(av.months))}</div><div class="sm mute" style="margin-top:2px">${av.never ? 'Minimum payments don\u2019t cover the interest. Add an extra payment.' : `${av.months} months with the avalanche plan`}</div><div class="grid3" style="margin-top:12px">${stat('Total debt', compact(debtTotal()))}${stat('Interest this month', money(mi), 'neg')}${stat('Interest to payoff', compact(av.interest))}</div>`;
+  const ds = $('#debtSum'); if (ds) ds.innerHTML = `<div class="mute sm">Debt-free date</div><div class="big">${av.never ? 'Not on track' : fmtMonYr(monthsFromNow(av.months))}</div><div class="sm mute" style="margin-top:2px">${av.never ? 'Minimum payments don\u2019t cover the interest. Add an extra payment.' : `${av.months} months with the avalanche plan`}</div><div class="grid3" style="margin-top:12px">${stat('Total debt', compact(debtTotal()))}${stat('Interest this month', money(mi))}${stat('Interest to payoff', compact(av.interest))}</div>`;
   const er = $('#extraRes'); if (er) er.innerHTML = x > 0 && !base.never ? `Saves <b class="pos">${money(base.interest - av.interest)}</b> in interest and gets you debt-free <b>${base.months - av.months} months</b> sooner than minimums alone.` : x > 0 ? 'With minimums alone this debt never gets paid off.' : '<span class="mute">Slide to see how extra payments change your payoff.</span>';
   const win = av.interest <= sn.interest ? 'a' : 's';
   const col = (p, name, k) => `<div class="${win === k ? 'win' : ''}"><div class="sm" style="font-weight:700">${name}</div><div class="mid" style="margin-top:4px">${p.never ? 'Never' : fmtMonYr(monthsFromNow(p.months))}</div><div class="xs mute">${p.months} months</div><div class="sm" style="margin-top:6px">${money(p.interest)} <span class="mute">interest</span></div>${win === k && Math.abs(av.interest - sn.interest) > 1 ? `<div class="xs pos" style="margin-top:4px">Saves ${money(Math.abs(av.interest - sn.interest))}</div>` : ''}</div>`;
@@ -1800,7 +1871,7 @@ function onboard() {
     onSave: v => { Object.assign(S.pay, { salary: num(v.salary), freq: +v.freq, anchor: v.anchor || todayISO(), k401: num(v.k401), roth401: num(v.roth401), matchPct: num(v.matchPct), matchUpTo: num(v.matchUpTo), hsa: num(v.hsa), ira: num(v.ira) }); step3(); }
   });
   const step3 = () => openForm({
-    title: 'Your balances', lock: true, noCancel: true, intro: 'Enter today\u2019s totals. You can break them into individual holdings later in Invest. Leave any at 0 you don\u2019t have.', fields: [
+    title: 'Your balances', lock: true, noCancel: true, intro: 'Enter today\u2019s totals. You can break them into individual holdings later in Investing. Leave any at 0 you don\u2019t have.', fields: [
       { k: 'roth_ira', label: 'Roth IRA', type: 'money', v: 0 }, { k: 'k401', label: '401(k)', type: 'money', v: 0 }, { k: 'match', label: 'Employer match (if tracked separately)', type: 'money', v: 0 },
       { k: 'hsa', label: 'HSA', type: 'money', v: 0 }, { k: 'checking', label: 'Checking', type: 'money', v: 0 }, { k: 'savings', label: 'Savings', type: 'money', v: 0 }
     ], saveLabel: 'Continue',
@@ -1971,7 +2042,7 @@ async function init() {
 }
 init();
 /* ================= v2 features ================= */
-const APP_VERSION = '2026.09.25-3';
+const APP_VERSION = '2026.09.26-4';
 const rules = () => S.rules || (S.rules = []);
 
 /* ---------- undo ---------- */
@@ -2104,7 +2175,7 @@ function splitLeft() {
 const splitNames = t => t.splits.map(s => catById(s.cat).name).join(', ');
 
 /* ---------- subscriptions ---------- */
-const prettyName = n => String(n || '').split(/\s{2,}|\*|#|\d{3,}/)[0].replace(/\.(com|net|io|co)\b.*$/i, '').replace(/\b(usa|us|inc|llc|ltd|corp|co)\b\.?/gi, '').replace(/\s+/g, ' ').trim().split(' ').filter(w => !w.includes('.')).slice(0, 3).join(' ').toLowerCase().replace(/(^|[\s-])\w/g, c => c.toUpperCase()).slice(0, 30) || n;
+const prettyName = n => String(n || '').split(/\s{2,}|\*|#|\d{3,}/)[0].replace(/\.(com|net|io|co)\b.*$/i, '').replace(/\b(usa|us|inc|llc|ltd|corp|co)\b\.?/gi, '').replace(/\s+/g, ' ').trim().split(' ').filter(w => !w.includes('.')).slice(0, 3).join(' ').replace(/[\s\-–:,.]+$/, '').toLowerCase().replace(/(^|[\s-])\w/g, c => c.toUpperCase()).slice(0, 30) || n;
 function detectSubs() {
   const dismissed = S.settings.subDismiss || [], billKeys = S.bills.map(b => merchKey(b.name)).filter(Boolean), g = {};
   S.txns.filter(t => t.type === 'expense' && num(t.amount) > 0 && !t.bill && t.note).forEach(t => { const k = merchKey(t.note); if (k) (g[k] = g[k] || []).push(t); });
@@ -2151,7 +2222,7 @@ function trendsHtml() {
   if (!top.length) return '';
   AFTER.push(() => lineChart($('#c-cattr'), { x: ms.map((_, i) => i), series: top.map((x, i) => ({ name: x.c.name, data: ms.map(m => spentIn(x.c.id, m)), color: COL[[0, 5, 1, 3][i]] })), xFmt: i => ms[i].label, xTip: i => ms[i].label + (i === 5 ? ' so far' : ''), label: 'Category trends', xl: 6, zero: true, h: 170 }));
   const chg = top.map(x => { const last = spentIn(x.c.id, ms[4]), prev = sum([ms[1], ms[2], ms[3]].map(m => spentIn(x.c.id, m))) / 3; return { x, last, d: prev > 1 ? (last - prev) / prev : null }; });
-  return card('Category trends', `<div class="chart" id="c-cattr"></div><div class="list" style="margin-top:8px">${chg.map(({ x, last, d }) => `<div class="row sm" style="padding:6px 0;border-top:1px solid var(--line)"><span>${esc(x.c.name)}</span><span>${money(last)} <span class="mute">last month</span>${d == null ? '' : ` <b class="${d > .05 ? 'neg' : d < -.05 ? 'pos' : 'mute'}">${d > 0 ? '+' : ''}${(d * 100).toFixed(0)}%</b>`}</span></div>`).join('')}</div><div class="xs mute" style="margin-top:6px">Change compares last month with the three months before it.</div>`, '<small>6 months</small>');
+  return card('Category trends', `<div class="chart" id="c-cattr"></div><div class="list" style="margin-top:8px">${chg.map(({ x, last, d }) => `<div class="row sm" style="padding:6px 0;border-top:1px solid var(--line)"><span>${esc(x.c.name)}</span><span>${money(last)} <span class="mute">last month</span>${d == null ? '' : ` <b class="${d > .25 ? 'neg' : d < -.05 ? 'pos' : 'mute'}">${d > 0 ? '+' : ''}${(d * 100).toFixed(0)}%</b>`}</span></div>`).join('')}</div><div class="xs mute" style="margin-top:6px">Change compares last month with the three months before it.</div>`, '<small>6 months</small>');
 }
 function openReport(off = -1) {
   const m = monthRange(off), pm = monthRange(off - 1), d0 = pd(m.s), name = MONTHS[d0.getMonth()] + ' ' + d0.getFullYear();
@@ -2167,7 +2238,7 @@ function openReport(off = -1) {
   const nw1 = hv(m.e), nw0 = hv(pm.e);
   const html = sheetHead(name + ' report', 'Done') + `<div class="row" style="margin:-4px 0 12px"><button class="chip" data-act="report" data-m="${off - 1}">\u2039 ${MONTHS[pd(pm.s).getMonth()]}</button>${off < 0 ? `<button class="chip" data-act="report" data-m="${off + 1}">${MONTHS[pd(monthRange(off + 1).s).getMonth()]} \u203a</button>` : '<span></span>'}</div>
   <section class="card hero"><div class="mute sm">You ${saved >= 0 ? 'saved' : 'overspent by'}</div><div class="big ${saved < 0 ? 'neg' : ''}">${money(Math.abs(saved))}</div><div class="sm" style="margin-top:4px">${saved >= 0 ? `A <b>${pct(rate, 0)}</b> savings rate` : 'Spending was more than income'}${planned ? ' <span class="mute">(using your planned take-home, since no income was logged)</span>' : ''}</div><div class="grid3" style="margin-top:12px">${stat(planned ? 'Take-home' : 'Income', compact(inc), 'pos')}${stat('Spent', compact(spend))}${stat('vs last month', pSpend ? (spend >= pSpend ? '+' : '\u2212') + pct(Math.abs(spend - pSpend) / pSpend, 0) : '\u2013', spend > pSpend ? 'neg' : 'pos')}</div></section>
-  <section class="card" style="margin-top:12px"><h2><span>Where it went</span></h2>${cats.length ? `<div class="list">${cats.slice(0, 6).map(x => { const d = x.pv > 1 ? (x.v - x.pv) / x.pv : null; return `<div class="row sm" style="padding:7px 0;border-top:1px solid var(--line)"><span>${esc(x.c.name)}</span><span><b>${money(x.v)}</b>${d == null ? '' : ` <span class="${d > .05 ? 'neg' : d < -.05 ? 'pos' : 'mute'}">${d > 0 ? '+' : ''}${(d * 100).toFixed(0)}%</span>`}</span></div>`; }).join('')}</div>` : '<div class="sm mute">No spending logged this month.</div>'}</section>
+  <section class="card" style="margin-top:12px"><h2><span>Where it went</span></h2>${cats.length ? `<div class="list">${cats.slice(0, 6).map(x => { const d = x.pv > 1 ? (x.v - x.pv) / x.pv : null; return `<div class="row sm" style="padding:7px 0;border-top:1px solid var(--line)"><span>${esc(x.c.name)}</span><span><b>${money(x.v)}</b>${d == null ? '' : ` <span class="${d > .25 ? 'neg' : d < -.05 ? 'pos' : 'mute'}">${d > 0 ? '+' : ''}${(d * 100).toFixed(0)}%</span>`}</span></div>`; }).join('')}</div>` : '<div class="sm mute">No spending logged this month.</div>'}</section>
   ${bud.length ? `<section class="card" style="margin-top:12px"><h2><span>Budgets</span><small>${under.length} of ${bud.length} kept</small></h2>${bar(under.length / bud.length, 'var(--pos)')}${over.length ? `<div class="sm" style="margin-top:8px">Over: ${over.map(x => `${esc(x.c.name)} <span class="neg">+${money(x.v - x.b)}</span>`).join(', ')}</div>` : '<div class="sm pos" style="margin-top:8px">Every budget held. Nice work.</div>'}</section>` : ''}
   ${big.length ? `<section class="card" style="margin-top:12px"><h2><span>Biggest purchases</span></h2>${big.map(t => `<div class="row sm" style="padding:6px 0;border-top:1px solid var(--line)"><span>${esc(t.note || catById(t.cat).name)} <span class="mute">${fmtShort(t.date)}</span></span><b>${money(t.amount)}</b></div>`).join('')}</section>` : ''}
   ${nw1 != null && nw0 != null ? `<section class="card" style="margin-top:12px"><div class="row"><span>Net worth change</span><b class="${nw1 - nw0 < 0 ? 'neg' : 'pos'}">${money(nw1 - nw0, { sign: true })}</b></div></section>` : ''}`;
@@ -2218,7 +2289,7 @@ function budCal() {
   h += card('', `<div class="calgrid">${g}</div><div class="legend" style="margin-top:10px"><span><i class="dt-pay" style="border-radius:50%"></i>Payday</span><span><i class="dt-bill" style="border-radius:50%"></i>Bill</span><span><i class="dt-card" style="border-radius:50%"></i>Card or loan payment</span><span><i class="dt-cardsub" style="border-radius:50%"></i>Charged to a card</span></div>`);
   const dayEv = ev[UI.calDay] || [];
   h += card(fmtDate(UI.calDay), (dayEv.length ? `<div class="list">${dayEv.map(x => `<div class="li"><span class="ic">${I(x.kind === 'pay' ? 'cash' : x.kind === 'bill' ? 'doc' : x.kind === 'card' ? 'card' : 'repeat')}</span><span class="main"><span class="t">${esc(x.label)}</span><span class="s">${x.kind === 'pay' ? 'Take-home pay' : x.kind === 'bill' ? 'Bill from checking' : x.kind === 'card' ? 'Paid from checking' : 'On your card, paid when the card is paid'}</span></span><span class="amt ${x.amt > 0 ? 'pos' : x.kind === 'cardsub' ? 'mute' : ''}">${x.amt > 0 ? money(x.amt, { sign: true }) : money(-(x.show || 0))}</span></div>`).join('')}</div>` : '<div class="sm mute">Nothing scheduled.</div>') + (proj[UI.calDay] != null ? `<div class="row sm" style="margin-top:10px"><span class="mute">Projected checking balance</span><b class="${proj[UI.calDay] < 0 ? 'neg' : ''}">${money(proj[UI.calDay])}</b></div>` : ''));
-  if (!checking.length) h += card('', '<div class="sm mute">Add a checking account in Invest to project your balance day by day.</div>');
+  if (!checking.length) h += card('', '<div class="sm mute">Add a checking account in Investing to project your balance day by day.</div>');
   else if (low) {
     const pts = Object.keys(proj).sort();
     AFTER.push(() => lineChart($('#c-cal'), { x: pts.map(k => pd(k).getDate()), series: [{ name: 'Checking', data: pts.map(k => proj[k]), color: 'var(--c1)' }], area: true, zero: true, xFmt: d => MONTHS[ms.getMonth()] + ' ' + d, label: 'Projected checking balance', h: 150 }));
@@ -2350,7 +2421,7 @@ Object.assign(DASH_NAMES, { safe: 'Safe to spend', payday: 'Payday checklist', n
 function lastPayday() { const t = stripTime(new Date()), ps = paydaysBetween(addDays(t, -45), t); return ps.length ? ps[ps.length - 1] : null; }
 function nextPayday() { const t = addDays(stripTime(new Date()), 1), ps = paydaysBetween(t, addDays(t, 45)); return ps[0] || null; }
 function paydayChecklistHtml(always) {
-  const lp = lastPayday(); if (!lp || !num(S.pay.salary)) return always ? card('Paycheck checklist', '<div class="sm mute">Add your salary and a recent payday under Budget, then Paycheck.</div>') : '';
+  const lp = lastPayday(); if (!lp || !num(S.pay.salary)) return always ? card('Paycheck checklist', '<div class="sm mute">Add your salary and a recent payday in Plan, Tools, Paycheck.</div>') : '';
   const age = Math.round((stripTime(new Date()) - lp) / 864e5); if (!always && age > 3) return '';
   const key = iso(lp), done = (S.payChecks || {})[key] || [], sp = paySplit(), items = sp.out.filter(o => o.sug);
   const logged = S.txns.some(t => t.type === 'income' && t.src === 'salary' && Math.abs((pd(t.date) - lp) / 864e5) <= 3);
@@ -2368,7 +2439,7 @@ function safeToSpend() {
   const p = period(0), t = stripTime(new Date()), end = pd(p.e);
   const cats = S.cats.filter(c => c.bucket !== 'savings' && num(c.budget) > 0); if (!cats.length) return null;
   const ids = new Set(cats.map(c => c.id)), days = Math.max(1, Math.round((end - t) / 864e5) + 1);
-  const left0 = sum(cats.map(c => { const a = catAvail(c, 0); return Math.max(0, a.avail - a.spent); }));
+  const left0 = sum(cats.map(c => { const a = catAvail(c, 0); return Math.max(0, a.budget - a.spent); }));
   let reserve = 0;
   S.bills.forEach(b => { if (b.noLog || !ids.has(b.cat)) return; for (let d = addDays(t, 1); d <= end; d = addDays(d, 1)) if (isDue(b, d)) reserve += num(b.amount); });
   const left = Math.max(0, left0 - reserve);
@@ -2633,6 +2704,534 @@ afterInit = function () {
   else if (S.settings.quickOnOpen && S.onboarded) setTimeout(() => quickAdd(), 500);
   let hid = 0;
   document.addEventListener('visibilitychange', () => { if (document.hidden) hid = Date.now(); else if (S.settings.quickOnOpen && hid && Date.now() - hid > 10 * 60000 && !$$('#sheets .ov').length) quickAdd(); });
+};
+/* ================= v4 upgrades ================= */
+DASH_W.push('plan', 'score', 'wins');
+Object.assign(DASH_NAMES, { plan: 'Money plan and tour', score: 'Savings-rate score', wins: 'Milestones' });
+
+/* ---------- simpler navigation ---------- */
+const TOOLS = [
+  ['whatif', 'What if', 'See what cutting spending does long term', 'target', () => whatIf()],
+  ['buy', 'Big purchase', 'Plan a car or another big buy', 'car', () => planBuy()],
+  ['pay', 'Paycheck', 'Take-home pay, taxes and deductions', 'cash', () => budPay()],
+  ['checkup', 'Annual checkup', 'Your yearly money to-do list', 'shield', () => checkupHtml()],
+  ['refi', 'Refinance', 'Compare a new loan rate', 'card', () => planRefi()]
+];
+scrBudget = function () {
+  if (UI.bsub === 'bills' || UI.bsub === 'goals') UI.bsub = 'bg';
+  if (UI.bsub === 'pay') { UI.bsub = 'overview'; UI.tab = 'plan'; UI.psub = 'pay'; return scrPlan(); }
+  let h = header('Spending') + `<div class="segwrap">${seg('bsub', [['overview', 'Overview'], ['tx', 'Transactions'], ['bg', 'Bills & goals'], ['cal', 'Calendar']], UI.bsub)}</div><div class="stack" id="bbody">`;
+  h += ({ overview: budOverview, tx: budTx, bg: () => budBills() + budGoals(), cal: budCal }[UI.bsub] || budOverview)();
+  return h + '</div>';
+};
+scrPlan = function () {
+  if (UI.psub === 'refiTool') UI.psub = 'refi';
+  const tool = TOOLS.find(t => t[0] === UI.psub), active = tool || UI.psub === 'tools' ? 'tools' : (['proj', 'debt', 'ladder'].includes(UI.psub) ? UI.psub : 'proj');
+  let h = header('Plan') + `<div class="segwrap">${seg('psub', [['proj', 'Future'], ['debt', 'Debt'], ['ladder', 'Next dollar'], ['tools', 'Tools']], active)}</div><div class="stack">`;
+  if (UI.psub === 'tools') h += card('', `<div class="list">${TOOLS.map(([id, t, d, ic]) => `<button class="li" data-act="psub" data-v="${id}"><span class="ic">${I(ic)}</span><span class="main"><span class="t">${t}</span><span class="s">${d}</span></span><span class="mute">${I('chevR')}</span></button>`).join('')}</div>`);
+  else if (tool) h += `<button class="chip back" data-act="psub" data-v="tools">\u2039 All tools</button>` + tool[4]();
+  else h += ({ proj: planProj, debt: planDebt, ladder: planLadder }[active] || planProj)();
+  return h + '</div>';
+};
+
+/* ---------- cleaner transaction rows + swipe ---------- */
+const AV = ['#5B9BFF', '#3DBEA8', '#9A8CF5', '#56C7F0', '#E07A9B', '#7F93B0', '#6FB0FF'];
+const avColor = s => { let h = 0; for (const ch of String(s)) h = (h * 31 + ch.charCodeAt(0)) | 0; return AV[Math.abs(h) % AV.length]; };
+txList = function (list, run) {
+  if (!list.length) return '<div class="empty">No transactions here yet.<div style="margin-top:10px"><button class="chip" data-act="fab">Add one</button> <button class="chip" data-act="importCsv">Import a CSV</button></div></div>';
+  let last = '', h = '<div class="list txl">';
+  list.forEach(t => {
+    if (t.date !== last) { h += `<div class="dh">${fmtDate(t.date)}</div>`; last = t.date; }
+    const c = catById(t.cat), inc = t.type === 'income', pay = t.type === 'payment', a = num(t.amount), credit = !inc && !pay && a < 0;
+    const name = (t.note ? prettyName(t.note) : '') || (inc ? 'Income' : pay ? 'Card payment' : c.name);
+    const sub = inc ? esc(srcLabel(t.src)) : pay ? 'Card payment' : (credit ? 'Credit \u00b7 ' : '') + (t.splits ? 'Split: ' + esc(splitNames(t)) : esc(c.name));
+    const amt = inc ? `<span class="pos">${money(a, { sign: true })}</span>` : pay ? `<span class="mute">${money(-a)}</span>` : credit ? `<span class="pos">${money(a, { sign: true }).replace('\u2212', '+')}</span>` : money(a);
+    const rt = run && run.has(t.id) ? `<span class="rt">${run.label === 'Balance' ? 'Bal' : 'Total'} ${money(run.get(t.id), { whole: true })}</span>` : '';
+    h += `<div class="swrow" data-id="${t.id}"><div class="swbg" aria-hidden="true"><span class="l">${I('tag')} Category</span><span class="r">Delete ${I('trash')}</span></div><button class="li" data-act="editTx" data-id="${t.id}"><span class="av" style="background:${inc ? 'var(--pos)' : pay ? 'var(--c7)' : avColor(name)}">${esc((name[0] || '?').toUpperCase())}</span><span class="main"><span class="t">${esc(name)}${t.receipt ? ' <span class="clip" title="Has receipt">\uD83D\uDCCE</span>' : ''}</span><span class="s">${sub}</span></span><span class="amt">${amt}${rt}</span></button></div>`;
+  });
+  return h + '</div>';
+};
+function swipeDelete(id) { const t = S.txns.find(x => x.id === id); if (!t) return; checkpoint(); S.txns = S.txns.filter(x => x.id !== id); commit(); offerUndo(`Deleted ${prettyName(t.note) || 'transaction'}`); }
+function swipeCat(id) {
+  const t = S.txns.find(x => x.id === id); if (!t) return;
+  if (t.type !== 'expense') { toast('Only expenses have categories'); return; }
+  openSheet(sheetHead('Move to category') + `<div class="sm mute" style="margin:-4px 0 10px">${esc(prettyName(t.note) || 'Transaction')}, ${money(Math.abs(num(t.amount)))}</div><div class="qa-cats">${S.cats.map(c => `<button class="${c.id === t.cat ? 'on' : ''}" data-act="swCat" data-id="${id}" data-cat="${c.id}">${I(c.icon)}<span>${esc(c.name)}</span></button>`).join('')}</div>`);
+}
+(function swipeInit() {
+  let row = null, x0 = 0, y0 = 0, dx = 0, drag = false;
+  document.addEventListener('pointerdown', e => { const r = e.target.closest && e.target.closest('.swrow'); if (!r || (e.pointerType === 'mouse' && e.button !== 0)) return; row = r; x0 = e.clientX; y0 = e.clientY; dx = 0; drag = false; });
+  document.addEventListener('pointermove', e => {
+    if (!row) return; const mx = e.clientX - x0, my = e.clientY - y0;
+    if (!drag) { if (Math.abs(mx) > 12 && Math.abs(mx) > Math.abs(my) * 1.4) { drag = true; row.classList.add('dragging'); } else if (Math.abs(my) > 12) { row = null; return; } else return; }
+    dx = clamp(mx, -150, 150); row.querySelector('.li').style.transform = `translateX(${dx}px)`;
+    row.classList.toggle('show-l', dx > 0); row.classList.toggle('show-r', dx < 0); row.classList.toggle('armed', Math.abs(dx) > 90);
+  });
+  const end = () => {
+    if (!row) return; const r = row, li = r.querySelector('.li'); row = null;
+    li.style.transition = 'transform .22s'; li.style.transform = '';
+    setTimeout(() => { li.style.transition = ''; r.classList.remove('dragging', 'show-l', 'show-r', 'armed'); }, 230);
+    if (drag) { r._swiped = Date.now(); if (dx < -90) swipeDelete(r.dataset.id); else if (dx > 90) swipeCat(r.dataset.id); }
+  };
+  document.addEventListener('pointerup', end); document.addEventListener('pointercancel', end);
+  document.addEventListener('click', e => { const r = e.target.closest && e.target.closest('.swrow'); if (r && r._swiped && Date.now() - r._swiped < 450) { e.stopPropagation(); e.preventDefault(); } }, true);
+})();
+
+/* ---------- search that understands phrases ---------- */
+const MONTHS_FULL = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+const CAT_ALIASES = [[/\b(dining|restaurants?|eating out|food|takeout)\b/, 'Dining out'], [/\b(groceries|grocery)\b/, 'Groceries'], [/\b(gas|fuel|uber|lyft|transport(ation)?)\b/, 'Transportation'], [/\b(rent|housing|mortgage)\b/, 'Housing'], [/\b(subscriptions?|streaming)\b/, 'Subscriptions'], [/\b(shopping|amazon)\b/, 'Shopping'], [/\b(travel|flights?|hotels?)\b/, 'Travel'], [/\b(utilities|electric|internet|phone)\b/, 'Utilities'], [/\b(health|medical|doctor|pharmacy)\b/, 'Health'], [/\b(entertainment|movies|fun)\b/, 'Entertainment']];
+function parseQuery(q) {
+  let s = ' ' + q.toLowerCase().replace(/[,]/g, '') + ' '; const f = {}, now = new Date(); let m;
+  const cut = x => { s = s.replace(x, ' '); };
+  if ((m = s.match(/\b(?:between|from)\s*\$?(\d+(?:\.\d+)?)\s*(?:and|to|-)\s*\$?(\d+(?:\.\d+)?)/))) { f.min = +m[1]; f.max = +m[2]; cut(m[0]); }
+  if ((m = s.match(/(?:over|above|more than|at least|>)\s*\$?(\d+(?:\.\d+)?)/))) { f.min = +m[1]; cut(m[0]); }
+  if ((m = s.match(/(?:under|below|less than|<)\s*\$?(\d+(?:\.\d+)?)/))) { f.max = +m[1]; cut(m[0]); }
+  const yr = (m = s.match(/\b(20\d\d)\b/)) ? +m[1] : null; if (yr) cut(m[0]);
+  if (/\bthis month\b/.test(s)) { f.range = monthRange(0); cut('this month'); }
+  else if (/\blast month\b/.test(s)) { f.range = monthRange(-1); cut('last month'); }
+  else if (/\bthis week\b/.test(s)) { f.range = { s: iso(addDays(now, -now.getDay())), e: todayISO(), label: 'This week' }; cut('this week'); }
+  else if (/\blast week\b/.test(s)) { const e = addDays(now, -now.getDay() - 1); f.range = { s: iso(addDays(e, -6)), e: iso(e), label: 'Last week' }; cut('last week'); }
+  else if (/\bthis year\b/.test(s)) { f.range = { s: now.getFullYear() + '-01-01', e: now.getFullYear() + '-12-31', label: String(now.getFullYear()) }; cut('this year'); }
+  else if (/\blast year\b/.test(s)) { const y = now.getFullYear() - 1; f.range = { s: y + '-01-01', e: y + '-12-31', label: String(y) }; cut('last year'); }
+  else {
+    const mi = MONTHS_FULL.findIndex(n => new RegExp(`\\b(${n}|${n.slice(0, 3)})\\b`).test(s) && !(n === 'may' && /\bmay (i|be)\b/.test(s)));
+    if (mi >= 0) { const y = yr || (mi <= now.getMonth() ? now.getFullYear() : now.getFullYear() - 1); f.range = { s: iso(new Date(y, mi, 1)), e: iso(new Date(y, mi + 1, 0)), label: MONTHS[mi] + ' ' + y }; cut(new RegExp(`\\b(${MONTHS_FULL[mi]}|${MONTHS_FULL[mi].slice(0, 3)})\\b`)); }
+    else if (yr) f.range = { s: yr + '-01-01', e: yr + '-12-31', label: String(yr) };
+  }
+  if (/\b(income|deposits?|paychecks?|paid me)\b/.test(s)) { f.type = 'income'; s = s.replace(/\b(income|deposits?|paychecks?)\b/g, ' '); }
+  else if (/\b(card )?payments?\b/.test(s)) { f.type = 'payment'; s = s.replace(/\b(card )?payments?\b/g, ' '); }
+  if (/\b(refunds?|credits?|returns?)\b/.test(s)) { f.refund = true; s = s.replace(/\b(refunds?|credits?|returns?)\b/g, ' '); }
+  for (const c of S.cats.slice().sort((a, b) => b.name.length - a.name.length)) { const n = c.name.toLowerCase(); if (n.length > 2 && s.includes(' ' + n + ' ') || s.includes(' ' + n)) { if (s.includes(n)) { f.cat = c.id; cut(n); break; } } }
+  if (!f.cat) for (const [re, n] of CAT_ALIASES) { if (re.test(s)) { const id = catIdByName(n); if (id) { f.cat = id; s = s.replace(re, ' '); break; } } }
+  const accts = [...new Set(S.txns.map(t => t.acct).filter(Boolean))];
+  for (const a of accts) { const al = a.toLowerCase(); if (s.includes(al) || (/american express/.test(al) && /\bamex\b/.test(s))) { f.acct = a; s = s.replace(al, ' ').replace(/\bamex\b/, ' '); break; } }
+  f.text = s.replace(/\b(in|on|at|for|from|during|spent|spend|spending|transactions?|purchases?|charges?|the|my|all|show|me|what|did|i|how|much|of|to|with|and)\b/g, ' ').replace(/\$|\s+/g, ' ').trim();
+  return f;
+}
+runSearch = function (q) {
+  const el = $('#qres'); if (!el) return;
+  if (q.trim().length < 2) { el.innerHTML = `<div class="empty">Try \u201cdining in August\u201d, \u201cover $100 last month\u201d or \u201camex refunds\u201d.</div>`; return; }
+  const f = parseQuery(q), txt = f.text, has = f.range || f.cat || f.min != null || f.max != null || f.type || f.refund || f.acct;
+  const tx = S.txns.filter(t => {
+    if (f.type ? t.type !== f.type : (has && !f.refund && t.type !== 'expense' && !txt)) return false;
+    if (f.refund && !(t.type === 'expense' && num(t.amount) < 0)) return false;
+    if (f.range && !inRange(t.date, f.range)) return false;
+    if (f.acct && t.acct !== f.acct) return false;
+    if (f.cat && !catParts(t).some(([c]) => c === f.cat)) return false;
+    const a = Math.abs(num(t.amount)); if (f.min != null && a < f.min) return false; if (f.max != null && a > f.max) return false;
+    if (txt && !(String(t.note || '').toLowerCase().includes(txt) || catById(t.cat).name.toLowerCase().includes(txt) || String(t.amount).includes(txt))) return false;
+    return true;
+  }).sort((a, b) => a.date < b.date ? 1 : -1);
+  const total = sum(tx.map(t => f.cat ? sum(catParts(t).filter(([c]) => c === f.cat).map(([, a]) => a)) : num(t.amount)));
+  const chips = [f.cat && catById(f.cat).name, f.range && (f.range.label || ''), f.acct, f.min != null && 'over ' + money(f.min, { force: true, whole: true }), f.max != null && 'under ' + money(f.max, { force: true, whole: true }), f.type === 'income' && 'Income', f.type === 'payment' && 'Card payments', f.refund && 'Refunds', txt && `\u201c${txt}\u201d`].filter(Boolean);
+  let h = `<div class="qchips">${chips.map(c => `<span class="tag">${esc(c)}</span>`).join('')}</div>`;
+  if (tx.length) h += `<div class="qsum"><span>${tx.length} transaction${tx.length === 1 ? '' : 's'}</span><b>${money(Math.abs(total))}</b></div>`;
+  if (!has && txt) {
+    const m2 = s => String(s || '').toLowerCase().includes(txt);
+    S.accounts.filter(a => m2(a.name) || (a.holdings || []).some(x => m2(x.ticker))).forEach(a => h += `<button class="li" data-act="openAcct" data-id="${a.id}"><span class="ic">${I('chart')}</span><span class="main"><span class="t">${esc(a.name)}</span><span class="s">Account</span></span><span class="amt">${money(acctValue(a))}</span></button>`);
+    S.debts.filter(d => m2(d.name)).forEach(d => h += `<button class="li" data-act="editDebt" data-id="${d.id}"><span class="ic">${I('card')}</span><span class="main"><span class="t">${esc(d.name)}</span><span class="s">Debt</span></span><span class="amt">${money(d.balance)}</span></button>`);
+    S.bills.filter(b => m2(b.name)).forEach(b => h += `<button class="li" data-act="editBill" data-id="${b.id}"><span class="ic">${I('repeat')}</span><span class="main"><span class="t">${esc(b.name)}</span><span class="s">Bill</span></span><span class="amt">${money(b.amount)}</span></button>`);
+    S.goals.filter(g => m2(g.name)).forEach(g => h += `<button class="li" data-act="editGoal" data-id="${g.id}"><span class="ic">${I('target')}</span><span class="main"><span class="t">${esc(g.name)}</span><span class="s">Goal</span></span><span class="amt">${money(g.saved)}</span></button>`);
+  }
+  h += tx.length ? txList(tx.slice(0, 80)) : '<div class="empty">No matching transactions.</div>';
+  el.innerHTML = h;
+};
+
+/* ---------- pull to refresh ---------- */
+async function pullRefresh() {
+  runBills(); syncDebts();
+  if (S.settings.quoteKey) await refreshQuotes({ silent: true });
+  lastUpdCheck = 0; await checkUpdate(); commit();
+  toast(S.settings.quoteKey ? 'Prices and bills are up to date' : 'Up to date');
+}
+(function ptrInit() {
+  const ind = document.createElement('div'); ind.id = 'ptr'; ind.setAttribute('aria-hidden', 'true'); ind.innerHTML = '<svg viewBox="0 0 24 24" class="i"><path d="M12 5v14 M6 13l6 6 6-6"/></svg>'; document.body.appendChild(ind);
+  let y0 = null, dy = 0, busy = false;
+  window.addEventListener('touchstart', e => { if (busy || window.scrollY > 0 || $$('#sheets .ov').length || UI.locked || e.touches.length > 1 || (e.target.closest && e.target.closest('.swrow,.chart,input,select,textarea'))) { y0 = null; return; } y0 = e.touches[0].clientY; dy = 0; }, { passive: true });
+  window.addEventListener('touchmove', e => { if (y0 == null) return; dy = e.touches[0].clientY - y0; if (dy <= 0 || window.scrollY > 0) { ind.style.opacity = 0; return; } const p = Math.min(dy, 130); ind.style.transform = `translate(-50%, ${p * .55}px) rotate(${Math.min(180, dy * 2)}deg)`; ind.style.opacity = Math.min(1, p / 80); ind.classList.toggle('ready', dy > 85); }, { passive: true });
+  window.addEventListener('touchend', () => { if (y0 == null) return; const go = dy > 85; y0 = null; if (!go) { ind.style.opacity = 0; ind.classList.remove('ready'); return; } busy = true; ind.classList.add('spin'); pullRefresh().finally(() => { busy = false; ind.classList.remove('spin', 'ready'); ind.style.opacity = 0; ind.style.transform = ''; }); });
+})();
+
+/* ---------- app icon badge ---------- */
+let badgeT;
+function updateBadge() {
+  clearTimeout(badgeT); badgeT = setTimeout(() => {
+    if (!('setAppBadge' in navigator)) return;
+    try { if (!S.settings.badge) { navigator.clearAppBadge(); return; } const n = alertsList().filter(a => !a.info).length; n ? navigator.setAppBadge(n) : navigator.clearAppBadge(); } catch (e) { }
+  }, 1200);
+}
+async function badgeToggle() {
+  if (S.settings.badge) { S.settings.badge = false; save(); updateBadge(); openSettingsFresh(); return; }
+  if (!('setAppBadge' in navigator) || !('Notification' in window)) { toast('Icon badges need iOS 16.4 or later, opened from the Home Screen icon'); return; }
+  const p = await Notification.requestPermission();
+  if (p !== 'granted') { toast('Badges need notification permission. You can allow it in iPhone Settings, Notifications, Compound.'); return; }
+  S.settings.badge = true; save(); updateBadge(); toast('The Compound icon will show how many things need you'); openSettingsFresh();
+}
+
+/* ---------- receipt scanner ---------- */
+function parseReceipt(text) {
+  const lines = String(text || '').split(/\n/).map(l => l.trim()).filter(Boolean), amtRe = /\$?\s?(\d{1,5}(?:,\d{3})*[.,]\d{2})(?!\d)/g;
+  const amts = l => [...l.matchAll(amtRe)].map(m => num(m[1].replace(/,(\d{2})$/, '.$1')));
+  let total = null;
+  for (const l of lines) if (/(^|\b)(grand total|total due|amount due|balance due|total)\b/i.test(l) && !/sub\s*-?\s*total|total tax|tax total|total savings|you saved|items?\b/i.test(l)) { const a = amts(l); if (a.length) total = Math.max(total || 0, a[a.length - 1]); }
+  if (!total) { const all = lines.flatMap(amts).filter(v => v < 100000); if (all.length) total = Math.max(...all); }
+  let date = null; for (const l of lines) { const m = l.match(/(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}|\d{4}-\d{2}-\d{2})/); if (m) { date = parseDateLoose(m[1].replace(/-/g, m[1].length === 10 && m[1][4] === '-' ? '-' : '/')); if (date) break; } }
+  const merchant = (lines.find(l => { const letters = (l.match(/[a-z]/gi) || []).length; return letters >= 3 && letters / l.length > .55 && !/receipt|welcome|thank|store\s*#|tel|phone|www|http|survey|cashier/i.test(l); }) || '').replace(/[^\w&'\- .]/g, '').trim().slice(0, 40);
+  return { total, date, merchant };
+}
+function loadScript(src) { return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('load')); document.head.appendChild(s); }); }
+function scanSheet() {
+  const ov = openSheet(sheetHead('Scan a receipt') + `<p class="sm mute" style="margin:-4px 0 14px">Take a photo of a paper receipt. Compound reads the store, date and total on your phone, then you confirm. The first scan downloads the text reader, about 10 MB, so use Wi-Fi.</p><label class="btn block" style="cursor:pointer">${I('doc')} Take or choose a photo<input type="file" accept="image/*" capture="environment" id="rcFile" hidden></label><div id="rcProg" class="sm mute" style="margin-top:12px"></div>`);
+  $('#rcFile', ov).addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) runScan(f, ov); });
+}
+async function runScan(file, ov) {
+  const pr = $('#rcProg', ov), set = t => { if (pr) pr.innerHTML = t; };
+  set('Preparing the photo\u2026');
+  const receipt = await resizeImage(file);
+  const big = await new Promise(res => { const fr = new FileReader(); fr.onload = () => { const img = new Image(); img.onload = () => { const m = 1800, sc = Math.min(1, m / Math.max(img.width, img.height)); const c = document.createElement('canvas'); c.width = img.width * sc; c.height = img.height * sc; const x = c.getContext('2d'); x.filter = 'grayscale(1) contrast(1.3)'; x.drawImage(img, 0, 0, c.width, c.height); res(c.toDataURL('image/jpeg', .9)); }; img.onerror = () => res(null); img.src = fr.result; }; fr.readAsDataURL(file); });
+  let text = '';
+  try {
+    if (!window.Tesseract) { set('Downloading the text reader\u2026'); await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'); }
+    const r = await window.Tesseract.recognize(big || file, 'eng', { logger: m => { if (m.status === 'recognizing text') set(`Reading the receipt\u2026 ${Math.round((m.progress || 0) * 100)}%`); else if (m.status) set(m.status.replace(/^\w/, c => c.toUpperCase()) + '\u2026'); } });
+    text = r && r.data ? r.data.text : '';
+  } catch (e) { set('<span class="neg">Couldn\u2019t load the text reader. Check your connection and try again.</span> You can still enter it by hand below.'); }
+  const p = parseReceipt(text), known = {}; S.txns.forEach(t => { if (t.note && t.cat && t.type === 'expense') known[merchKey(t.note)] = t.cat; });
+  if (ov.isConnected) ov.remove();
+  txForm(null, 'expense', { amount: p.total || '', date: p.date || todayISO(), note: p.merchant ? prettyName(p.merchant) : '', cat: p.merchant ? guessCat(p.merchant, '', known) : uncategorized(), receipt });
+  toast(p.total ? 'Check the details, then tap Add' : 'Couldn\u2019t find a total. Enter it by hand.');
+}
+
+/* ---------- milestones & celebrations ---------- */
+function milestoneState() {
+  const out = [], nw = netWorth();
+  [10e3, 25e3, 50e3, 100e3, 250e3, 500e3, 1e6, 2e6].forEach(v => { if (S.accounts.length && nw >= v) out.push(['nw' + v, `Net worth passed ${compactRaw(v)}`, 'Every dollar you keep now compounds from here.', '\uD83D\uDCC8']); });
+  S.debts.forEach(d => { if (num(d.balance) > 0) d.hadBal = true; if (d.hadBal && num(d.balance) <= 0 && d.type !== 'cc') out.push(['debt' + d.id, `${d.name} is paid off`, 'One less payment competing for your paycheck.', '\uD83C\uDF89']); });
+  const needs = needsMonthly(), efm = num(S.settings.efMonths) || 6; if (needs > 0 && efTotal() >= needs * efm) out.push(['ef' + efm, 'Emergency fund complete', `${efm} months of essentials, set aside. That\u2019s real peace of mind.`, '\uD83D\uDEE1\uFE0F']);
+  S.goals.forEach(g => { if (num(g.target) > 0 && num(g.saved) >= num(g.target)) out.push(['goal' + g.id, `${g.name}: goal reached`, `You saved the full ${money(g.target, { force: true, whole: true })}.`, '\uD83C\uDFAF']); });
+  const n = typeof noSpendInfo === 'function' ? noSpendInfo() : null;
+  if (n) [7, 14, 30].forEach(k => { if (n.streak >= k) out.push(['streak' + k + '-' + iso(addDays(new Date(), -n.streak)), `${k}-day no-spend streak`, 'Small choices, adding up.', '\uD83D\uDD25']); });
+  const sc = monthScore(-1); if (sc && sc.grade === 'A') out.push(['scoreA' + sc.key, `${sc.label}: an A savings month`, `You kept ${pct(sc.rate, 0)} of your income.`, '\u2B50']);
+  return out;
+}
+function checkMilestones(silent) {
+  if (!S || !S.onboarded) return;
+  S.milestones = S.milestones || {};
+  const fresh = milestoneState().filter(([k]) => !S.milestones[k]);
+  if (!fresh.length) return;
+  fresh.forEach(([k, t, d, e]) => { S.milestones[k] = { at: todayISO(), t, e }; });
+  save(); if (!silent) celebrate(fresh[fresh.length - 1]);
+}
+function celebrate([, title, sub, emoji]) {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, colors = ['#5B9BFF', '#3DBEA8', '#9A8CF5', '#56C7F0', '#E07A9B', '#F0A541'];
+  const bits = reduce ? '' : Array.from({ length: 70 }, (_, i) => `<i style="left:${Math.random() * 100}%;background:${colors[i % colors.length]};animation-delay:${Math.random() * .6}s;animation-duration:${1.8 + Math.random() * 1.4}s;transform:rotate(${Math.random() * 360}deg)"></i>`).join('');
+  const el = document.createElement('div'); el.className = 'celebrate'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', title);
+  el.innerHTML = `<div class="confetti">${bits}</div><div class="cel-card"><div class="cel-e">${emoji}</div><div class="cel-t">${esc(title)}</div><div class="cel-s">${esc(sub)}</div><button class="btn block" data-act="celClose">Nice!</button></div>`;
+  document.body.appendChild(el);
+}
+
+/* ---------- savings-rate score ---------- */
+function monthScore(off) {
+  const m = monthRange(off), tx = S.txns.filter(t => inRange(t.date, m)); if (!tx.some(t => t.type === 'expense')) return null;
+  const incL = sum(tx.filter(t => t.type === 'income').map(t => num(t.amount))), inc = incL || calcPay().net / 12; if (!inc) return null;
+  const spend = sum(tx.filter(t => t.type === 'expense').map(t => num(t.amount))), rate = (inc - spend) / inc, tgt = (num(S.settings.saveTarget) || 20) / 100;
+  const grade = rate >= tgt ? 'A' : rate >= tgt * .75 ? 'B' : rate >= tgt * .5 ? 'C' : rate >= tgt * .25 ? 'D' : 'F';
+  const d = pd(m.s); return { rate, grade, planned: !incL, label: MONTHS[d.getMonth()], key: m.s.slice(0, 7), inc, spend };
+}
+W.score = function () {
+  const last = monthScore(-1), cur = monthScore(0), tgt = num(S.settings.saveTarget) || 20;
+  if (!last && !cur) return card('Savings-rate score', '<div class="sm mute">Your first score appears after a month of spending is logged or imported.</div>');
+  const main = last || cur, hist = [-6, -5, -4, -3, -2, -1].map(monthScore), col = g => g === 'A' ? 'var(--pos)' : g === 'B' ? 'var(--acc)' : g === 'C' ? 'var(--c3)' : 'var(--neg)';
+  const r = 30, c = 2 * Math.PI * r, p = clamp(main.rate / (tgt / 100), 0, 1);
+  return card('Savings-rate score', `<div class="row" style="justify-content:flex-start;gap:16px"><svg viewBox="0 0 76 76" width="76" height="76" aria-hidden="true"><circle cx="38" cy="38" r="${r}" fill="none" stroke="var(--surf2)" stroke-width="8"/><circle cx="38" cy="38" r="${r}" fill="none" stroke="${col(main.grade)}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(c * p).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 38 38)"/><text x="38" y="45" text-anchor="middle" font-size="22" font-weight="800" fill="var(--text)">${main.grade}</text></svg><div><div class="mid">${pct(Math.max(0, main.rate), 0)} saved</div><div class="sm mute">${main.label}${main === cur ? ' so far' : ''}, goal ${tgt}%${main.planned ? ', using planned take-home' : ''}</div>${last && cur ? `<div class="sm" style="margin-top:4px">${cur.label} so far: <b>${pct(Math.max(0, cur.rate), 0)}</b></div>` : ''}</div></div><div class="spark">${hist.map((h, i) => `<div><i style="height:${h ? clamp(h.rate, 0, .6) / .6 * 100 : 0}%;background:${h ? col(h.grade) : 'var(--line)'}"></i><span>${h ? h.grade : '\u2013'}</span></div>`).join('')}</div>`, '<small>last 6 months</small>');
+};
+
+/* ---------- milestones widget ---------- */
+W.wins = function () {
+  const ms = Object.entries(S.milestones || {}).filter(([, v]) => v && v.t).sort((a, b) => a[1].at < b[1].at ? 1 : -1);
+  if (!ms.length) return '';
+  return card('Milestones', `<div class="list">${ms.slice(0, 3).map(([, v]) => `<div class="li"><span class="ic" style="font-size:17px">${v.e || '\u2B50'}</span><span class="main"><span class="t">${esc(v.t)}</span><span class="s">${fmtDate(v.at)}</span></span></div>`).join('')}</div>`, `<small>${ms.length} earned</small>`);
+};
+
+/* ---------- Face ID via passkeys ---------- */
+const Passkey = {
+  async available() { try { return !!(window.PublicKeyCredential && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()); } catch (e) { return false; } },
+  async create() {
+    const cred = await navigator.credentials.create({ publicKey: { rp: { name: 'Compound', id: location.hostname }, user: { id: crypto.getRandomValues(new Uint8Array(16)), name: 'Compound unlock', displayName: 'Compound unlock' }, challenge: crypto.getRandomValues(new Uint8Array(32)), pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }], authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'preferred' }, timeout: 60000, attestation: 'none' } });
+    S.settings.passkey = b64(cred.rawId); save();
+  },
+  async verify() {
+    const a = await navigator.credentials.get({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), allowCredentials: [{ type: 'public-key', id: unb64(S.settings.passkey) }], userVerification: 'required', rpId: location.hostname, timeout: 60000 } });
+    return !!a;
+  }
+};
+const _showLock = showLock;
+showLock = function () {
+  _showLock();
+  if (S.settings.passkey) {
+    $('#lock').insertAdjacentHTML('beforeend', `<button class="btn ghost" data-act="faceUnlock" style="margin-top:4px">${I('eye')} Unlock with Face ID</button>`);
+    setTimeout(() => { if (UI.locked) faceUnlock(true); }, 350);
+  }
+};
+async function faceUnlock(auto) {
+  try { if (await Passkey.verify()) { UI.locked = false; $('#lock').hidden = true; $('#lock').innerHTML = ''; } }
+  catch (e) { if (!auto) toast('Face ID didn\u2019t work. Use your passcode.'); }
+}
+async function faceSetup() {
+  if (!S.settings.pin) { toast('Set a passcode first. It stays as your backup.'); return; }
+  if (!(await Passkey.available())) { toast('Face ID unlock isn\u2019t available here. Open Compound from its Home Screen icon on iOS 16 or later.'); return; }
+  try { await Passkey.create(); toast('Face ID is on'); openSettingsFresh(); }
+  catch (e) { toast(e && e.name === 'NotAllowedError' ? 'Face ID setup was cancelled' : 'Couldn\u2019t set up Face ID on this device'); }
+}
+
+/* ---------- restore points ---------- */
+const RP_KEY = 'compound-restore'; let RPmem = [];
+async function rpLoad() { try { const v = await IDB.get(RP_KEY); return v ? JSON.parse(v) : []; } catch (e) { return RPmem; } }
+async function rpSave(l) { try { await IDB.set(RP_KEY, JSON.stringify(l)); } catch (e) { RPmem = l; } }
+async function addRestorePoint(label, snap) { if (S.practice) return; const l = await rpLoad(); l.unshift({ id: uid(), at: Date.now(), label, snap }); await rpSave(l.slice(0, 20)); }
+const _offerUndo = offerUndo;
+offerUndo = function (msg) { if (UNDO && !S.practice && UNDO.snap !== JSON.stringify(S)) addRestorePoint(msg, UNDO.snap); _offerUndo(msg); };
+async function openHistory() {
+  const l = await rpLoad(), ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : fmtDate(new Date(t)); };
+  const ov = openSheet(sheetHead('Change history', 'Done') + `<p class="sm mute" style="margin:-4px 0 12px">Compound saves a restore point before every import, delete and bulk change, plus one each day. Restoring puts the app back exactly as it was before that change. Your current state is saved first, so you can always come back.</p>` + (l.length ? `<div class="list">${l.map(p => `<div class="li"><span class="ic">${I('doc')}</span><span class="main"><span class="t">${esc(p.label)}</span><span class="s">${ago(p.at)}</span></span><button class="chip" data-act="rpRestore" data-id="${p.id}">Restore</button></div>`).join('')}</div>` : '<div class="empty">No restore points yet. They appear as you make changes.</div>'));
+  ov._hist = true;
+}
+async function rpRestore(id) {
+  const l = await rpLoad(), p = l.find(x => x.id === id); if (!p) return;
+  if (!confirm(`Put Compound back to before \u201c${p.label}\u201d?`)) return;
+  await addRestorePoint('Before restoring an earlier version', JSON.stringify(S));
+  S = merge(JSON.parse(p.snap)); applyTheme(); closeAll(); commit(); toast('Restored');
+}
+
+/* ---------- annual money checkup ---------- */
+const CHECKUP = [
+  ['raise401', 'Raise your 401(k) by 1%', 'You\u2019ll barely notice it in your paycheck.', () => { UI.tab = 'plan'; UI.psub = 'pay'; }],
+  ['rebalance', 'Rebalance your investments', 'Bring your stock and bond mix back to target.', () => { UI.tab = 'invest'; }],
+  ['credit', 'Check your credit reports', 'Free at annualcreditreport.com from all three bureaus.'],
+  ['freeze', 'Freeze your credit', 'Free and reversible. Blocks new accounts in your name.'],
+  ['insurance', 'Compare car and renters insurance', 'Quotes change yearly. Shopping around often saves hundreds.'],
+  ['benef', 'Update beneficiaries', 'On your 401(k), IRA and HSA.'],
+  ['subs', 'Cancel subscriptions you don\u2019t use', 'Review them in Spending, Bills & goals.', () => { UI.tab = 'budget'; UI.bsub = 'bg'; }],
+  ['budget', 'Refresh your budgets and goals', 'Use the suggested budgets based on your real spending.', () => { UI.tab = 'budget'; UI.bsub = 'overview'; }],
+  ['limits', 'Check the new contribution limits', '401(k), IRA and HSA limits usually rise each January.', () => { UI.tab = 'invest'; }],
+  ['tax', 'Gather tax forms', 'W-2, 1099s and 5498-SA. Your year in review has a tax folder.', () => openYear()],
+  ['hsa', 'File HSA receipts', 'Keep receipts for medical costs you might reimburse later.'],
+  ['backup', 'Back up Compound', 'Save an encrypted backup to iCloud Drive.', () => backupForm()]
+];
+function checkupState() { const y = new Date().getFullYear(); if (!S.checkup || S.checkup.year !== y) S.checkup = { year: y, done: [] }; return S.checkup; }
+function checkupHtml() {
+  const st = checkupState(), n = st.done.length;
+  return card(`${st.year} money checkup`, `<div class="row" style="margin-bottom:8px"><span class="sm mute">Once a year, about an hour total</span><b>${n} of ${CHECKUP.length}</b></div>${bar(n / CHECKUP.length, 'var(--pos)')}<div class="list" style="margin-top:8px">${CHECKUP.map(([id, t, d, go]) => { const on = st.done.includes(id); return `<div class="li chk-row${on ? ' done' : ''}"><button class="box" data-act="ckToggle" data-id="${id}" role="checkbox" aria-checked="${on}" aria-label="${esc(t)}">${on ? '\u2713' : ''}</button><span class="main"><span class="t">${t}</span><span class="s">${d}</span></span>${go ? `<button class="chip" data-act="ckGo" data-id="${id}">Go</button>` : ''}</div>`; }).join('')}</div>${n === CHECKUP.length ? '<div class="sm pos" style="margin-top:10px">All done for the year. Excellent.</div>' : ''}`);
+}
+
+/* ---------- practice mode & sample data ---------- */
+async function snapSet(v) { try { await IDB.set('compound-real', v); return; } catch (e) { } try { if (window.storage) { await window.storage.set('compound-real', v || ' ', false); return; } } catch (e) { } snapSet.mem = v; }
+async function snapGet() { try { const v = await IDB.get('compound-real'); if (v) return v; } catch (e) { } try { if (window.storage) { const r = await window.storage.get('compound-real', false); if (r && r.value && r.value.trim()) return r.value; } } catch (e) { } return snapSet.mem || null; }
+function sampleData() {
+  const d = defaults(), t = stripTime(new Date()), cid = n => d.cats.find(c => c.name === n).id;
+  const fri = addDays(t, -((t.getDay() + 2) % 7));
+  Object.assign(d, { onboarded: true, practice: true, planDone: todayISO(), toured: true, msInit: true });
+  d.profile = { name: 'Sam', age: 29, retireAge: 60, retireSpend: 55000, state: 'TX', filing: 'single' };
+  Object.assign(d.pay, { salary: 85000, freq: 26, anchor: iso(fri), k401: 6, matchPct: 100, matchUpTo: 5, hsa: 100, ira: 300 });
+  const acc = (type, name, cash, extra = {}) => { const a = { id: uid(), type, name, cash, holdings: [], updated: todayISO(), ...extra }; d.accounts.push(a); return a; };
+  const roth = acc('roth_ira', 'Fidelity Roth IRA', 250, { holdings: [{ id: uid(), ticker: 'VTI', shares: 58, price: 312.4, cost: 251, cls: 'stock' }, { id: uid(), ticker: 'BND', shares: 30, price: 73.1, cost: 74, cls: 'bond' }] });
+  const k = acc('k401', 'Work 401(k)', 0, { holdings: [{ id: uid(), ticker: 'FXAIX', shares: 180, price: 214.2, cost: 180, cls: 'stock', manualPrice: true }] });
+  acc('match', 'Employer match', 6400, { hireDate: iso(addDays(t, -800)), vestYears: 3, vestType: 'graded' });
+  acc('hsa', 'HSA', 3900); acc('checking', 'Checking', 3400); acc('savings', 'High-yield savings', 11800, { ef: true }); acc('brokerage', 'Brokerage', 4200);
+  const budgets = { Housing: 1650, Utilities: 190, Groceries: 480, Transportation: 220, Insurance: 140, Health: 60, 'Dining out': 280, Entertainment: 120, Shopping: 200, Subscriptions: 45, Travel: 150 };
+  d.cats.forEach(c => { if (budgets[c.name]) c.budget = budgets[c.name]; c.created = iso(addDays(t, -150)); });
+  const add = (dt, amount, cat, note, acct) => d.txns.push({ id: uid(), date: iso(dt), amount, type: 'expense', cat: cid(cat), note, acct });
+  let seed = 7; const rnd = (a, b) => { seed = (seed * 9301 + 49297) % 233280; return Math.round((a + (b - a) * seed / 233280) * 100) / 100; };
+  for (let m = 4; m >= 0; m--) {
+    const b = new Date(t.getFullYear(), t.getMonth() - m, 1), day = n => new Date(b.getFullYear(), b.getMonth(), n), inMonth = n => day(n) <= t;
+    if (inMonth(1)) add(day(1), 1650, 'Housing', 'RENT - AUSTIN APTS');
+    if (inMonth(3)) add(day(3), 15.49, 'Subscriptions', 'NETFLIX.COM', 'American Express');
+    if (inMonth(9)) add(day(9), 11.99, 'Subscriptions', 'SPOTIFY USA', 'American Express');
+    if (inMonth(12)) add(day(12), rnd(150, 210), 'Utilities', 'AUSTIN ENERGY');
+    [4, 11, 18, 25].forEach(n => { if (inMonth(n)) add(day(n), rnd(85, 135), 'Groceries', 'H-E-B #123 AUSTIN TX', 'American Express'); });
+    [6, 14, 21, 27].forEach(n => { if (inMonth(n)) add(day(n), rnd(18, 95), 'Dining out', ['UCHI AUSTIN', 'TORCHYS TACOS', 'STARBUCKS STORE 123', 'VIA 313 PIZZA'][n % 4], 'American Express'); });
+    [8, 22].forEach(n => { if (inMonth(n)) add(day(n), rnd(35, 55), 'Transportation', 'BUC-EES #22', 'American Express'); });
+    if (inMonth(16)) add(day(16), rnd(40, 180), 'Shopping', 'AMAZON MKTPL', 'American Express');
+    if (inMonth(19)) add(day(19), rnd(20, 60), 'Entertainment', 'ALAMO DRAFTHOUSE', 'American Express');
+    if (inMonth(28)) d.txns.push({ id: uid(), date: iso(day(28)), amount: rnd(700, 950), type: 'payment', note: 'MOBILE PAYMENT - THANK YOU', acct: 'American Express' });
+  }
+  const per = 2380; for (let p = new Date(fri); p >= addDays(t, -140); p = addDays(p, -14)) { d.txns.push({ id: uid(), date: iso(p), amount: per, type: 'income', src: 'salary', note: 'Paycheck' }); d.contribs.push({ id: uid(), date: iso(p), acct: k.id, amount: 196, kind: 'you' }); }
+  for (let m = 0; m < 9; m++) d.contribs.push({ id: uid(), date: iso(new Date(t.getFullYear(), m, 5)), acct: roth.id, amount: 300, kind: 'you' });
+  d.bills.push({ id: uid(), name: 'Rent', amount: 1650, cat: cid('Housing'), freq: 'monthly', day: 1, start: todayISO(), last: todayISO() }, { id: uid(), name: 'Netflix', amount: 15.49, cat: cid('Subscriptions'), freq: 'monthly', day: 3, sub: true, noLog: true, start: todayISO(), last: todayISO() });
+  d.goals.push({ id: uid(), name: 'Japan trip', target: 6000, saved: 2300, due: iso(new Date(t.getFullYear() + 1, 3, 1)) }, { id: uid(), name: 'New laptop', target: 2500, saved: 1900, due: '' });
+  d.debts.push({ id: uid(), type: 'cc', name: 'American Express', link: 'American Express', startBal: 900, since: iso(addDays(t, -150)), balance: 0, apr: 24.99, min: 40, limit: 8000, dueDay: 18 }, { id: uid(), type: 'car', name: 'Car loan', balance: 14200, apr: 6.9, min: 385, dueDay: 5 });
+  for (let i = 180; i >= 1; i -= 3) d.history[iso(addDays(t, -i))] = Math.round(58000 + (180 - i) * 70 + Math.sin(i / 12) * 1800);
+  Object.assign(d.settings, { v4dash: true, extra: 200, lastBackup: todayISO(), dash: ['hero', 'safe', 'payday', 'alerts', 'score', 'networth', 'allocation', 'budget', 'nospend', 'debt', 'retire', 'fi', 'limits', 'goals', 'wins', 'cashflow', 'plan'] });
+  d.milestones = { nw50000: { at: iso(addDays(t, -40)), t: 'Net worth passed $50K', e: '\uD83D\uDCC8' } };
+  return d;
+}
+async function enterPractice() {
+  if (S.practice) return;
+  await snapSet(JSON.stringify(S)); S = merge(sampleData()); syncDebts(); checkMilestones(true);
+  closeAll(); UI.tab = 'dash'; commit(); toast('Practice mode: explore freely. Your real data is safe.');
+}
+async function exitPractice() {
+  const s = await snapGet(); if (!s) { toast('Couldn\u2019t find your saved data. Try again, or restore a backup.'); return; }
+  const toured = S.toured; S = merge(JSON.parse(s)); delete S.practice; if (toured) S.toured = true; await snapSet(''); applyTheme(); closeAll(); UI.tab = 'dash'; commit(); toast('Welcome back to your real data');
+}
+
+/* ---------- guided tour ---------- */
+const TOUR = [
+  ['[data-w="hero"]', 'Your big picture', 'Net worth, or tap Cash flow to see money in and out this month.'],
+  ['[data-w="safe"]', 'Safe to spend', 'What you can spend per day and still stay on budget.'],
+  ['#fab', 'Log in two taps', 'Tap + then type the amount and pick a category. You can scan receipts here too.'],
+  ['#tabs [data-tab="budget"]', 'Spending', 'Budgets, transactions, bills, goals and your cash-flow calendar. Swipe a transaction to delete it or change its category.'],
+  ['#tabs [data-tab="invest"]', 'Investing', 'Accounts, holdings, live prices and your contribution limits.'],
+  ['#tabs [data-tab="plan"]', 'Plan', 'Your future, debt payoff, where your next dollar should go, and handy tools.'],
+  ['[data-act="search"]', 'Search that understands you', 'Try \u201cdining in August\u201d or \u201cover $100 last month\u201d.'],
+  ['[data-act="settings"]', 'Settings', 'Backups, Face ID, rules, change history and practice mode.']
+];
+function startTour(i = 0) {
+  if (i === 0) { closeAll(); UI.tab = 'dash'; UI.editDash = false; render(); window.scrollTo(0, 0); }
+  $$('.coach').forEach(x => x.remove());
+  let step = TOUR[i]; while (step && !$(step[0])) step = TOUR[++i];
+  if (!step) { S.toured = true; save(); render(); toast('Tour done. Pull down on any screen to refresh.'); return; }
+  const el = $(step[0]); el.scrollIntoView({ block: 'center' });
+  setTimeout(() => {
+    const r = el.getBoundingClientRect(), pad = 6, below = r.top < innerHeight / 2;
+    const c = document.createElement('div'); c.className = 'coach';
+    c.innerHTML = `<div class="coach-hole" style="left:${r.left - pad}px;top:${r.top - pad}px;width:${r.width + pad * 2}px;height:${r.height + pad * 2}px"></div><div class="coach-tip" style="${below ? `top:${Math.min(r.bottom + 14, innerHeight - 200)}px` : `bottom:${innerHeight - r.top + 14}px`}"><div class="xs mute">${i + 1} of ${TOUR.length}</div><div class="b" style="font-size:17px;margin:2px 0 4px">${step[1]}</div><div class="sm">${step[2]}</div><div class="row" style="margin-top:12px"><button class="chip" data-act="tourEnd">Skip</button><button class="btn" data-act="tourNext" data-i="${i + 1}">${i + 1 === TOUR.length ? 'Done' : 'Next'}</button></div></div>`;
+    document.body.appendChild(c);
+  }, 220);
+}
+
+/* ---------- personal money plan ---------- */
+function planWizard() {
+  const tk = calcPay().net / 12, sug = budgetSuggestions(), cats = S.cats.filter(c => c.name !== 'Uncategorized' && c.bucket !== 'savings');
+  const val = c => { const s = sug.list.find(x => x.c.id === c.id); return s ? s.sug : num(c.budget) || ''; };
+  closeAll();
+  openForm({
+    title: 'Your money plan, step 1 of 5', lock: true, intro: `<b>Monthly budgets.</b> ${sug.months ? `Filled in from your last ${sug.months === 1 ? 'month' : sug.months + ' months'} of spending. ` : ''}${tk ? `You take home about ${money(tk, { whole: true })} a month. A 50/30/20 split is ${money(tk * .5, { whole: true })} needs, ${money(tk * .3, { whole: true })} wants and ${money(tk * .2, { whole: true })} saving.` : ''}`,
+    fields: cats.map(c => ({ k: c.id, label: c.name + (c.bucket === 'needs' ? ' (need)' : ' (want)'), type: 'money', v: val(c) })), saveLabel: 'Next', skip: 'Keep my current budgets',
+    onSave: v => { cats.forEach(c => { if (v[c.id] !== '') c.budget = num(v[c.id]); }); save(); plan2(); }
+  }); topSheet()._form.onSkip = plan2;
+}
+function plan2() {
+  const cash = S.accounts.filter(a => a.type === 'savings' || a.type === 'checking');
+  openForm({
+    title: 'Step 2 of 5', lock: true, intro: `<b>Emergency fund.</b> Money set aside for surprises like a job loss or car repair. Your essentials run about ${money(needsMonthly(), { whole: true })} a month.`,
+    fields: [{ k: 'm', label: 'Months of essentials to keep', type: 'select', opts: [[3, '3 months'], [4, '4 months'], [6, '6 months (recommended)'], [9, '9 months'], [12, '12 months']], v: num(S.settings.efMonths) || 6 }, ...(cash.length ? [{ k: 'a', label: 'Account that holds it', type: 'select', opts: cash.map(a => [a.id, a.name]), v: (cash.find(a => a.ef) || cash[0]).id }] : [])],
+    saveLabel: 'Next', onSave: v => { S.settings.efMonths = +v.m; if (v.a) S.accounts.forEach(a => { if (a.type === 'savings' || a.type === 'checking') a.ef = a.id === v.a; }); save(); plan3(); }
+  });
+}
+function plan3() {
+  openForm({
+    title: 'Step 3 of 5', lock: true, intro: '<b>A savings goal.</b> Something you\u2019re saving for, like a trip or a car. Optional.',
+    fields: [{ k: 'name', label: 'Goal', type: 'text', v: '', ph: 'e.g. Japan trip' }, { k: 'target', label: 'Amount', type: 'money', v: '' }, { k: 'due', label: 'By when', type: 'date', v: '' }],
+    saveLabel: 'Next', skip: 'Skip this step',
+    onSave: v => { if (v.name && v.target > 0) S.goals.push({ id: uid(), name: v.name, target: v.target, saved: 0, due: v.due }); save(); plan4(); }
+  }); topSheet()._form.onSkip = plan4;
+}
+function plan4() {
+  openForm({
+    title: 'Step 4 of 5', lock: true, intro: '<b>Your future.</b> These drive your retirement check and financial independence date.',
+    fields: [{ k: 'ra', label: 'Age you\u2019d like to retire', type: 'num', v: S.profile.retireAge }, { k: 'rs', label: 'Yearly spending in retirement', type: 'money', v: S.profile.retireSpend, hint: 'In today\u2019s dollars. Many people use 70 to 80% of what they spend now.' }, { k: 'st', label: 'Savings-rate goal (%)', type: 'num', v: S.settings.saveTarget || 20, hint: 'Share of take-home you keep each month. 20% is a strong target.' }],
+    saveLabel: 'Next', onSave: v => { S.profile.retireAge = num(v.ra) || 65; S.profile.retireSpend = num(v.rs); S.settings.saveTarget = num(v.st) || 20; save(); S.debts.some(d => num(d.balance) > 0) ? plan5() : planDone(); }
+  });
+}
+function plan5() {
+  openForm({
+    title: 'Step 5 of 5', lock: true, intro: `<b>Debt.</b> You owe ${money(debtTotal(), { whole: true })} across ${S.debts.filter(d => num(d.balance) > 0).length} debt${S.debts.length === 1 ? '' : 's'}. Extra payments go to the highest interest rate first.`,
+    fields: [{ k: 'x', label: 'Extra toward debt each month', type: 'money', v: S.settings.extra }, { k: 't', label: 'Pay off anything above this APR before investing more (%)', type: 'num', v: S.settings.threshold }],
+    saveLabel: 'See my plan', onSave: v => { S.settings.extra = num(v.x); S.settings.threshold = num(v.t) || 6; save(); planDone(); }
+  });
+}
+function planDone() {
+  S.planDone = todayISO(); commit();
+  const tk = calcPay().net / 12, bud = sum(S.cats.map(c => num(c.budget))), left = tk - bud, efm = num(S.settings.efMonths), nm = needsMonthly(), ef = efTotal();
+  const f = fiInfo(), pf = S.debts.some(d => num(d.balance) > 0) ? payoff(S.debts, S.settings.extra, 'avalanche') : null, g = S.goals[S.goals.length - 1];
+  const row = (ic, t, d) => `<div class="li"><span class="ic">${I(ic)}</span><span class="main"><span class="t">${t}</span><span class="s">${d}</span></span></div>`;
+  openSheet(sheetHead('Your money plan', 'Done') + `<section class="card hero">${bud ? `<div class="sm mute">Each month you keep</div><div class="big ${left < 0 ? 'neg' : 'pos'}">${money(left, { whole: true })}</div><div class="sm">${tk ? `${pct(Math.max(0, left) / tk, 0)} of take-home, goal ${num(S.settings.saveTarget) || 20}%` : ''}</div>` : `<div class="sm mute">You take home</div><div class="big">${money(tk, { whole: true })}</div><div class="sm">a month. Set budgets to see how much you keep.</div>`}</section><section class="card" style="margin-top:12px"><div class="list">
+    ${row('wallet', bud ? `Budgets: ${money(bud, { whole: true })} a month` : 'Budgets: not set yet', !bud ? 'Import a month of spending, then rebuild your plan to get suggested budgets.' : left < 0 ? 'More than you take home. Trim a Wants category.' : 'Tracked in Spending, with a safe-to-spend number on Today.')}
+    ${row('shield', `Emergency fund: ${efm} months`, nm ? `${money(ef, { whole: true })} of ${money(nm * efm, { whole: true })} saved (${(ef / nm).toFixed(1)} months)` : 'Set Needs budgets to size it.')}
+    ${g ? row('target', `${esc(g.name)}: ${money(g.target, { whole: true })}`, g.due ? `By ${fmtDate(g.due)}` : 'Track it in Bills & goals') : ''}
+    ${pf ? row('card', `Debt-free by ${pf.never ? 'raising payments' : fmtMonYr(monthsFromNow(pf.months))}`, `${money(S.settings.extra, { whole: true })} extra a month, highest rate first`) : ''}
+    ${row('chart', f.yrs >= 0 ? `Financial independence around ${f.year}` : 'Financial independence: keep building', f.yrs >= 0 ? `Age ${f.age}, when investments could cover ${money(f.spend, { whole: true })} a year` : 'Try the What if tool to speed it up')}
+  </div></section><p class="sm mute" style="margin-top:10px">You can change any of this later. Your paycheck checklist on payday follows this plan.</p>`);
+}
+W.plan = function () {
+  if (S.practice) return card('', `<div class="row"><div><div class="b">Practice mode</div><div class="sm mute">You\u2019re exploring sample data. Your real data is saved.</div></div><button class="btn" data-act="practiceExit">Exit</button></div>`);
+  if (S.planDone && S.toured) return '';
+  return card(S.planDone ? 'New here?' : 'Set up your money plan', `<div class="sm mute" style="margin:-4px 0 12px">${S.planDone ? 'A one-minute tour of where everything lives.' : 'Five short steps: budgets, emergency fund, a goal, your future, and debt. About five minutes.'}</div><div class="btns">${S.planDone ? '' : '<button class="btn" data-act="planStart">Build my plan</button>'}${S.toured ? '' : '<button class="btn ghost" data-act="tourStart">Take the tour</button>'}<button class="btn ghost" data-act="practiceStart">Try with sample data</button></div>`);
+};
+
+/* ---------- screens: small wiring ---------- */
+function openSettingsFresh() { $$('#sheets .ov').forEach(o => { if (o._settings) o.remove(); }); openSettings(); }
+async function fillFaceRow() {
+  const el = $('#fidRow'); if (!el) return;
+  if (!S.settings.pin) { el.innerHTML = ''; return; }
+  const ok = await Passkey.available();
+  el.innerHTML = S.settings.passkey ? `<div class="row" style="margin-top:10px"><span>Face ID unlock is on</span><button class="chip" data-act="faceOff">Turn off</button></div>` : ok ? `<button class="btn ghost block" style="margin-top:10px" data-act="faceSetup">${I('eye')} Turn on Face ID unlock</button>` : '<div class="xs mute" style="margin-top:10px">Face ID unlock works when Compound is opened from its Home Screen icon.</div>';
+}
+const _openSettings = openSettings;
+openSettings = function () {
+  _openSettings();
+  const ov = topSheet(); if (!ov) return;
+  const sec = $$('section.card', ov).find(s => /Security/.test(s.querySelector('h2') ? s.querySelector('h2').textContent : ''));
+  if (sec) sec.insertAdjacentHTML('beforeend', '<div id="fidRow"></div>');
+  const first = $('section.card', ov);
+  if (first) first.insertAdjacentHTML('beforebegin', `<section class="card" style="margin-bottom:12px"><h2><span>Help and planning</span></h2><div class="stack" style="gap:8px"><button class="btn block" data-act="planStart">${S.planDone ? 'Rebuild my money plan' : 'Build my money plan'}</button><button class="btn ghost block" data-act="tourStart">Take the tour</button><button class="btn ghost block" data-act="${S.practice ? 'practiceExit' : 'practiceStart'}">${S.practice ? 'Exit practice mode' : 'Practice with sample data'}</button><button class="btn ghost block" data-act="history">Change history and restore points</button></div></section>`);
+  const auto = $$('section.card', ov).find(s => /Automation/.test(s.querySelector('h2') ? s.querySelector('h2').textContent : ''));
+  if (auto) auto.insertAdjacentHTML('beforeend', `<div class="tgl" style="margin-top:6px"><label>App icon badge<div class="xs mute">Shows how many things need you on the Compound icon.</div></label><button class="chip" data-act="badgeToggle">${S.settings.badge ? 'Turn off' : 'Turn on'}</button></div><div class="fld" style="margin-top:6px"><label for="s-st">Savings-rate goal (%)</label><input id="s-st" type="text" inputmode="decimal" data-bind="settings.saveTarget" data-t="num" value="${num(S.settings.saveTarget) || 20}"></div>`);
+  fillFaceRow();
+};
+const _render = render;
+render = function () {
+  _render();
+  const pb = $('#practiceBar');
+  if (S && S.practice) { if (!pb) document.body.insertAdjacentHTML('beforeend', '<div id="practiceBar" role="status">Practice mode: sample data <button data-act="practiceExit">Exit</button></div>'); }
+  else if (pb) pb.remove();
+  document.body.classList.toggle('practicing', !!(S && S.practice));
+  updateBadge();
+};
+const _commit = commit;
+commit = function () { _commit(); if (!S.onboarded) return; if (!S.msInit) { checkMilestones(true); S.msInit = true; save(); return; } setTimeout(() => checkMilestones(false), 60); };
+const _openFab = openFab;
+openFab = function () { _openFab(); const l = $('.list', topSheet()); if (l) l.insertAdjacentHTML('afterbegin', `<button class="li" data-act="scan" data-close="1"><span class="ic">${I('doc')}</span><span class="main"><span class="t">Scan a receipt</span></span></button>`); };
+const _quickAdd = quickAdd;
+quickAdd = function (pre) { _quickAdd(pre); const ov = topSheet(); const b = ov && $('[data-act=qaMore]', ov); if (b) b.insertAdjacentHTML('beforebegin', `<button class="btn ghost block" style="margin-top:12px" data-act="scan">${I('doc')} Scan a receipt</button>`); };
+
+Object.assign(ACT, {
+  swCat: d => { const t = S.txns.find(x => x.id === d.id); if (!t) return; checkpoint(); t.cat = d.cat; delete t.splits; closeSheet(); commit(); offerUndo(`Moved to ${catById(d.cat).name}`); },
+  scan: () => { closeAll(); scanSheet(); },
+  celClose: (d, el) => { const c = el.closest('.celebrate'); if (c) c.remove(); },
+  faceUnlock: () => faceUnlock(false),
+  faceSetup: () => faceSetup(),
+  faceOff: () => { delete S.settings.passkey; save(); fillFaceRow(); toast('Face ID unlock is off'); },
+  history: () => { closeAll(); openHistory(); },
+  rpRestore: d => rpRestore(d.id),
+  ckToggle: d => { const st = checkupState(), i = st.done.indexOf(d.id); if (i >= 0) st.done.splice(i, 1); else st.done.push(d.id); commit(); },
+  ckGo: d => { const it = CHECKUP.find(x => x[0] === d.id); if (it && it[3]) { const r = it[3](); if (r === undefined && !$$('#sheets .ov').length) { render(); window.scrollTo(0, 0); } } },
+  practiceStart: () => enterPractice(),
+  practiceExit: () => exitPractice(),
+  tourStart: () => startTour(0),
+  tourNext: d => startTour(+d.i),
+  tourEnd: () => { $$('.coach').forEach(x => x.remove()); S.toured = true; save(); render(); },
+  planStart: () => planWizard(),
+  badgeToggle: () => badgeToggle()
+});
+
+/* ---------- alerts: checkup reminder ---------- */
+const _extraAlerts = extraAlerts;
+extraAlerts = function () {
+  const out = _extraAlerts(), st = S.checkup, m = new Date().getMonth();
+  if ((m === 0 || m === 11) && (!st || st.year !== new Date().getFullYear() || st.done.length < CHECKUP.length / 2)) out.push({ t: `Your ${new Date().getFullYear()} money checkup is ready. About an hour, once a year.`, info: true, act: 'goCheckup' });
+  return out;
+};
+ACT.goCheckup = () => { UI.tab = 'plan'; UI.psub = 'checkup'; render(); window.scrollTo(0, 0); };
+
+/* ---------- boot ---------- */
+const _afterInit4 = afterInit;
+afterInit = function () {
+  _afterInit4();
+  const d = S.settings.dash;
+  if (!S.settings.v5dash) { const mv = (id, after) => { const i = d.indexOf(id); if (i >= 0) d.splice(i, 1); const j = d.indexOf(after); d.splice(j >= 0 ? j + 1 : d.length, 0, id); }; mv('plan', 'hero'); mv('score', 'alerts'); mv('wins', 'goals'); S.settings.v5dash = true; }
+  if (!S.msInit && S.onboarded) { checkMilestones(true); S.msInit = true; }
+  if (S.onboarded && !S.practice) rpLoad().then(l => { if (!l.length || Date.now() - l[0].at > 864e5) addRestorePoint('Daily snapshot', JSON.stringify(S)); });
+  save(); render();
 };
 
 </script>
