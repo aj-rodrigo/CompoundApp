@@ -1420,7 +1420,8 @@ function renderProj() {
 function planDebt() {
   if (!S.debts.length) return card('Debt', '<div class="empty">Add credit cards, car loans, student loans or a mortgage to plan your payoff.</div><button class="btn block" data-act="addDebt">Add debt</button>');
   let h = `<section class="card hero" id="debtSum"></section>`;
-  h += card('Extra payment each month', `<div class="row"><span class="sm mute">On top of minimums</span><b id="extraLbl">${money(S.settings.extra, { force: true })}</b></div><input type="range" min="0" max="3000" step="25" value="${num(S.settings.extra)}" data-inp="extra" data-chg="extraDone" aria-label="Extra monthly payment"><div class="sm" id="extraRes"></div>`);
+  const xMax = Math.max(3000, Math.ceil(debtTotal() / 500) * 500, Math.ceil(num(S.settings.extra) / 500) * 500), xStep = xMax > 20000 ? 100 : xMax > 6000 ? 50 : 25;
+  h += card('Extra payment each month', `<div class="row"><span class="sm mute">On top of minimums</span><b id="extraLbl">${money(S.settings.extra, { force: true })}</b></div><input type="range" min="0" max="${xMax}" step="${xStep}" value="${num(S.settings.extra)}" data-inp="extra" data-chg="extraDone" aria-label="Extra monthly payment"><div class="row xs mute" style="margin-top:-4px"><span>$0</span><span>${money(xMax, { force: true, whole: true })}</span></div><div class="fld" style="margin:10px 0 8px"><label for="extraExact">Or type an exact amount</label><input id="extraExact" type="text" inputmode="decimal" data-chg="extraExact" value="${num(S.settings.extra)}"></div><div class="sm" id="extraRes"></div>`);
   h += card('Avalanche vs snowball', `<div class="cmp" id="debtCmp"></div><div class="chart" id="c-debt" style="margin-top:12px"></div><div class="xs mute" style="margin-top:6px">Avalanche pays the highest interest rate first. Snowball pays the smallest balance first for quicker wins.</div>`);
   const mi = d => num(d.balance) * num(d.apr) / 1200;
   h += card('Your debts', `<div class="list">${S.debts.map(d => { const t = esc(optLabel(DEBT_TYPES, d.type) || 'Debt'); const util = d.type === 'cc' && num(d.limit) ? num(d.balance) / num(d.limit) : null; return `<button class="li" data-act="editDebt" data-id="${d.id}" style="flex-wrap:wrap"><span class="ic">${I(d.type === 'car' ? 'car' : d.type === 'mortgage' ? 'home' : d.type === 'student' ? 'book' : 'card')}</span><span class="main"><span class="t">${esc(d.name)}</span><span class="s">${t}, ${num(d.apr)}% APR, ${money(d.min)} minimum, ${money(mi(d))} interest a month${d.link ? (() => { const r = linkedTotals(d); return `<br><span style="color:var(--acc)">Running total of ${r.count} ${esc(d.link)} transaction${r.count === 1 ? '' : 's'}</span>: ${num(d.startBal) ? money(d.startBal) + ' start + ' : ''}${money(r.charges)} charged \u2212 ${money(r.credits)} credits \u2212 ${money(r.payments)} paid${r.running < 0 ? `. Payments are ${money(-r.running)} more than the charges imported, so this shows $0. Add a starting balance to fix it.` : ''}`; })() : ''}</span></span><span class="amt">${money(d.balance)}${d.link ? '<div class="xs mute">auto</div>' : ''}</span>${util != null ? `<span style="flex-basis:100%;padding-left:42px;margin-top:6px"><span class="xs ${util > .3 ? 'neg' : 'mute'}">${pct(util, 0)} of ${money(d.limit)} limit used${util > .3 ? ', above the 30% that helps credit scores' : ''}</span>${bar(util, util > .3 ? 'var(--neg)' : 'var(--pos)', .3)}</span>` : ''}</button>`; }).join('')}</div><button class="btn ghost block" style="margin-top:10px" data-act="addDebt">Add debt</button>`);
@@ -1827,11 +1828,12 @@ const CHG = {
   to: t => { UI.to = t.value; if (UI.from && UI.to) render(); },
   scnCmp: t => { const s = byId(S.scenarios, t.dataset.id); if (s) { s.cmp = t.checked; save(); renderProj(); } },
   extraDone: () => { save(); },
+  extraExact: t => { S.settings.extra = Math.max(0, Math.round(num(t.value) * 100) / 100); save(); render(); },
   refiPick: t => { const d = byId(S.debts, t.value); if (!d) return; const r = S.settings.refi; r.bal = num(d.balance); r.apr = num(d.apr); const rr = num(d.apr) / 1200, p = num(d.min); r.months = p > d.balance * rr ? Math.ceil(rr ? -Math.log(1 - d.balance * rr / p) / Math.log(1 + rr) : d.balance / p) : 360; save(); render(); }
 };
 const INP = {
   raise: t => { UI.raise = +t.value; renderRaise(); },
-  extra: t => { S.settings.extra = +t.value; renderDebt(); },
+  extra: t => { S.settings.extra = +t.value; const e = $('#extraExact'); if (e) e.value = t.value; renderDebt(); },
   search: t => runSearch(t.value)
 };
 function bindEvents() {
