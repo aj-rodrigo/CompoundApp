@@ -56,3 +56,9 @@ Your financial data is never uploaded. The hosted files are only the app itself;
 ## Updating the app
 
 Upload the new `index.html` (and `sw.js` if it changed) to GitHub. The next time you open Compound, a blue **A new version is ready** banner appears. Tap **Update**. The app also works offline once it’s been opened with a connection.
+
+## Quick expense
+
+Tap **+** to log a purchase in two taps: type the amount, then tap a category (or a recent merchant). To have Quick expense open every time you launch Compound, turn it on in **Settings → Automation**.
+
+A note on Siri: on iPhone, links opened by Siri or Shortcuts go to Safari, which keeps its own separate copy of website data. The Home Screen app has its own copy, so the reliable fast path is the Home Screen icon with Quick expense on launch.
