@@ -1245,7 +1245,7 @@ function budTx() {
     ? `<div class="grid3" style="margin-bottom:10px">${stat('Charged', money(charged))}${stat('Payments', money(paid), 'pos')}${stat('Balance change', money(charged - paid, { sign: true }))}</div>`
     : `<div class="grid3" style="margin-bottom:10px">${stat('In', money(inc), 'pos')}${stat('Charged', money(charged))}${stat('Net', money(inc - charged, { sign: true }), inc - charged < 0 ? 'neg' : '')}</div>`;
   h += `<div class="xs mute" style="margin:-2px 2px 10px">${cardView ? 'Balance adds each charge and subtracts credits and payments, oldest first.' : 'Charged so far is a running total of spending this period. Credits reduce it; card payments and income don\u2019t count as spending.'}</div>`;
-  h += card('', txList(list, run) + `<div class="btns" style="margin-top:12px"><button class="btn" data-act="addTx">Add transaction</button><button class="btn ghost" data-act="importCsv">Import CSV</button></div>`);
+  h += card('', txList(list, run) + `<div class="btns" style="margin-top:12px"><button class="btn" data-act="addTx">Add transaction</button><button class="btn ghost" data-act="importCsv">Import CSV</button><button class="btn danger" data-act="delTx">Delete…</button></div>`);
   return h;
 }
 function budBills() {
@@ -1482,7 +1482,7 @@ function openSettings() {
   <section class="card" style="margin-top:12px"><h2><span>Budget</span></h2>${sel('settings.period', 'Budget period', [['month', 'Calendar month'], ['paycheck', 'Each paycheck']])}${tg('settings.paceAlerts', 'Warn when behind on maxing accounts')}</section>
   <section class="card" style="margin-top:12px" id="liveprices"><h2><span>Live prices</span></h2><div class="sm mute" style="margin-bottom:10px">Updates stock, ETF and crypto prices from Finnhub. Create a free account at <a href="https://finnhub.io/register" target="_blank" rel="noopener" style="color:var(--acc)">finnhub.io/register</a>, then copy the API key from your Finnhub dashboard and paste it here. It stays on this phone.</div><div class="fld"><label for="s-qk">Finnhub API key</label><input id="s-qk" type="text" data-bind="settings.quoteKey" data-t="str" value="${esc(s.quoteKey || '')}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Paste your key"></div>${tg('settings.autoQuotes', 'Update prices when the app opens')}<button class="btn ghost block" data-act="refreshQuotes">Update prices now</button>${s.lastQuote ? `<div class="xs mute" style="margin-top:8px">${quoteAsOf()}</div>` : ''}<div class="xs mute" style="margin-top:8px">Mutual funds and many 401(k) funds aren’t covered on the free plan. Those keep the price you enter.</div></section>
   <section class="card" style="margin-top:12px"><h2><span>Security</span></h2><div class="sm mute" style="margin-bottom:10px">${s.pin ? 'A passcode protects the app.' : 'No passcode set. Anyone with your unlocked phone can open the app.'}</div>${s.pin ? tg('settings.autolock', 'Lock after 1 minute in the background') : ''}<div class="btns"><button class="btn ghost" data-act="setPin">${s.pin ? 'Change passcode' : 'Set passcode'}</button>${s.pin ? '<button class="btn danger" data-act="removePin">Turn off passcode</button>' : ''}</div></section>
-  <section class="card" style="margin-top:12px"><h2><span>Your data</span></h2><div class="sm mute" style="margin-bottom:10px">Everything is stored only on this phone.${s.lastBackup ? ' Last backup ' + fmtDate(s.lastBackup) + '.' : ' You haven\u2019t made a backup yet.'}</div><div class="stack" style="gap:8px"><button class="btn block" data-act="backup">Back up all data</button><button class="btn ghost block" data-act="restore">Restore from backup</button><button class="btn ghost block" data-act="expTx">Export transactions (CSV for Excel)</button><button class="btn ghost block" data-act="expAcct">Export accounts and debts (CSV)</button><button class="btn ghost block" data-act="pdf">Save a PDF report</button><button class="btn ghost block" data-act="importCsv">Import transactions (CSV)</button></div></section>
+  <section class="card" style="margin-top:12px"><h2><span>Your data</span></h2><div class="sm mute" style="margin-bottom:10px">Everything is stored only on this phone.${s.lastBackup ? ' Last backup ' + fmtDate(s.lastBackup) + '.' : ' You haven\u2019t made a backup yet.'}</div><div class="stack" style="gap:8px"><button class="btn block" data-act="backup">Back up all data</button><button class="btn ghost block" data-act="restore">Restore from backup</button><button class="btn ghost block" data-act="expTx">Export transactions (CSV for Excel)</button><button class="btn ghost block" data-act="expAcct">Export accounts and debts (CSV)</button><button class="btn ghost block" data-act="pdf">Save a PDF report</button><button class="btn ghost block" data-act="importCsv">Import transactions (CSV)</button><button class="btn ghost block" data-act="delTx">Delete transactions</button></div></section>
   <section class="card" style="margin-top:12px"><h2><span>Start over</span></h2><div class="btns"><button class="btn ghost" data-act="rerunSetup">Run setup again</button><button class="btn danger" data-act="reset">Erase all data</button></div></section>
   <p class="xs mute" style="text-align:center;margin-top:16px">Compound. Estimates only, not financial or tax advice.</p>`;
   const ov = openSheet(html); ov._settings = true;
@@ -1773,6 +1773,26 @@ const ACT = {
   pdf: () => printReport(),
   txFilter: d => { UI.txFilter = d.v; render(); },
   txAcct: d => { UI.txAcct = d.v; render(); },
+  delTx: () => {
+    const accts = [...new Set(S.txns.map(t => t.acct).filter(Boolean))], imp = S.txns.filter(t => t.imported || t.acct).length;
+    const opts = [['imported', `All imported transactions (${imp})`], ...accts.map(a => ['acct:' + a, `Everything from ${a} (${S.txns.filter(t => t.acct === a).length})`]), ['all', `Every transaction, including ones you added (${S.txns.length})`]];
+    openForm({
+      title: 'Delete transactions', intro: 'Use this to clear an import and start fresh. Accounts, budgets, bills and goals aren\u2019t affected. Consider backing up first.', fields: [
+        { k: 'scope', label: 'Delete', type: 'select', opts, v: accts.length === 1 ? 'acct:' + accts[0] : 'imported' },
+        { k: 'from', label: 'Only from this date (optional)', type: 'date', v: '' },
+        { k: 'to', label: 'Through this date (optional)', type: 'date', v: '' }
+      ],
+      saveLabel: 'Delete', 
+      onSave: v => {
+        const hit = t => (v.scope === 'all' || (v.scope === 'imported' && (t.imported || t.acct)) || (v.scope.startsWith('acct:') && t.acct === v.scope.slice(5))) && (!v.from || t.date >= v.from) && (!v.to || t.date <= v.to);
+        const n = S.txns.filter(hit).length;
+        if (!n) { toast('No transactions match that'); return; }
+        if (!confirm(`Delete ${n} transaction${n === 1 ? '' : 's'}? This can\u2019t be undone.`)) return;
+        S.txns = S.txns.filter(t => !hit(t)); UI.txAcct = ''; UI.txFilter = '';
+        closeAll(); UI.tab = 'budget'; UI.bsub = 'tx'; commit(); toast(`Deleted ${n} transaction${n === 1 ? '' : 's'}. You can import the file again now.`);
+      }
+    });
+  },
   refreshQuotes: () => refreshQuotes(),
   quoteSetup: () => { openSettings(); setTimeout(() => { const el = $('#liveprices'); if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); const i = $('#s-qk'); if (i) i.focus(); }, 320); },
   importCsv: () => importCsvForm(),
