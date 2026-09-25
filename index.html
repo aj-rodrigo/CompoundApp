@@ -783,7 +783,16 @@ function save() {
   clearTimeout(saveT);
   saveT = setTimeout(async () => { const ok = await Store.save(S); if (!ok) toast('Couldn\u2019t save. Storage may be full: remove some receipt photos or export a backup.'); }, 250);
 }
-function commit() { save(); render(); refreshAcct(); }
+function linkedTotals(d) {
+  const tx = S.txns.filter(t => t.acct === d.link && (!d.since || t.date > d.since));
+  const charges = sum(tx.filter(t => t.type === 'expense' && num(t.amount) > 0).map(t => num(t.amount)));
+  const credits = -sum(tx.filter(t => t.type === 'expense' && num(t.amount) < 0).map(t => num(t.amount)));
+  const payments = sum(tx.filter(t => t.type === 'payment').map(t => num(t.amount)));
+  const running = Math.round((num(d.startBal) + charges - credits - payments) * 100) / 100;
+  return { charges, credits, payments, running, count: tx.length };
+}
+function syncDebts() { S.debts.forEach(d => { if (d.link) { const r = linkedTotals(d); d.running = r.running; d.balance = Math.max(0, r.running); } }); }
+function commit() { syncDebts(); save(); render(); refreshAcct(); }
 function softCommit() {
   save();
   if (LIVE) { LIVE(); return; }
@@ -1414,7 +1423,7 @@ function planDebt() {
   h += card('Extra payment each month', `<div class="row"><span class="sm mute">On top of minimums</span><b id="extraLbl">${money(S.settings.extra, { force: true })}</b></div><input type="range" min="0" max="3000" step="25" value="${num(S.settings.extra)}" data-inp="extra" data-chg="extraDone" aria-label="Extra monthly payment"><div class="sm" id="extraRes"></div>`);
   h += card('Avalanche vs snowball', `<div class="cmp" id="debtCmp"></div><div class="chart" id="c-debt" style="margin-top:12px"></div><div class="xs mute" style="margin-top:6px">Avalanche pays the highest interest rate first. Snowball pays the smallest balance first for quicker wins.</div>`);
   const mi = d => num(d.balance) * num(d.apr) / 1200;
-  h += card('Your debts', `<div class="list">${S.debts.map(d => { const t = esc(optLabel(DEBT_TYPES, d.type) || 'Debt'); const util = d.type === 'cc' && num(d.limit) ? num(d.balance) / num(d.limit) : null; return `<button class="li" data-act="editDebt" data-id="${d.id}" style="flex-wrap:wrap"><span class="ic">${I(d.type === 'car' ? 'car' : d.type === 'mortgage' ? 'home' : d.type === 'student' ? 'book' : 'card')}</span><span class="main"><span class="t">${esc(d.name)}</span><span class="s">${t}, ${num(d.apr)}% APR, ${money(d.min)} minimum, ${money(mi(d))} interest a month</span></span><span class="amt">${money(d.balance)}</span>${util != null ? `<span style="flex-basis:100%;padding-left:42px;margin-top:6px"><span class="xs ${util > .3 ? 'neg' : 'mute'}">${pct(util, 0)} of ${money(d.limit)} limit used${util > .3 ? ', above the 30% that helps credit scores' : ''}</span>${bar(util, util > .3 ? 'var(--neg)' : 'var(--pos)', .3)}</span>` : ''}</button>`; }).join('')}</div><button class="btn ghost block" style="margin-top:10px" data-act="addDebt">Add debt</button>`);
+  h += card('Your debts', `<div class="list">${S.debts.map(d => { const t = esc(optLabel(DEBT_TYPES, d.type) || 'Debt'); const util = d.type === 'cc' && num(d.limit) ? num(d.balance) / num(d.limit) : null; return `<button class="li" data-act="editDebt" data-id="${d.id}" style="flex-wrap:wrap"><span class="ic">${I(d.type === 'car' ? 'car' : d.type === 'mortgage' ? 'home' : d.type === 'student' ? 'book' : 'card')}</span><span class="main"><span class="t">${esc(d.name)}</span><span class="s">${t}, ${num(d.apr)}% APR, ${money(d.min)} minimum, ${money(mi(d))} interest a month${d.link ? (() => { const r = linkedTotals(d); return `<br><span style="color:var(--acc)">Running total of ${r.count} ${esc(d.link)} transaction${r.count === 1 ? '' : 's'}</span>: ${num(d.startBal) ? money(d.startBal) + ' start + ' : ''}${money(r.charges)} charged \u2212 ${money(r.credits)} credits \u2212 ${money(r.payments)} paid${r.running < 0 ? `. Payments are ${money(-r.running)} more than the charges imported, so this shows $0. Add a starting balance to fix it.` : ''}`; })() : ''}</span></span><span class="amt">${money(d.balance)}${d.link ? '<div class="xs mute">auto</div>' : ''}</span>${util != null ? `<span style="flex-basis:100%;padding-left:42px;margin-top:6px"><span class="xs ${util > .3 ? 'neg' : 'mute'}">${pct(util, 0)} of ${money(d.limit)} limit used${util > .3 ? ', above the 30% that helps credit scores' : ''}</span>${bar(util, util > .3 ? 'var(--neg)' : 'var(--pos)', .3)}</span>` : ''}</button>`; }).join('')}</div><button class="btn ghost block" style="margin-top:10px" data-act="addDebt">Add debt</button>`);
   const th = num(S.settings.threshold), ret = num(S.settings.ret);
   h += card('Pay down or invest?', `<table class="tbl"><tr><th>Debt</th><th>APR</th><th>Rule of thumb</th><th>By the math</th></tr>${S.debts.filter(d => num(d.balance) > 0).map(d => { const apr = num(d.apr); return `<tr><td>${esc(d.name)}</td><td>${apr}%</td><td class="${apr > th ? 'neg' : 'pos'}">${apr > th ? 'Pay first' : 'Invest'}</td><td class="${apr > ret ? 'neg' : 'pos'}">${apr > ret ? `Pay: ${(apr - ret).toFixed(1)}% better` : `Invest: ${(ret - apr).toFixed(1)}% better`}</td></tr>`; }).join('')}</table>${bindInp('settings.threshold', 'Rule of thumb: pay off debt above this APR (%)')}<div class="xs mute">By the math compares each APR with your ${ret}% expected return. Paying debt is a guaranteed return, investing isn\u2019t, so many people pay off anything close to the line. Always get the full employer match first.</div>`);
   AFTER.push(renderDebt);
@@ -1441,14 +1450,17 @@ function debtForm(d) {
     title: isNew ? 'Add debt' : 'Edit ' + d.name, focus: isNew, fields: [
       { k: 'type', label: 'Type', type: 'select', opts: DEBT_TYPES, v: d.type, other: true, otherPh: 'e.g. Medical bill, Family loan, HELOC' },
       { k: 'name', label: 'Name', type: 'text', v: d.name, ph: 'e.g. Chase Sapphire' },
-      { k: 'balance', label: 'Current balance', type: 'money', v: d.balance },
+      { k: 'link', label: 'Balance comes from', type: 'select', opts: [['', 'I\u2019ll enter it myself'], ...[...new Set([...S.txns.map(t => t.acct).filter(Boolean), ...(d.link ? [d.link] : [])])].map(a => [a, 'Running total of ' + a + ' imports'])], v: d.link || '', hint: 'Linked cards update automatically each time you import that card\u2019s CSV: charges add, credits and payments subtract.', when: () => S.txns.some(t => t.acct) || !!d.link },
+      { k: 'balance', label: 'Current balance', type: 'money', v: d.balance, when: v => !v.link },
+      { k: 'startBal', label: 'Starting balance (optional)', type: 'money', v: d.startBal ?? '', hint: 'What you owed before your first imported transaction, for example the balance on an earlier statement. Leave blank to start from $0.', when: v => !!v.link },
+      { k: 'since', label: 'Only count transactions after (optional)', type: 'date', v: d.since || '', hint: 'Use the date of the statement your starting balance came from.', when: v => !!v.link },
       { k: 'apr', label: 'Interest rate (APR)', type: 'pct', v: d.apr },
       { k: 'min', label: 'Minimum monthly payment', type: 'money', v: d.min },
       { k: 'limit', label: 'Credit limit', type: 'money', v: d.limit, when: v => v.type === 'cc' }
     ],
     saveLabel: isNew ? 'Add debt' : 'Save changes',
     onDelete: isNew ? null : () => { S.debts = S.debts.filter(x => x.id !== d.id); commit(); },
-    onSave: v => { if (!(v.balance >= 0) || v.balance === '') { toast('Enter the balance'); return; } const o = { type: v.type, name: v.name || optLabel(DEBT_TYPES, v.type) || 'Debt', balance: num(v.balance), apr: num(v.apr), min: num(v.min), limit: num(v.limit) }; if (isNew) S.debts.push({ id: uid(), ...o }); else Object.assign(d, o); commit(); }
+    onSave: v => { if (!v.link && (!(v.balance >= 0) || v.balance === '')) { toast('Enter the balance'); return; } const o = { type: v.type, name: v.name || v.link || optLabel(DEBT_TYPES, v.type) || 'Debt', balance: num(v.balance), apr: num(v.apr), min: num(v.min), limit: num(v.limit), link: v.link || '', startBal: v.link ? num(v.startBal) : 0, since: v.link ? v.since : '' }; if (isNew) S.debts.push({ id: uid(), ...o }); else Object.assign(d, o); commit(); }
   });
 }
 function planLadder() {
@@ -1576,7 +1588,7 @@ function importCsvForm() {
     title: 'Import transactions', intro: 'Choose a CSV downloaded from your card or bank\u2019s website, such as American Express activity. Card payments are recorded as transfers, not income. Credits reduce what\u2019s been charged, and charges are sorted into your categories. Duplicates are skipped.', fields: [
       { k: 'file', label: 'CSV file', type: 'file', accept: '.csv,text/csv' },
       { k: 'kind', label: 'This file is from', type: 'select', opts: [['auto', 'Figure it out for me'], ['card', 'A credit card, like Amex'], ['bank', 'A checking or savings account']], v: 'auto' },
-      { k: 'acct', label: 'Card or account name', type: 'text', v: '', ph: 'Filled in automatically, e.g. American Express', hint: 'Used to keep a running balance for this card.' }
+      { k: 'acct', label: 'Card or account', type: 'select', opts: [['', 'Detect from the file'], ...[...new Set(S.txns.map(t => t.acct).filter(Boolean))].map(a => [a, a])], other: true, otherPh: 'e.g. American Express', v: (S.txns.slice().reverse().find(t => t.acct && t.type !== 'income') || {}).acct || '', hint: 'Pick the same card each time so its running balance in Plan \u2192 Debt keeps adding up.' }
     ],
     saveLabel: 'Import',
     onSave: async v => {
@@ -1600,7 +1612,8 @@ function importCsvForm() {
       }
       if (v.kind === 'bank') isCard = false;
       const amexHdr = hd.some(x => /card member|appears on your statement|extended details/.test(x)) || body.some(r => /american express|amex/i.test((r[ni] || '') + (r[ci] || '')));
-      const acct = v.acct || (amexHdr && isCard ? 'American Express' : (ti >= 0 && isCard ? 'Chase card' : (v.file.name || 'Imported').replace(/\.csv$/i, '')));
+      const fname = (v.file.name || 'Imported').replace(/\.csv$/i, '');
+      const acct = v.acct || ((amexHdr || /amex|american|^activity/i.test(fname)) && isCard ? 'American Express' : (ti >= 0 && isCard ? 'Chase card' : fname));
       if (ai >= 0 && ni >= 0) { const th = body.filter(r => CARD_THANKS_RE.test(r[ni] || '')).map(r => parseAmt(r[ai])).filter(Boolean); if (th.length) { isCard = true; sign = th.filter(x => x < 0).length >= th.length / 2 ? 'pos' : 'neg'; } }
       const known = {}; S.txns.forEach(t => { if (t.note && t.cat && t.type === 'expense') known[merchKey(t.note)] = t.cat; });
       const un = uncategorized(), runIds = new Set(); let nE = 0, nR = 0, nI = 0, nP = 0, dup = 0, fixed = 0, unc = 0;
@@ -1636,6 +1649,13 @@ function importCsvForm() {
       const pl = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`, parts = [];
       if (nE) parts.push(pl(nE, 'charge')); if (nR) parts.push(pl(nR, 'credit')); if (nP) parts.push(pl(nP, 'card payment')); if (nI) parts.push(pl(nI, 'deposit'));
       toast((parts.length ? 'Imported ' + parts.join(', ') + '.' : 'Nothing new to import.') + (fixed ? ` Fixed ${pl(fixed, 'earlier entry')} that had been counted as income.` : '') + (dup ? ` Skipped ${pl(dup, 'duplicate')}.` : '') + (unc ? ` ${unc} need${unc === 1 ? 's' : ''} a category.` : ''));
+      if (isCard && !S.debts.some(d => d.link === acct)) {
+        const cand = S.debts.find(d => !d.link && d.type === 'cc' && (d.name.toLowerCase() === acct.toLowerCase() || (/american express/i.test(acct) && /amex|american express/i.test(d.name))));
+        if (cand) { cand.link = acct; cand.startBal = 0; cand.since = ''; }
+        else S.debts.push({ id: uid(), type: 'cc', name: acct, link: acct, startBal: 0, since: '', balance: 0, apr: 0, min: 0, limit: 0 });
+        commit();
+        setTimeout(() => toast(`${acct} is now in Plan \u2192 Debt and updates with each import. Add its APR and minimum payment there.`), 3200);
+      }
       UI.tab = 'budget'; UI.bsub = 'tx'; UI.txAcct = acct; UI.txFilter = ''; render();
     }
   });
@@ -1859,6 +1879,7 @@ function cleanCardPayments() {
 }
 async function init() {
   S = merge(await Store.load());
+  syncDebts();
   S.txns.forEach(t => { if (t.type === 'income' && t.src !== 'salary' && (CARD_THANKS_RE.test(t.note || '') || /^(autopay|mobile|online|electronic) payment/i.test(t.note || ''))) { t.type = 'payment'; t.src = ''; t.cat = ''; } });
   applyTheme(); bindEvents();
   runBills(); render();
