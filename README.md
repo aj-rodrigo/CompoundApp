@@ -7,7 +7,7 @@ A personal finance app for your iPhone Home Screen: investments, budget, take-ho
 The app has to be hosted at a web address once so Safari can install it. GitHub Pages is free:
 
 1. Create a free account at github.com, then create a new **public** repository (for example `compound`).
-1. Click **Add file → Upload files** and upload all of these: `index.html`, `manifest.json`, `icon.png`, `icon-192.png`, `icon-512.png`.
+1. Click **Add file → Upload files** and upload all of these: `index.html`, `sw.js`, `manifest.json`, `icon.png`, `icon-192.png`, `icon-512.png`.
 1. Go to **Settings → Pages**, set Source to **Deploy from a branch**, pick `main` and `/ (root)`, and save.
 1. After a minute your app is live at `https://YOUR-USERNAME.github.io/compound/`.
 1. Open that address in **Safari** on your iPhone, tap **Share → Add to Home Screen**, then **Add**.
@@ -28,8 +28,10 @@ Your financial data is never uploaded. The hosted files are only the app itself;
 1. On americanexpress.com (use **Request Desktop Website** in Safari), open your activity list, choose a date range, tap **Download**, and pick **CSV**. Statement PDFs can’t be imported.
 1. In Compound, go to **Budget → Transactions → Import CSV** and choose the file.
 
-- Card payments are skipped automatically, so they don’t count as income or double up with your checking account.
-- Refunds and credits lower the spending in their category.
+- Card payments (like MOBILE PAYMENT - THANK YOU) are recorded as transfers. They never count as income or spending.
+- Refunds and credits reduce what’s been charged, in their category.
+- The Transactions list shows a running total: “Charged so far” for all spending, or a running “Balance” when you tap a card’s name.
+- Re-importing a file repairs entries an older version counted as income.
 - Charges are sorted using the card’s own category column (Amex, Chase) and known merchants. Anything unmatched goes to **Needs a category**. When you pick a category there, future imports from that merchant use it.
 - Importing the same file twice is safe; duplicates are skipped.
 
@@ -50,3 +52,7 @@ Your financial data is never uploaded. The hosted files are only the app itself;
 - **Stock prices can update live** with a free Finnhub key (see above). Cash balances and share counts are still entered by you, or imported from your bank’s CSV under Budget → Transactions.
 - **Taxes are estimates.** Federal brackets, FICA and 2026 contribution limits (401(k) $24,500, IRA $7,500, HSA $4,400 / $8,750) are built in. State taxes use simplified brackets and exclude local taxes.
 - Projections are simulations, not predictions. Nothing here is financial or tax advice.
+
+## Updating the app
+
+Upload the new `index.html` (and `sw.js` if it changed) to GitHub. The next time you open Compound, a blue **A new version is ready** banner appears. Tap **Update**. The app also works offline once it’s been opened with a connection.

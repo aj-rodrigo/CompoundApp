@@ -164,6 +164,25 @@ input[type=range]{width:100%;accent-color:var(--acc);margin:12px 0 6px}
 @keyframes sh{25%{transform:translateX(-9px)}75%{transform:translateX(9px)}}
 #toast{position:fixed;left:50%;bottom:calc(142px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;font-weight:560;opacity:0;pointer-events:none;transition:opacity .2s;z-index:200;width:max-content;max-width:88vw;text-align:center}
 #toast.on{opacity:1}
+#toast.act{pointer-events:auto;display:flex;align-items:center;gap:16px;text-align:left}
+#toast.act button{color:inherit;font-weight:750;text-decoration:underline;text-underline-offset:3px;padding:4px 2px;flex:none}
+#upd{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top) + 8px);z-index:150;background:var(--acc);color:var(--acc-ink);border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;box-shadow:0 10px 26px rgba(10,40,100,.45);max-width:696px;margin:0 auto}
+#upd[hidden]{display:none}
+#upd span{flex:1}
+#upd button{background:var(--acc-ink);color:var(--acc);border-radius:10px;padding:7px 12px;font-weight:700}
+#upd button.x{background:transparent;color:var(--acc-ink);padding:6px}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.calgrid .cw{font-size:11px;color:var(--mute);text-align:center;font-weight:600;padding-bottom:2px}
+.cd{min-height:54px;border-radius:9px;background:var(--surf2);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:4px 1px 3px;gap:2px;border:1.5px solid transparent}
+[data-theme=light] .cd{background:#EEF2F8}
+.cd .n{font-size:12.5px;font-weight:600}
+.cd.today .n{color:var(--acc)}
+.cd.on{border-color:var(--acc)}
+.cd .dots{display:flex;gap:2px;height:6px}
+.cd .dots i,.legend i.dt-pay,.legend i.dt-bill,.legend i.dt-card,.legend i.dt-cardsub{width:6px;height:6px;border-radius:50%;display:block}
+.dt-pay{background:var(--pos)}.dt-bill{background:var(--neg)}.dt-card{background:var(--c3)}.dt-cardsub{background:var(--mute)}
+.cd em{font-style:normal;font-size:9px;color:var(--mute);letter-spacing:-.02em}
+.cd em.neg{color:var(--neg)}
 #print{display:none}
 @media print{#app,#sheets,#lock,#toast{display:none!important}html,body{background:#fff}#print{display:block;color:#000;font:12px -apple-system,system-ui,sans-serif}#print h1{font-size:20px}#print h2{font-size:15px;margin-top:18px}#print table{width:100%;border-collapse:collapse}#print td,#print th{border-bottom:1px solid #ccc;padding:4px;text-align:left}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.draw{stroke-dasharray:none}}
@@ -412,7 +431,8 @@ function monthRange(offset = 0) {
   return { s: iso(s), e: iso(e), label: MONTHS[s.getMonth()], frac: 1 };
 }
 const inRange = (d, p) => d >= p.s && d <= p.e;
-const spentIn = (catId, p) => sum(S.txns.filter(t => t.type === 'expense' && t.cat === catId && inRange(t.date, p)).map(t => num(t.amount)));
+const catParts = t => t.splits && t.splits.length ? t.splits.map(s => [s.cat, num(s.amount) * (num(t.amount) < 0 ? -1 : 1)]) : [[t.cat, num(t.amount)]];
+const spentIn = (catId, p) => sum(S.txns.filter(t => t.type === 'expense' && inRange(t.date, p)).map(t => sum(catParts(t).filter(([c]) => c === catId).map(([, a]) => a))));
 function catAvail(c, off) {
   const p = period(off); let carry = 0;
   if (c.rollover) {
@@ -429,7 +449,7 @@ function needsMonthly() {
   const b = sum(S.cats.filter(c => c.bucket === 'needs').map(c => num(c.budget)));
   if (b > 0) return b;
   const ids = S.cats.filter(c => c.bucket === 'needs').map(c => c.id);
-  let t = 0; for (let i = 1; i <= 3; i++) { const m = monthRange(-i); t += sum(S.txns.filter(x => x.type === 'expense' && ids.includes(x.cat) && inRange(x.date, m)).map(x => num(x.amount))); }
+  let t = 0; for (let i = 1; i <= 3; i++) { const m = monthRange(-i); t += sum(S.txns.filter(x => x.type === 'expense' && inRange(x.date, m)).map(x => sum(catParts(x).filter(([c]) => ids.includes(c)).map(([, a]) => a)))); }
   return t / 3;
 }
 const efTotal = () => sum(S.accounts.filter(a => a.ef).map(acctValue));
@@ -448,6 +468,7 @@ function nextDue(b, from = new Date()) { const f = stripTime(from); for (let i =
 function runBills() {
   const end = stripTime(new Date()); let added = 0;
   S.bills.forEach(b => {
+    if (b.noLog) { b.last = iso(end); return; }
     let cur = b.last ? addDays(pd(b.last), 1) : pd(b.start || todayISO()); let g = 0;
     while (cur <= end && g++ < 800) {
       if (isDue(b, cur)) { S.txns.push({ id: uid(), date: iso(cur), amount: num(b.amount), cat: b.cat, note: b.name, type: 'expense', bill: b.id }); added++; }
@@ -766,14 +787,35 @@ function ringsHtml(items) {
 let S = null;
 const UI = { tab: 'dash', bsub: 'overview', psub: 'proj', pOff: 0, nwRange: '1Y', projH: 30, editDash: false, hero: 'nw', txq: '', from: '', to: '', anim: true, raise: 0, locked: false };
 const KEY = 'compound-finance-v1';
+const IDB = {
+  db: null,
+  open() {
+    if (this.db) return Promise.resolve(this.db);
+    return new Promise((res, rej) => {
+      if (!window.indexedDB) return rej(new Error('no indexedDB'));
+      const r = indexedDB.open('compound', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('kv');
+      r.onsuccess = () => { this.db = r.result; res(this.db); };
+      r.onerror = () => rej(r.error);
+    });
+  },
+  async get(k) { const db = await this.open(); return new Promise((res, rej) => { const q = db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); },
+  async set(k, v) { const db = await this.open(); return new Promise((res, rej) => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(v, k); tx.oncomplete = () => res(true); tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error); }); }
+};
 const Store = {
+  backend: 'local',
   async load() {
-    try { if (window.storage && window.storage.get) { const r = await window.storage.get(KEY, false); if (r && r.value) return JSON.parse(r.value); } } catch (e) { }
+    try { if (window.storage && window.storage.get) { const r = await window.storage.get(KEY, false); if (r && r.value) { this.backend = 'claude'; return JSON.parse(r.value); } } } catch (e) { }
+    try { const v = await IDB.get(KEY); this.backend = 'idb'; if (v) return JSON.parse(v); } catch (e) { this.backend = 'local'; }
     try { const v = window.localStorage.getItem(KEY); return v ? JSON.parse(v) : null; } catch (e) { return null; }
   },
   async save(o) {
     const s = JSON.stringify(o);
-    try { if (window.storage && window.storage.set) { await window.storage.set(KEY, s, false); return true; } } catch (e) { }
+    if (this.backend === 'claude') { try { await window.storage.set(KEY, s, false); return true; } catch (e) { } }
+    if (this.backend !== 'local') {
+      try { await IDB.set(KEY, s); this.backend = 'idb'; try { window.localStorage.removeItem(KEY); } catch (e) { } return true; } catch (e) { }
+    }
+    try { if (window.storage && window.storage.set) { await window.storage.set(KEY, s, false); this.backend = 'claude'; return true; } } catch (e) { }
     try { window.localStorage.setItem(KEY, s); return true; } catch (e) { return false; }
   }
 };
@@ -799,7 +841,7 @@ function softCommit() {
   const a = document.activeElement;
   if (a && a.closest && a.closest('#main') && /INPUT|SELECT|TEXTAREA/.test(a.tagName)) pendingRender = true; else render();
 }
-function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 2800); }
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.remove('act'); t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 2800); }
 function applyTheme() {
   const pref = S.settings.theme, dark = pref === 'dark' || (pref === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.dataset.theme = dark ? 'dark' : 'light';
@@ -896,8 +938,8 @@ function alertsList() {
   const un = spentIn(uncategorized(), period(0)); if (un > 0) out.push({ t: `${money(un)} of spending is uncategorized this period.`, act: 'goTx', info: true });
   if (S.settings.paceAlerts) { const L = limitsInfo(); ['k401', 'ira', 'hsa'].forEach(k => { const x = L[k]; if (x.has && x.planned + 1 < x.limit && x.ytd < x.limit * L.frac - 1) out.push({ t: `${x.label} is ${money(x.limit * L.frac - x.ytd)} behind the pace to max out this year.`, act: 'goInvest' }); }); }
   S.bills.forEach(b => { const d = nextDue(b); if (d && (d - stripTime(new Date())) / 864e5 <= 3 && (d - stripTime(new Date())) > 0) out.push({ t: `${b.name} (${money(b.amount)}) is due ${fmtShort(d)}.`, info: true, act: 'goBills' }); });
-  if (S.accounts.length && daysAgo(S.settings.lastBackup) > 30) out.push({ t: 'Your data only lives on this phone. Export a backup from Settings.', info: true, act: 'settings' });
-  return out;
+  if (S.accounts.length && daysAgo(S.settings.lastBackup) > 30) out.push({ t: S.settings.lastBackup ? `It\u2019s been ${daysAgo(S.settings.lastBackup)} days since your last backup. Tap to back up now.` : 'Your data only lives on this phone. Tap to make your first backup.', act: 'backup' });
+  return out.concat(extraAlerts());
 }
 
 /* ================= dashboard ================= */
@@ -960,7 +1002,7 @@ const W = {
   cashflow() {
     const c = calcPay(), m = monthRange(0), tx = S.txns.filter(t => inRange(t.date, m));
     const other = sum(tx.filter(t => t.type === 'income' && t.src !== 'salary').map(t => num(t.amount)));
-    const byB = b => sum(tx.filter(t => t.type === 'expense' && catById(t.cat).bucket === b).map(t => num(t.amount)));
+    const byB = b => sum(tx.filter(t => t.type === 'expense').map(t => sum(catParts(t).filter(([c]) => catById(c).bucket === b).map(([, a]) => a))));
     const gross = c.G / 12 + other, needs = byB('needs'), wants = byB('wants'), sav = byB('savings');
     const taxes = (c.fed + c.fica + c.stax) / 12, inv = (c.k + c.r + c.h) / 12, ben = (c.hi + c.o) / 12;
     const left = Math.max(0, gross - taxes - inv - ben - needs - wants - sav);
@@ -1180,8 +1222,8 @@ function quoteAsOf() {
 const dayLine = (dc, label) => dc ? `<span class="${dc.chg < 0 ? 'neg' : 'pos'}">${money(dc.chg, { sign: true })} (${dc.chg >= 0 ? '+' : ''}${pct(dc.pct, 2)})</span> <span class="mute">${label}</span>` : '';
 /* ================= budget ================= */
 function scrBudget() {
-  let h = header('Budget') + `<div class="segwrap">${seg('bsub', [['overview', 'Overview'], ['tx', 'Transactions'], ['bills', 'Bills'], ['goals', 'Goals'], ['pay', 'Paycheck']], UI.bsub)}</div><div class="stack" id="bbody">`;
-  h += ({ overview: budOverview, tx: budTx, bills: budBills, goals: budGoals, pay: budPay }[UI.bsub] || budOverview)();
+  let h = header('Budget') + `<div class="segwrap">${seg('bsub', [['overview', 'Overview'], ['tx', 'Transactions'], ['cal', 'Calendar'], ['bills', 'Bills'], ['goals', 'Goals'], ['pay', 'Paycheck']], UI.bsub)}</div><div class="stack" id="bbody">`;
+  h += ({ overview: budOverview, tx: budTx, cal: budCal, bills: budBills, goals: budGoals, pay: budPay }[UI.bsub] || budOverview)();
   return h + '</div>';
 }
 const pnav = (label, off) => `<div class="pnav"><button class="ib" data-act="pPrev" aria-label="Previous period">${I('chevL')}</button><div style="text-align:center"><div class="lbl">${esc(label)}</div>${off ? '<button class="xs" style="color:var(--acc)" data-act="pNow">Back to current</button>' : ''}</div><button class="ib" data-act="pNext" aria-label="Next period">${I('chevR')}</button></div>`;
@@ -1217,6 +1259,8 @@ function budOverview() {
   const mb = sum(S.cats.map(c => num(c.budget)));
   AFTER.push(() => barChart($('#c-trend'), { labels: ms.map(m => m.label), values: vals, colors: vals.map((v, i) => i === 5 ? 'var(--acc)' : 'var(--c7)'), ref: mb || 0, label: 'Monthly spending', legend: mb ? [{ label: 'Monthly budget', color: 'var(--neg)' }] : null }));
   h += card('Monthly spending', '<div class="chart" id="c-trend"></div>', '<small>last 6 months</small>');
+  h += trendsHtml() + suggestionsHtml();
+  if (S.txns.some(t => inRange(t.date, monthRange(-1)))) h += `<button class="btn ghost block" data-act="report">See your ${MONTHS[pd(monthRange(-1).s).getMonth()]} report</button>`;
   return h + '</div>';
 }
 function txList(list, run) {
@@ -1226,7 +1270,7 @@ function txList(list, run) {
     if (t.date !== last) { h += `<div class="xs mute" style="margin:12px 0 0;font-weight:600">${fmtDate(t.date)}</div>`; last = t.date; }
     const c = catById(t.cat), inc = t.type === 'income', pay = t.type === 'payment', a = num(t.amount), credit = !inc && !pay && a < 0;
     const ic = inc ? I('cash') : pay ? I('card') : I(c.icon);
-    const sub = inc ? esc(srcLabel(t.src)) : pay ? 'Card payment, not spending' : (credit ? 'Credit, ' : '') + esc(c.name);
+    const sub = inc ? esc(srcLabel(t.src)) : pay ? 'Card payment, not spending' : (credit ? 'Credit, ' : '') + (t.splits ? 'Split: ' + esc(splitNames(t)) : esc(c.name));
     const amt = inc ? `<span class="pos">${money(a, { sign: true })}</span>` : pay ? `<span class="mute">${money(-a)}</span>` : credit ? `<span class="pos">${money(a)}</span>` : money(a);
     const rt = run && run.has(t.id) ? `<div class="xs mute">${run.label} ${money(run.get(t.id))}</div>` : '';
     h += `<button class="li" data-act="editTx" data-id="${t.id}"><span class="ic">${ic}</span><span class="main"><span class="t">${esc(t.note || (inc ? 'Income' : pay ? 'Card payment' : c.name))}</span><span class="s">${sub}${t.acct ? ', ' + esc(t.acct) : ''}${t.bill ? ', recurring' : ''}</span></span>${t.receipt ? `<img class="thumb" src="${t.receipt}" alt="Receipt">` : ''}<span class="amt">${amt}${rt}</span></button>`;
@@ -1261,7 +1305,7 @@ function budBills() {
   const bills = S.bills.slice().sort((a, b) => (nextDue(a) || 0) - (nextDue(b) || 0));
   const subs = bills.filter(b => b.sub), regular = bills.filter(b => !b.sub);
   const row = b => { const d = nextDue(b); return `<button class="li" data-act="editBill" data-id="${b.id}"><span class="ic">${I(catById(b.cat).icon)}</span><span class="main"><span class="t">${esc(b.name)}</span><span class="s">${optLabel(FREQS, b.freq || 'monthly')}, next ${d ? fmtShort(d) : 'unknown'}</span></span><span class="amt">${money(b.amount)}</span></button>`; };
-  let h = card('Recurring bills', (regular.length ? `<div class="list">${regular.map(row).join('')}</div>` : '<div class="sm mute">Bills you add here are logged as expenses automatically on their due date.</div>') + `<div class="row sm" style="margin-top:10px"><span class="mute">Monthly total</span><b>${money(sum(regular.map(billMonthly)))}</b></div>`);
+  let h = subsDetectedHtml() + card('Recurring bills', (regular.length ? `<div class="list">${regular.map(row).join('')}</div>` : '<div class="sm mute">Bills you add here are logged as expenses automatically on their due date.</div>') + `<div class="row sm" style="margin-top:10px"><span class="mute">Monthly total</span><b>${money(sum(regular.map(billMonthly)))}</b></div>`);
   h += card('Subscriptions', (subs.length ? `<div class="grid2" style="margin-bottom:8px">${stat('Per month', money(sum(subs.map(billMonthly))))}${stat('Per year', money(sum(subs.map(billMonthly)) * 12))}</div><div class="list">${subs.map(row).join('')}</div>` : '<div class="sm mute">Add streaming, software and memberships here, and mark them as subscriptions.</div>'));
   return h + '<button class="btn block" data-act="addBill">Add bill or subscription</button>';
 }
@@ -1330,7 +1374,8 @@ function txForm(t, type) {
       { k: 'cat', label: 'Category', type: 'select', opts: catOpts(), v: t.cat, other: true, otherPh: 'New category name', when: v => v.type === 'expense' },
       { k: 'src', label: 'Income type', type: 'select', opts: SRCS, v: t.src === 'other' ? 'Other income' : (t.src || 'bonus'), other: true, otherPh: 'e.g. Tax refund, Freelance, Dividends', when: v => v.type === 'income' },
       { k: 'date', label: 'Date', type: 'date', v: t.date },
-      { k: 'receipt', label: 'Receipt photo', type: 'image', v: t.receipt, when: v => v.type === 'expense' }
+      { k: 'receipt', label: 'Receipt photo', type: 'image', v: t.receipt, when: v => v.type === 'expense' },
+      ...(isNew ? [] : [{ k: '_split', type: 'info', html: `<div class="stack" style="gap:8px"><button type="button" class="btn ghost block" data-act="splitTx" data-id="${t.id}">${t.splits ? 'Edit split (' + esc(splitNames(t)) + ')' : 'Split across categories'}</button>${t.note ? `<button type="button" class="btn ghost block" data-act="makeRule" data-id="${t.id}">Always categorize this merchant</button>` : ''}</div>`, when: v => v.type === 'expense' }])
     ],
     saveLabel: isNew ? 'Add' : 'Save changes',
     onDelete: isNew ? null : () => { S.txns = S.txns.filter(x => x.id !== t.id); commit(); toast('Transaction deleted'); },
@@ -1339,6 +1384,8 @@ function txForm(t, type) {
       const nc = v.type === 'expense' && v.catOther && !S.cats.some(c => c.name.toLowerCase() === v.cat.toLowerCase());
       const prevCat = t.cat;
       const o = { type: v.type, amount: v.type === 'expense' && v.refund ? -v.amount : v.amount, note: v.note, cat: v.type === 'expense' ? ensureCat(v) : '', src: v.type === 'income' ? v.src : '', date: v.date || todayISO(), receipt: v.type === 'expense' ? v.receipt : '' };
+      if (!isNew && t.splits && (o.type !== 'expense' || Math.abs(sum(t.splits.map(x => num(x.amount))) - Math.abs(num(o.amount))) > .005)) delete t.splits;
+      if (!isNew && t.splits) o.cat = t.cat;
       if (isNew) S.txns.push({ id: uid(), ...o }); else Object.assign(t, o);
       if (!isNew && t.srcCat && o.cat && o.cat !== prevCat) { S.settings.catMap = S.settings.catMap || {}; S.settings.catMap[t.srcCat.toLowerCase()] = o.cat; }
       commit();
@@ -1359,14 +1406,15 @@ function billForm(b) {
       { k: 'anchor', label: 'Next due date', type: 'date', v: b.anchor || todayISO(), when: v => ['weekly', 'biweekly'].includes(v.freq) },
       { k: 'month', label: 'A month it\u2019s due', type: 'select', opts: MONTHS.map((m, i) => [i + 1, m]), v: b.month, when: v => ['quarterly', 'semiannual', 'yearly'].includes(v.freq) },
       { k: 'day', label: 'Day of month due', type: 'num', v: b.day, when: v => !['weekly', 'biweekly'].includes(v.freq) },
-      { k: 'sub', label: 'This is a subscription', type: 'toggle', v: b.sub }
+      { k: 'sub', label: 'This is a subscription', type: 'toggle', v: b.sub },
+      { k: 'log', label: 'Add to expenses automatically', type: 'toggle', v: !b.noLog, hint: 'Turn off if it\u2019s charged to a card you import, so it isn\u2019t counted twice.' }
     ],
     intro: isNew ? 'Starting with the next due date, this bill is added to your expenses automatically.' : '',
     saveLabel: isNew ? 'Add bill' : 'Save changes',
     onDelete: isNew ? null : () => { S.bills = S.bills.filter(x => x.id !== b.id); commit(); },
     onSave: v => {
       if (!v.name || !(v.amount > 0)) { toast('Enter a name and amount'); return; }
-      const o = { name: v.name, amount: v.amount, cat: ensureCat(v), freq: v.freq, anchor: v.anchor, month: +v.month, day: clamp(Math.round(num(v.day)) || 1, 1, 31), sub: v.sub };
+      const o = { name: v.name, amount: v.amount, cat: ensureCat(v), freq: v.freq, anchor: v.anchor, month: +v.month, day: clamp(Math.round(num(v.day)) || 1, 1, 31), sub: v.sub, noLog: !v.log };
       if (isNew) S.bills.push({ id: uid(), start: todayISO(), ...o }); else Object.assign(b, o);
       const n = runBills(); commit(); toast(n ? `Bill saved and ${n} payment logged` : 'Bill saved');
     }
@@ -1426,6 +1474,8 @@ function planDebt() {
   const mi = d => num(d.balance) * num(d.apr) / 1200;
   h += card('Your debts', `<div class="list">${S.debts.map(d => { const t = esc(optLabel(DEBT_TYPES, d.type) || 'Debt'); const util = d.type === 'cc' && num(d.limit) ? num(d.balance) / num(d.limit) : null; return `<button class="li" data-act="editDebt" data-id="${d.id}" style="flex-wrap:wrap"><span class="ic">${I(d.type === 'car' ? 'car' : d.type === 'mortgage' ? 'home' : d.type === 'student' ? 'book' : 'card')}</span><span class="main"><span class="t">${esc(d.name)}</span><span class="s">${t}, ${num(d.apr)}% APR, ${money(d.min)} minimum, ${money(mi(d))} interest a month${d.link ? (() => { const r = linkedTotals(d); return `<br><span style="color:var(--acc)">Running total of ${r.count} ${esc(d.link)} transaction${r.count === 1 ? '' : 's'}</span>: ${num(d.startBal) ? money(d.startBal) + ' start + ' : ''}${money(r.charges)} charged \u2212 ${money(r.credits)} credits \u2212 ${money(r.payments)} paid${r.running < 0 ? `. Payments are ${money(-r.running)} more than the charges imported, so this shows $0. Add a starting balance to fix it.` : ''}`; })() : ''}</span></span><span class="amt">${money(d.balance)}${d.link ? '<div class="xs mute">auto</div>' : ''}</span>${util != null ? `<span style="flex-basis:100%;padding-left:42px;margin-top:6px"><span class="xs ${util > .3 ? 'neg' : 'mute'}">${pct(util, 0)} of ${money(d.limit)} limit used${util > .3 ? ', above the 30% that helps credit scores' : ''}</span>${bar(util, util > .3 ? 'var(--neg)' : 'var(--pos)', .3)}</span>` : ''}</button>`; }).join('')}</div><button class="btn ghost block" style="margin-top:10px" data-act="addDebt">Add debt</button>`);
   const th = num(S.settings.threshold), ret = num(S.settings.ret);
+  const chk = S.debts.filter(d => d.link);
+  if (chk.length) h += card('Check against your statement', `<div class="sm mute" style="margin:-4px 0 10px">Compare a card\u2019s running total with its latest statement.</div>${chk.map(d => `<button class="li" data-act="stmtCheck" data-id="${d.id}"><span class="ic">${I('doc')}</span><span class="main"><span class="t">${esc(d.name)}</span><span class="s">${d.lastStmt ? (Math.abs(d.lastStmt.diff) < .01 ? `Matched the ${fmtShort(d.lastStmt.date)} statement` : `Off by ${money(Math.abs(d.lastStmt.diff))} on ${fmtShort(d.lastStmt.date)}`) : 'Not checked yet'}</span></span><span class="chip">Check</span></button>`).join('')}`);
   h += card('Pay down or invest?', `<table class="tbl"><tr><th>Debt</th><th>APR</th><th>Rule of thumb</th><th>By the math</th></tr>${S.debts.filter(d => num(d.balance) > 0).map(d => { const apr = num(d.apr); return `<tr><td>${esc(d.name)}</td><td>${apr}%</td><td class="${apr > th ? 'neg' : 'pos'}">${apr > th ? 'Pay first' : 'Invest'}</td><td class="${apr > ret ? 'neg' : 'pos'}">${apr > ret ? `Pay: ${(apr - ret).toFixed(1)}% better` : `Invest: ${(ret - apr).toFixed(1)}% better`}</td></tr>`; }).join('')}</table>${bindInp('settings.threshold', 'Rule of thumb: pay off debt above this APR (%)')}<div class="xs mute">By the math compares each APR with your ${ret}% expected return. Paying debt is a guaranteed return, investing isn\u2019t, so many people pay off anything close to the line. Always get the full employer match first.</div>`);
   AFTER.push(renderDebt);
   return h;
@@ -1457,11 +1507,12 @@ function debtForm(d) {
       { k: 'since', label: 'Only count transactions after (optional)', type: 'date', v: d.since || '', hint: 'Use the date of the statement your starting balance came from.', when: v => !!v.link },
       { k: 'apr', label: 'Interest rate (APR)', type: 'pct', v: d.apr },
       { k: 'min', label: 'Minimum monthly payment', type: 'money', v: d.min },
+      { k: 'dueDay', label: 'Payment due day of the month', type: 'num', v: d.dueDay || '', ph: 'e.g. 18', hint: 'For due-date alerts and the cash-flow calendar.' },
       { k: 'limit', label: 'Credit limit', type: 'money', v: d.limit, when: v => v.type === 'cc' }
     ],
     saveLabel: isNew ? 'Add debt' : 'Save changes',
     onDelete: isNew ? null : () => { S.debts = S.debts.filter(x => x.id !== d.id); commit(); },
-    onSave: v => { if (!v.link && (!(v.balance >= 0) || v.balance === '')) { toast('Enter the balance'); return; } const o = { type: v.type, name: v.name || v.link || optLabel(DEBT_TYPES, v.type) || 'Debt', balance: num(v.balance), apr: num(v.apr), min: num(v.min), limit: num(v.limit), link: v.link || '', startBal: v.link ? num(v.startBal) : 0, since: v.link ? v.since : '' }; if (isNew) S.debts.push({ id: uid(), ...o }); else Object.assign(d, o); commit(); }
+    onSave: v => { if (!v.link && (!(v.balance >= 0) || v.balance === '')) { toast('Enter the balance'); return; } const o = { type: v.type, name: v.name || v.link || optLabel(DEBT_TYPES, v.type) || 'Debt', balance: num(v.balance), apr: num(v.apr), min: num(v.min), limit: num(v.limit), dueDay: clamp(Math.round(num(v.dueDay)), 0, 31), link: v.link || '', startBal: v.link ? num(v.startBal) : 0, since: v.link ? v.since : '' }; if (isNew) S.debts.push({ id: uid(), ...o }); else Object.assign(d, o); commit(); }
   });
 }
 function planLadder() {
@@ -1494,11 +1545,13 @@ function openSettings() {
   <section class="card" style="margin-top:12px"><h2><span>Display</span></h2>${sel('settings.theme', 'Appearance', [['system', 'Match iPhone'], ['dark', 'Dark'], ['light', 'Light']])}${tg('settings.hide', 'Hide balances', 'Shows dots instead of dollar amounts until you turn it off.')}</section>
   <section class="card" style="margin-top:12px"><h2><span>Budget</span></h2>${sel('settings.period', 'Budget period', [['month', 'Calendar month'], ['paycheck', 'Each paycheck']])}${tg('settings.paceAlerts', 'Warn when behind on maxing accounts')}</section>
   <section class="card" style="margin-top:12px" id="liveprices"><h2><span>Live prices</span></h2><div class="sm mute" style="margin-bottom:10px">Updates stock, ETF and crypto prices from Finnhub. Create a free account at <a href="https://finnhub.io/register" target="_blank" rel="noopener" style="color:var(--acc)">finnhub.io/register</a>, then copy the API key from your Finnhub dashboard and paste it here. It stays on this phone.</div><div class="fld"><label for="s-qk">Finnhub API key</label><input id="s-qk" type="text" data-bind="settings.quoteKey" data-t="str" value="${esc(s.quoteKey || '')}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Paste your key"></div>${tg('settings.autoQuotes', 'Update prices when the app opens')}<button class="btn ghost block" data-act="refreshQuotes">Update prices now</button>${s.lastQuote ? `<div class="xs mute" style="margin-top:8px">${quoteAsOf()}</div>` : ''}<div class="xs mute" style="margin-top:8px">Mutual funds and many 401(k) funds aren’t covered on the free plan. Those keep the price you enter.</div></section>
+  <section class="card" style="margin-top:12px"><h2><span>Storage</span></h2><div id="storeInfo" class="sm mute">Checking\u2026</div></section>
+  <section class="card" style="margin-top:12px"><h2><span>Automation</span></h2><button class="btn ghost block" data-act="rules">Auto-categorize rules (${rules().length})</button><div class="xs mute" style="margin-top:8px">Compound version ${APP_VERSION}</div></section>
   <section class="card" style="margin-top:12px"><h2><span>Security</span></h2><div class="sm mute" style="margin-bottom:10px">${s.pin ? 'A passcode protects the app.' : 'No passcode set. Anyone with your unlocked phone can open the app.'}</div>${s.pin ? tg('settings.autolock', 'Lock after 1 minute in the background') : ''}<div class="btns"><button class="btn ghost" data-act="setPin">${s.pin ? 'Change passcode' : 'Set passcode'}</button>${s.pin ? '<button class="btn danger" data-act="removePin">Turn off passcode</button>' : ''}</div></section>
   <section class="card" style="margin-top:12px"><h2><span>Your data</span></h2><div class="sm mute" style="margin-bottom:10px">Everything is stored only on this phone.${s.lastBackup ? ' Last backup ' + fmtDate(s.lastBackup) + '.' : ' You haven\u2019t made a backup yet.'}</div><div class="stack" style="gap:8px"><button class="btn block" data-act="backup">Back up all data</button><button class="btn ghost block" data-act="restore">Restore from backup</button><button class="btn ghost block" data-act="expTx">Export transactions (CSV for Excel)</button><button class="btn ghost block" data-act="expAcct">Export accounts and debts (CSV)</button><button class="btn ghost block" data-act="pdf">Save a PDF report</button><button class="btn ghost block" data-act="importCsv">Import transactions (CSV)</button><button class="btn ghost block" data-act="delTx">Delete transactions</button></div></section>
   <section class="card" style="margin-top:12px"><h2><span>Start over</span></h2><div class="btns"><button class="btn ghost" data-act="rerunSetup">Run setup again</button><button class="btn danger" data-act="reset">Erase all data</button></div></section>
   <p class="xs mute" style="text-align:center;margin-top:16px">Compound. Estimates only, not financial or tax advice.</p>`;
-  const ov = openSheet(html); ov._settings = true;
+  const ov = openSheet(html); ov._settings = true; fillStorageInfo();
 }
 function openSearch() {
   const ov = openSheet(sheetHead('Search', 'Done') + `<div class="fld"><input type="search" id="q" placeholder="Transactions, accounts, debts, bills" data-inp="search" aria-label="Search" autocomplete="off"></div><div id="qres" class="list"></div>`);
@@ -1576,6 +1629,7 @@ const CAT_RULES = [
 const catIdByName = n => { const c = S.cats.find(x => x.name.toLowerCase() === n.toLowerCase()); return c ? c.id : null; };
 const merchKey = note => String(note || '').toLowerCase().replace(/[0-9#*]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 14);
 function guessCat(note, srcCat, known) {
+  const rl = ruleFor(note); if (rl) return rl.cat;
   const k = merchKey(note); if (k && known[k]) return known[k];
   const map = S.settings.catMap || {}, sc = String(srcCat || '').toLowerCase().trim();
   if (sc && map[sc] && S.cats.some(c => c.id === map[sc])) return map[sc];
@@ -1596,6 +1650,7 @@ function importCsvForm() {
       if (!v.file) { toast('Choose a CSV file'); return; }
       let rows;
       try { rows = parseCsv(await readText(v.file)); } catch (e) { toast('Couldn\u2019t read that file'); return; }
+      checkpoint();
       const hi = rows.findIndex(r => r.some(c => /date/i.test(c)) && r.some(c => /amount|debit|credit/i.test(c)));
       if (hi < 0) { toast('Couldn\u2019t find date and amount columns in that file'); return; }
       const hd = rows[hi].map(x => x.toLowerCase().trim()), f = re => hd.findIndex(x => re.test(x)), body = rows.slice(hi + 1);
@@ -1655,9 +1710,10 @@ function importCsvForm() {
         if (cand) { cand.link = acct; cand.startBal = 0; cand.since = ''; }
         else S.debts.push({ id: uid(), type: 'cc', name: acct, link: acct, startBal: 0, since: '', balance: 0, apr: 0, min: 0, limit: 0 });
         commit();
-        setTimeout(() => toast(`${acct} is now in Plan \u2192 Debt and updates with each import. Add its APR and minimum payment there.`), 3200);
+        setTimeout(() => toast(`${acct} is now in Plan \u2192 Debt and updates with each import. Add its APR and minimum payment there.`), 8600);
       }
       UI.tab = 'budget'; UI.bsub = 'tx'; UI.txAcct = acct; UI.txFilter = ''; render();
+      offerUndo($('#toast').textContent);
     }
   });
 }
@@ -1783,7 +1839,7 @@ const ACT = {
   delScn: d => { S.scenarios = S.scenarios.filter(s => s.id !== d.id); save(); renderProj(); },
   formSave: async () => { const sh = topSheet(), o = sh._form; const v = readForm(sh, o); for (const [i, fd] of o.fields.entries()) { const w = sh.querySelector(`[data-fi="${i}"]`); if (v[fd.k + 'Other'] && !v[fd.k] && !(w && w.style.display === 'none')) { toast(`Type a value for ${fd.label}, or pick one from the list`); return; } } for (const [i, fd] of o.fields.entries()) { if (fd.type === 'image') { const inp = sh.querySelector('#f' + i); if (inp && inp.files && inp.files[0]) v[fd.k] = await resizeImage(inp.files[0]); } } sh.remove(); await o.onSave(v); },
   formSkip: () => { const sh = topSheet(), o = sh._form; sh.remove(); if (o.onSkip) o.onSkip(); },
-  formDel: () => { const sh = topSheet(), o = sh._form; sh.remove(); o.onDelete(); },
+  formDel: () => { const sh = topSheet(), o = sh._form; sh.remove(); checkpoint(); const t = $('#toast'); t.classList.remove('on'); o.onDelete(); setTimeout(() => offerUndo(t.classList.contains('on') && t.textContent ? t.textContent : 'Deleted'), 30); },
   key: d => pinKey(d.v),
   setPin: () => { closeSheet(); pinForm(); },
   removePin: () => { if (confirm('Turn off the passcode?')) { S.settings.pin = null; save(); closeSheet(); openSettings(); toast('Passcode off'); } },
@@ -1808,9 +1864,9 @@ const ACT = {
         const hit = t => (v.scope === 'all' || (v.scope === 'imported' && (t.imported || t.acct)) || (v.scope.startsWith('acct:') && t.acct === v.scope.slice(5))) && (!v.from || t.date >= v.from) && (!v.to || t.date <= v.to);
         const n = S.txns.filter(hit).length;
         if (!n) { toast('No transactions match that'); return; }
-        if (!confirm(`Delete ${n} transaction${n === 1 ? '' : 's'}? This can\u2019t be undone.`)) return;
-        S.txns = S.txns.filter(t => !hit(t)); UI.txAcct = ''; UI.txFilter = '';
-        closeAll(); UI.tab = 'budget'; UI.bsub = 'tx'; commit(); toast(`Deleted ${n} transaction${n === 1 ? '' : 's'}. You can import the file again now.`);
+        if (!confirm(`Delete ${n} transaction${n === 1 ? '' : 's'}?`)) return;
+        checkpoint(); S.txns = S.txns.filter(t => !hit(t)); UI.txAcct = ''; UI.txFilter = '';
+        closeAll(); UI.tab = 'budget'; UI.bsub = 'tx'; commit(); offerUndo(`Deleted ${n} transaction${n === 1 ? '' : 's'}. You can import the file again now.`);
       }
     });
   },
@@ -1891,8 +1947,381 @@ async function init() {
   if (cleaned) { render(); setTimeout(() => toast(`Removed ${cleaned} credit card payment${cleaned === 1 ? '' : 's'} that had been counted as income.`), 600); }
   save();
   if (S.onboarded && S.settings.quoteKey && S.settings.autoQuotes) refreshQuotes({ silent: true });
+  afterInit();
 }
 init();
+/* ================= v2 features ================= */
+const APP_VERSION = '2026.09.25-2';
+const rules = () => S.rules || (S.rules = []);
+
+/* ---------- undo ---------- */
+let UNDO = null;
+function checkpoint() { UNDO = { snap: JSON.stringify(S) }; }
+function offerUndo(msg) {
+  if (!UNDO) return;
+  if (UNDO.snap === JSON.stringify(S)) { UNDO = null; return; }
+  const t = $('#toast');
+  t.innerHTML = `<span>${esc(msg)}</span><button data-act="undo">Undo</button>`;
+  t.classList.add('on', 'act'); clearTimeout(toast.t);
+  toast.t = setTimeout(() => { t.classList.remove('on', 'act'); }, 8000);
+}
+function undoLast() {
+  if (!UNDO) return;
+  S = merge(JSON.parse(UNDO.snap)); UNDO = null;
+  applyTheme(); closeAll(); commit(); toast('Undone');
+}
+
+/* ---------- encrypted backups ---------- */
+const b64 = buf => { const a = new Uint8Array(buf); let s = ''; for (let i = 0; i < a.length; i += 0x8000) s += String.fromCharCode.apply(null, a.subarray(i, i + 0x8000)); return btoa(s); };
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function deriveKey(pass, salt, iter) {
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+async function encryptBackup(obj, pass) {
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)), iter = 250000;
+  const key = await deriveKey(pass, salt, iter);
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(obj)));
+  return JSON.stringify({ compound: 'encrypted-backup', v: 1, kdf: 'PBKDF2-SHA256', iter, cipher: 'AES-256-GCM', salt: b64(salt), iv: b64(iv), data: b64(ct), made: todayISO() });
+}
+async function decryptBackup(o, pass) {
+  const key = await deriveKey(pass, unb64(o.salt), o.iter || 250000);
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(o.iv) }, key, unb64(o.data));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+function backupForm() {
+  openForm({
+    title: 'Back up all data', intro: 'Saves everything to one file. Keep it in iCloud Drive or Files. With a password, the file is encrypted (AES-256), so it\u2019s safe even if someone else opens it.', fields: [
+      { k: 'enc', label: 'Protect with a password', type: 'toggle', v: true },
+      { k: 'p1', label: 'Backup password', type: 'text', v: '', ph: 'At least 6 characters', hint: 'You\u2019ll need it to restore. It can\u2019t be recovered if you forget it.', when: v => v.enc },
+      { k: 'p2', label: 'Enter it again', type: 'text', v: '', when: v => v.enc }
+    ],
+    saveLabel: 'Save backup file',
+    onSave: async v => {
+      let text;
+      if (v.enc) {
+        if ((v.p1 || '').length < 6) { toast('Use at least 6 characters'); backupForm(); return; }
+        if (v.p1 !== v.p2) { toast('Passwords don\u2019t match'); backupForm(); return; }
+        try { text = await encryptBackup(S, v.p1); } catch (e) { toast('Encryption isn\u2019t available here. Open the app from your GitHub Pages address.'); return; }
+      } else text = JSON.stringify(S);
+      S.settings.lastBackup = todayISO(); save();
+      download(`compound-backup-${todayISO()}${v.enc ? '-encrypted' : ''}.json`, text, 'application/json');
+      toast(v.enc ? 'Encrypted backup saved' : 'Backup saved'); render();
+    }
+  });
+  const sh = topSheet(); $$('#f1,#f2', sh).forEach(i => { i.type = 'password'; i.autocomplete = 'new-password'; });
+}
+function applyRestore(o) {
+  if (!o || !o.settings || !o.accounts) throw new Error('bad');
+  checkpoint(); S = merge(o); applyTheme(); closeAll(); commit();
+  offerUndo('Backup restored');
+}
+function restoreForm() {
+  openForm({
+    title: 'Restore from backup', intro: 'This replaces everything in the app with the backup file. You can undo right after.', fields: [{ k: 'file', label: 'Backup file (.json)', type: 'file', accept: '.json,application/json' }], saveLabel: 'Restore',
+    onSave: async v => {
+      if (!v.file) { toast('Choose a backup file'); return; }
+      let o; try { o = JSON.parse(await readText(v.file)); } catch (e) { toast('That isn\u2019t a Compound backup file'); return; }
+      if (o && o.compound === 'encrypted-backup') {
+        openForm({
+          title: 'Backup password', fields: [{ k: 'p', label: 'Password', type: 'text', v: '' }], saveLabel: 'Unlock and restore', focus: true,
+          onSave: async p => { try { applyRestore(await decryptBackup(o, p.p)); } catch (e) { toast('Wrong password, or the file is damaged'); } }
+        });
+        const i = $('#f0', topSheet()); if (i) { i.type = 'password'; i.autocomplete = 'current-password'; }
+        return;
+      }
+      try { applyRestore(o); } catch (e) { toast('That isn\u2019t a Compound backup file'); }
+    }
+  });
+}
+
+/* ---------- storage info ---------- */
+async function fillStorageInfo() {
+  const el = $('#storeInfo'); if (!el) return;
+  let used = '', quota = '';
+  try { const e = await navigator.storage.estimate(); used = e.usage; quota = e.quota; } catch (e) { }
+  const mb = x => x < 1048576 ? Math.max(1, Math.round(x / 1024)) + ' KB' : (x / 1048576).toFixed(x > 1048576 * 10 ? 0 : 1) + ' MB';
+  const dataSize = new Blob([JSON.stringify(S)]).size;
+  let persisted = false; try { persisted = await navigator.storage.persisted(); } catch (e) { }
+  el.innerHTML = `<div class="row"><span>Your data</span><b>${mb(dataSize)}</b></div>${quota ? `<div class="row" style="margin-top:4px"><span>Space available</span><b>${mb(quota)}</b></div><div class="bar" style="margin-top:6px"><i style="width:${clamp(used / quota, 0.01, 1) * 100}%;background:var(--pos)"></i></div>` : ''}<div class="xs mute" style="margin-top:6px">Stored in ${Store.backend === 'idb' ? 'the app\u2019s database, with room for years of transactions and receipt photos' : Store.backend === 'claude' ? 'this preview only' : 'basic browser storage (about 5 MB)'}.${persisted ? ' Protected from automatic clean-up.' : ''}</div>`;
+}
+
+/* ---------- updates & offline ---------- */
+let lastUpdCheck = 0;
+async function checkUpdate() {
+  if (!/^https?:/.test(location.protocol) || Date.now() - lastUpdCheck < 60000) return;
+  lastUpdCheck = Date.now();
+  try {
+    const r = await fetch(location.pathname + '?check=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) return;
+    const m = (await r.text()).match(/APP_VERSION = '([^']+)'/);
+    if (m && m[1] !== APP_VERSION) { const b = $('#upd'); if (b) b.hidden = false; }
+  } catch (e) { }
+}
+async function applyUpdate() {
+  try { const regs = await navigator.serviceWorker.getRegistrations(); await Promise.all(regs.map(r => r.update())); } catch (e) { }
+  try { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); } catch (e) { }
+  save(); setTimeout(() => location.reload(), 300);
+}
+
+/* ---------- splits ---------- */
+function splitSheet(t) {
+  const parts = t.splits && t.splits.length ? t.splits.map(s => ({ ...s })) : [{ cat: t.cat, amount: Math.abs(num(t.amount)) }];
+  while (parts.length < 4) parts.push({ cat: '', amount: '' });
+  const opts = sel => `<option value="">Choose category</option>` + S.cats.map(c => `<option value="${c.id}" ${c.id === sel ? 'selected' : ''}>${esc(c.name)}</option>`).join('');
+  const html = sheetHead('Split charge') + `<div class="row" style="margin-bottom:12px"><span class="b">${esc(t.note || 'Transaction')}</span><span class="b">${money(Math.abs(num(t.amount)), { force: true })}</span></div>` +
+    parts.map((p, i) => `<div class="grid2 splitrow" style="grid-template-columns:1.4fr 1fr;margin-bottom:8px"><div class="fld" style="margin:0"><select aria-label="Category ${i + 1}" class="sp-c">${opts(p.cat)}</select></div><div class="fld" style="margin:0"><input class="sp-a" type="text" inputmode="decimal" placeholder="$0.00" value="${p.amount === '' ? '' : num(p.amount).toFixed(2)}" data-inp="splitAmt" aria-label="Amount ${i + 1}"></div></div>`).join('') +
+    `<div class="row sm" style="margin:6px 0 14px"><span class="mute">Left to assign</span><b id="spLeft"></b></div><div class="stack" style="gap:8px"><button class="btn block" data-act="splitSave" data-id="${t.id}">Save split</button>${t.splits ? `<button class="btn danger block" data-act="splitClear" data-id="${t.id}">Remove split</button>` : ''}</div>`;
+  const ov = openSheet(html); ov._split = t.id; splitLeft();
+}
+function splitLeft() {
+  const ov = topSheet(); if (!ov || !ov._split) return;
+  const t = S.txns.find(x => x.id === ov._split), tot = Math.abs(num(t.amount));
+  const used = sum($$('.sp-a', ov).map(i => num(i.value))), left = Math.round((tot - used) * 100) / 100;
+  const el = $('#spLeft', ov); el.textContent = money(left, { force: true }); el.className = Math.abs(left) < .005 ? 'pos' : 'neg';
+  return left;
+}
+const splitNames = t => t.splits.map(s => catById(s.cat).name).join(', ');
+
+/* ---------- subscriptions ---------- */
+const prettyName = n => String(n || '').split(/\s{2,}|\*|#|\d{3,}/)[0].replace(/\.(com|net|io|co)\b.*$/i, '').replace(/\b(usa|us|inc|llc|ltd|corp|co)\b\.?/gi, '').replace(/\s+/g, ' ').trim().toLowerCase().replace(/\b\w/g, c => c.toUpperCase()).slice(0, 30) || n;
+function detectSubs() {
+  const dismissed = S.settings.subDismiss || [], billKeys = S.bills.map(b => merchKey(b.name)).filter(Boolean), g = {};
+  S.txns.filter(t => t.type === 'expense' && num(t.amount) > 0 && !t.bill && t.note).forEach(t => { const k = merchKey(t.note); if (k) (g[k] = g[k] || []).push(t); });
+  const out = [];
+  Object.entries(g).forEach(([k, ts]) => {
+    if (ts.length < 2 || dismissed.includes(k) || billKeys.some(b => b === k || k.startsWith(b) || b.startsWith(k))) return;
+    ts.sort((a, b) => a.date < b.date ? -1 : 1);
+    const recent = ts.slice(-4), amts = recent.map(t => num(t.amount)), avg = sum(amts) / amts.length, last = recent[recent.length - 1];
+    if (amts.some(a => Math.abs(a - avg) > Math.max(1, avg * .08))) return;
+    const gaps = []; for (let i = 1; i < recent.length; i++) gaps.push(Math.round((pd(recent[i].date) - pd(recent[i - 1].date)) / 864e5));
+    let freq = null;
+    if (gaps.every(x => x >= 26 && x <= 35)) freq = 'monthly'; else if (gaps.every(x => x >= 350 && x <= 380)) freq = 'yearly'; else if (gaps.every(x => x >= 6 && x <= 8) && recent.length >= 3) freq = 'weekly';
+    if (!freq || daysAgo(last.date) > { monthly: 45, yearly: 400, weekly: 16 }[freq]) return;
+    out.push({ key: k, name: prettyName(last.note), amount: num(last.amount), freq, cat: last.cat, day: pd(last.date).getDate(), month: pd(last.date).getMonth() + 1, lastDate: last.date, n: ts.length, card: !!last.acct });
+  });
+  return out.sort((a, b) => b.amount - a.amount);
+}
+function subsDetectedHtml() {
+  const f = detectSubs(); if (!f.length) return '';
+  return card(`Found ${f.length} repeating charge${f.length === 1 ? '' : 's'}`, `<div class="sm mute" style="margin:-4px 0 6px">These showed up at the same amount on a regular schedule. Add them to track what you pay for subscriptions.</div><div class="list">${f.map(s => `<div class="li"><span class="ic">${I('repeat')}</span><span class="main"><span class="t">${esc(s.name)}</span><span class="s">${s.freq === 'yearly' ? 'Yearly' : s.freq === 'weekly' ? 'Weekly' : 'Monthly'}, ${s.n} charges, last ${fmtShort(s.lastDate)}</span></span><span class="amt">${money(s.amount)}<div class="btns" style="margin-top:4px;justify-content:flex-end;flex-wrap:nowrap"><button class="chip" data-act="subIgnore" data-k="${esc(s.key)}">Ignore</button><button class="chip" data-act="subAdd" data-k="${esc(s.key)}">Add</button></div></span></div>`).join('')}</div>`);
+}
+
+/* ---------- budget suggestions ---------- */
+function budgetSuggestions() {
+  const first = S.txns.filter(t => t.type === 'expense').reduce((m, t) => t.date < m ? t.date : m, '9999-12-31');
+  const ms = [1, 2, 3].map(i => monthRange(-i)).filter(m => m.e >= first);
+  if (!ms.length) return { months: 0, list: [] };
+  const list = S.cats.filter(c => c.name !== 'Uncategorized').map(c => {
+    const avg = sum(ms.map(m => spentIn(c.id, m))) / ms.length, step = avg >= 500 ? 25 : avg >= 100 ? 10 : 5;
+    return { c, avg, sug: Math.ceil(avg / step) * step, cur: num(c.budget) };
+  }).filter(x => x.avg > .5 && Math.abs(x.sug - x.cur) >= Math.max(5, x.cur * .05));
+  return { months: ms.length, list };
+}
+function suggestionsHtml() {
+  const s = budgetSuggestions(); if (!s.list.length) return '';
+  const tk = calcPay().net / 12, tot = sum(S.cats.map(c => { const x = s.list.find(y => y.c.id === c.id); return x ? x.sug : num(c.budget); }));
+  return card('Suggested budgets', `<div class="sm mute" style="margin:-4px 0 6px">Based on what you actually spent over the last ${s.months === 1 ? 'month' : s.months + ' months'}, rounded up a little.</div><div class="list">${s.list.map(x => `<div class="li"><span class="ic">${I(x.c.icon)}</span><span class="main"><span class="t">${esc(x.c.name)}</span><span class="s">Averaging ${money(x.avg)} a month, budget ${x.cur ? money(x.cur) : 'not set'}</span></span><span class="amt">${money(x.sug)}<div style="margin-top:4px"><button class="chip" data-act="sugApply" data-id="${x.c.id}" data-v="${x.sug}">Use</button></div></span></div>`).join('')}</div><button class="btn block" style="margin-top:10px" data-act="sugApplyAll">Use all suggestions</button>${tk ? `<div class="xs ${tot > tk ? 'neg' : 'mute'}" style="margin-top:8px">With these, your monthly budgets total ${money(tot)} against ${money(tk)} take-home${tot > tk ? '. That\u2019s more than you bring home, so trim a Wants category.' : ', leaving ' + money(tk - tot) + ' to save.'}</div>` : ''}`);
+}
+
+/* ---------- category trends & monthly report ---------- */
+function trendsHtml() {
+  const ms = [5, 4, 3, 2, 1, 0].map(i => monthRange(-i));
+  const top = S.cats.map(c => ({ c, tot: sum(ms.map(m => spentIn(c.id, m))) })).filter(x => x.tot > .5).sort((a, b) => b.tot - a.tot).slice(0, 4);
+  if (!top.length) return '';
+  AFTER.push(() => lineChart($('#c-cattr'), { x: ms.map((_, i) => i), series: top.map((x, i) => ({ name: x.c.name, data: ms.map(m => spentIn(x.c.id, m)), color: COL[[0, 5, 1, 3][i]] })), xFmt: i => ms[i].label, xTip: i => ms[i].label + (i === 5 ? ' so far' : ''), label: 'Category trends', xl: 6, zero: true, h: 170 }));
+  const chg = top.map(x => { const last = spentIn(x.c.id, ms[4]), prev = sum([ms[1], ms[2], ms[3]].map(m => spentIn(x.c.id, m))) / 3; return { x, last, d: prev > 1 ? (last - prev) / prev : null }; });
+  return card('Category trends', `<div class="chart" id="c-cattr"></div><div class="list" style="margin-top:8px">${chg.map(({ x, last, d }) => `<div class="row sm" style="padding:6px 0;border-top:1px solid var(--line)"><span>${esc(x.c.name)}</span><span>${money(last)} <span class="mute">last month</span>${d == null ? '' : ` <b class="${d > .05 ? 'neg' : d < -.05 ? 'pos' : 'mute'}">${d > 0 ? '+' : ''}${(d * 100).toFixed(0)}%</b>`}</span></div>`).join('')}</div><div class="xs mute" style="margin-top:6px">Change compares last month with the three months before it.</div>`, '<small>6 months</small>');
+}
+function openReport(off = -1) {
+  const m = monthRange(off), pm = monthRange(off - 1), d0 = pd(m.s), name = MONTHS[d0.getMonth()] + ' ' + d0.getFullYear();
+  const tx = S.txns.filter(t => inRange(t.date, m)), ptx = S.txns.filter(t => inRange(t.date, pm));
+  const incL = sum(tx.filter(t => t.type === 'income').map(t => num(t.amount))), spend = sum(tx.filter(t => t.type === 'expense').map(t => num(t.amount)));
+  const pSpend = sum(ptx.filter(t => t.type === 'expense').map(t => num(t.amount)));
+  const planned = !incL, inc = incL || calcPay().net / 12, saved = inc - spend, rate = inc ? saved / inc : 0;
+  const cats = S.cats.map(c => ({ c, v: spentIn(c.id, m), pv: spentIn(c.id, pm) })).filter(x => x.v > .5 || x.pv > .5).sort((a, b) => b.v - a.v);
+  const bud = S.cats.filter(c => num(c.budget) > 0).map(c => ({ c, v: spentIn(c.id, m), b: num(c.budget) }));
+  const under = bud.filter(x => x.v <= x.b + .5), over = bud.filter(x => x.v > x.b + .5);
+  const big = tx.filter(t => t.type === 'expense' && num(t.amount) > 0).sort((a, b) => num(b.amount) - num(a.amount)).slice(0, 3);
+  const hv = e => { const k = Object.keys(S.history).filter(d => d <= e).sort().pop(); return k ? S.history[k] : null; };
+  const nw1 = hv(m.e), nw0 = hv(pm.e);
+  const html = sheetHead(name + ' report', 'Done') + `<div class="row" style="margin:-4px 0 12px"><button class="chip" data-act="report" data-m="${off - 1}">\u2039 ${MONTHS[pd(pm.s).getMonth()]}</button>${off < 0 ? `<button class="chip" data-act="report" data-m="${off + 1}">${MONTHS[pd(monthRange(off + 1).s).getMonth()]} \u203a</button>` : '<span></span>'}</div>
+  <section class="card hero"><div class="mute sm">You ${saved >= 0 ? 'saved' : 'overspent by'}</div><div class="big ${saved < 0 ? 'neg' : ''}">${money(Math.abs(saved))}</div><div class="sm" style="margin-top:4px">${saved >= 0 ? `A <b>${pct(rate, 0)}</b> savings rate` : 'Spending was more than income'}${planned ? ' <span class="mute">(using your planned take-home, since no income was logged)</span>' : ''}</div><div class="grid3" style="margin-top:12px">${stat(planned ? 'Take-home' : 'Income', compact(inc), 'pos')}${stat('Spent', compact(spend))}${stat('vs last month', pSpend ? (spend >= pSpend ? '+' : '\u2212') + pct(Math.abs(spend - pSpend) / pSpend, 0) : '\u2013', spend > pSpend ? 'neg' : 'pos')}</div></section>
+  <section class="card" style="margin-top:12px"><h2><span>Where it went</span></h2>${cats.length ? `<div class="list">${cats.slice(0, 6).map(x => { const d = x.pv > 1 ? (x.v - x.pv) / x.pv : null; return `<div class="row sm" style="padding:7px 0;border-top:1px solid var(--line)"><span>${esc(x.c.name)}</span><span><b>${money(x.v)}</b>${d == null ? '' : ` <span class="${d > .05 ? 'neg' : d < -.05 ? 'pos' : 'mute'}">${d > 0 ? '+' : ''}${(d * 100).toFixed(0)}%</span>`}</span></div>`; }).join('')}</div>` : '<div class="sm mute">No spending logged this month.</div>'}</section>
+  ${bud.length ? `<section class="card" style="margin-top:12px"><h2><span>Budgets</span><small>${under.length} of ${bud.length} kept</small></h2>${bar(under.length / bud.length, 'var(--pos)')}${over.length ? `<div class="sm" style="margin-top:8px">Over: ${over.map(x => `${esc(x.c.name)} <span class="neg">+${money(x.v - x.b)}</span>`).join(', ')}</div>` : '<div class="sm pos" style="margin-top:8px">Every budget held. Nice work.</div>'}</section>` : ''}
+  ${big.length ? `<section class="card" style="margin-top:12px"><h2><span>Biggest purchases</span></h2>${big.map(t => `<div class="row sm" style="padding:6px 0;border-top:1px solid var(--line)"><span>${esc(t.note || catById(t.cat).name)} <span class="mute">${fmtShort(t.date)}</span></span><b>${money(t.amount)}</b></div>`).join('')}</section>` : ''}
+  ${nw1 != null && nw0 != null ? `<section class="card" style="margin-top:12px"><div class="row"><span>Net worth change</span><b class="${nw1 - nw0 < 0 ? 'neg' : 'pos'}">${money(nw1 - nw0, { sign: true })}</b></div></section>` : ''}`;
+  const top = topSheet(); if (top && top._report) top.remove();
+  const ov = openSheet(html); ov._report = true;
+}
+
+/* ---------- cash-flow calendar ---------- */
+function paydaysBetween(s, e) {
+  const n = +S.pay.freq || 26, out = [], a = pd(S.pay.anchor || todayISO());
+  if (n === 26 || n === 52) { const len = n === 26 ? 14 : 7; const k = Math.floor((s - a) / 864e5 / len); for (let d = addDays(a, k * len); d <= e; d = addDays(d, len)) if (d >= s) out.push(d); }
+  else for (let m = new Date(s.getFullYear(), s.getMonth(), 1); m <= e; m = new Date(m.getFullYear(), m.getMonth() + 1, 1)) {
+    const days = n === 24 ? [15, daysIn(m)] : [Math.min(a.getDate(), daysIn(m))];
+    days.forEach(dd => { const d = new Date(m.getFullYear(), m.getMonth(), dd); if (d >= s && d <= e) out.push(d); });
+  }
+  return out;
+}
+function cashEvents(s, e) {
+  const map = {}, add = (d, ev) => { const k = iso(d); (map[k] = map[k] || []).push(ev); };
+  const c = calcPay(), per = c.n ? c.net / c.n : 0, today = stripTime(new Date()), seenCard = new Set();
+  if (num(S.pay.salary)) paydaysBetween(s, e).forEach(d => add(d, { kind: 'pay', label: 'Payday', amt: per }));
+  for (let d = new Date(s); d <= e; d = addDays(d, 1)) {
+    S.bills.forEach(b => { if (isDue(b, d)) add(d, { kind: b.noLog ? 'cardsub' : 'bill', label: b.name, amt: b.noLog ? 0 : -num(b.amount), show: num(b.amount) }); });
+    S.debts.forEach(x => {
+      if (!num(x.dueDay) || !(num(x.balance) > 0) || d.getDate() !== Math.min(num(x.dueDay), daysIn(d))) return;
+      let amt = num(x.min);
+      if (x.type === 'cc') { if (d > today && !seenCard.has(x.id)) { amt = num(x.balance); seenCard.add(x.id); } else if (d > today) amt = num(x.min); }
+      add(d, { kind: 'card', label: x.name + ' payment', amt: -amt, show: amt });
+    });
+  }
+  return map;
+}
+function budCal() {
+  const off = UI.calOff || 0, base = new Date(), ms = new Date(base.getFullYear(), base.getMonth() + off, 1), me = new Date(ms.getFullYear(), ms.getMonth() + 1, 0);
+  const today = stripTime(new Date()), tomorrow = addDays(today, 1);
+  const from = ms < tomorrow ? ms : tomorrow, ev = cashEvents(from, me);
+  const checking = S.accounts.filter(a => a.type === 'checking'), start = sum(checking.map(acctValue));
+  const proj = {}; let bal = start, low = null;
+  if (checking.length && me >= tomorrow) for (let d = new Date(tomorrow); d <= me; d = addDays(d, 1)) { (ev[iso(d)] || []).forEach(x => bal += x.amt); if (d >= ms) { proj[iso(d)] = bal; if (!low || bal < low.v) low = { v: bal, d: new Date(d) }; } }
+  if (!UI.calDay || UI.calDay < iso(ms) || UI.calDay > iso(me)) UI.calDay = off === 0 ? iso(today) : iso(ms);
+  let h = `<div class="pnav"><button class="ib" data-act="calPrev" aria-label="Previous month">${I('chevL')}</button><div style="text-align:center"><div class="lbl">${MONTHS[ms.getMonth()]} ${ms.getFullYear()}</div>${off ? '<button class="xs" style="color:var(--acc)" data-act="calNow">Back to this month</button>' : ''}</div><button class="ib" data-act="calNext" aria-label="Next month">${I('chevR')}</button></div>`;
+  let g = ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => `<div class="cw">${d}</div>`).join('') + '<div></div>'.repeat(ms.getDay());
+  for (let d = 1; d <= me.getDate(); d++) {
+    const dt = new Date(ms.getFullYear(), ms.getMonth(), d), k = iso(dt), es = ev[k] || [];
+    const dots = [...new Set(es.map(x => x.kind))].map(kd => `<i class="dt-${kd}"></i>`).join('');
+    g += `<button class="cd${k === UI.calDay ? ' on' : ''}${k === iso(today) ? ' today' : ''}" data-act="calDay" data-d="${k}" aria-label="${fmtDate(k)}${es.length ? ', ' + es.length + ' items' : ''}"><span class="n">${d}</span><span class="dots">${dots}</span>${proj[k] != null && !S.settings.hide ? `<em class="${proj[k] < 0 ? 'neg' : ''}">${compactRaw(proj[k])}</em>` : ''}</button>`;
+  }
+  h += card('', `<div class="calgrid">${g}</div><div class="legend" style="margin-top:10px"><span><i class="dt-pay" style="border-radius:50%"></i>Payday</span><span><i class="dt-bill" style="border-radius:50%"></i>Bill</span><span><i class="dt-card" style="border-radius:50%"></i>Card or loan payment</span><span><i class="dt-cardsub" style="border-radius:50%"></i>Charged to a card</span></div>`);
+  const dayEv = ev[UI.calDay] || [];
+  h += card(fmtDate(UI.calDay), (dayEv.length ? `<div class="list">${dayEv.map(x => `<div class="li"><span class="ic">${I(x.kind === 'pay' ? 'cash' : x.kind === 'bill' ? 'doc' : x.kind === 'card' ? 'card' : 'repeat')}</span><span class="main"><span class="t">${esc(x.label)}</span><span class="s">${x.kind === 'pay' ? 'Take-home pay' : x.kind === 'bill' ? 'Bill from checking' : x.kind === 'card' ? 'Paid from checking' : 'On your card, paid when the card is paid'}</span></span><span class="amt ${x.amt > 0 ? 'pos' : x.kind === 'cardsub' ? 'mute' : ''}">${x.amt > 0 ? money(x.amt, { sign: true }) : money(-(x.show || 0))}</span></div>`).join('')}</div>` : '<div class="sm mute">Nothing scheduled.</div>') + (proj[UI.calDay] != null ? `<div class="row sm" style="margin-top:10px"><span class="mute">Projected checking balance</span><b class="${proj[UI.calDay] < 0 ? 'neg' : ''}">${money(proj[UI.calDay])}</b></div>` : ''));
+  if (!checking.length) h += card('', '<div class="sm mute">Add a checking account in Invest to project your balance day by day.</div>');
+  else if (low) {
+    const pts = Object.keys(proj).sort();
+    AFTER.push(() => lineChart($('#c-cal'), { x: pts.map(k => pd(k).getDate()), series: [{ name: 'Checking', data: pts.map(k => proj[k]), color: 'var(--c1)' }], area: true, zero: true, xFmt: d => MONTHS[ms.getMonth()] + ' ' + d, label: 'Projected checking balance', h: 150 }));
+    h += card('Projected checking balance', `<div class="row"><div><div class="sm mute">Lowest point</div><div class="mid ${low.v < 0 ? 'neg' : low.v < 500 ? 'neg' : ''}">${money(low.v)}</div></div><div class="sm" style="text-align:right">${fmtShort(low.d)}<br><span class="mute">starting from ${money(start)} today</span></div></div>${low.v < 0 ? '<div class="sm neg" style="margin-top:8px">You\u2019d dip below zero. Move money in or shift a bill\u2019s date before then.</div>' : ''}<div class="chart" id="c-cal" style="margin-top:10px"></div><div class="xs mute" style="margin-top:6px">Uses your take-home per paycheck, bills that come out of checking, and card and loan payments on their due days (full balance for cards). Everyday spending isn\u2019t included.</div>`);
+  }
+  return h;
+}
+
+/* ---------- statement check ---------- */
+function linkedAsOf(d, date) {
+  const tx = S.txns.filter(t => t.acct === d.link && (!d.since || t.date > d.since) && t.date <= date);
+  return Math.round((num(d.startBal) + sum(tx.filter(t => t.type === 'expense').map(t => num(t.amount))) - sum(tx.filter(t => t.type === 'payment').map(t => num(t.amount)))) * 100) / 100;
+}
+function stmtForm(d) {
+  openForm({
+    title: 'Check ' + d.name, intro: 'Enter the numbers from your latest statement. Compound compares them with the running total of your imported transactions.', fields: [
+      { k: 'date', label: 'Statement closing date', type: 'date', v: (d.lastStmt || {}).date || '' },
+      { k: 'bal', label: 'New balance on the statement', type: 'money', v: '' }
+    ], saveLabel: 'Compare',
+    onSave: v => {
+      if (!v.date || v.bal === '') { toast('Enter the closing date and balance'); stmtForm(d); return; }
+      const app = linkedAsOf(d, v.date), diff = Math.round((num(v.bal) - app) * 100) / 100;
+      d.lastStmt = { date: v.date, bal: num(v.bal), diff }; save();
+      const near = S.txns.filter(t => t.acct === d.link && Math.abs((pd(t.date) - pd(v.date)) / 864e5) <= 4).sort((a, b) => a.date < b.date ? -1 : 1);
+      const after = S.txns.filter(t => t.acct === d.link && t.date > v.date);
+      const ok = Math.abs(diff) < .01;
+      openSheet(sheetHead('Statement check', 'Done') + `<section class="card hero"><div class="mute sm">${fmtDate(v.date)}</div><div class="big ${ok ? 'pos' : 'neg'}">${ok ? 'Matched' : 'Off by ' + money(Math.abs(diff), { force: true })}</div><div class="grid2" style="margin-top:12px">${stat('Statement', money(v.bal, { force: true }))}${stat('Compound', money(app, { force: true }))}</div></section>
+      ${ok ? '<p class="sm">Your imported transactions add up exactly to the statement.</p>' : `<section class="card" style="margin-top:12px"><h2><span>What might explain it</span></h2><div class="sm">${diff > 0 ? `The statement is <b>${money(diff, { force: true })} higher</b>. A charge is probably missing: import the dates around ${fmtShort(v.date)}, or check that your starting balance is right.` : `Compound is <b>${money(-diff, { force: true })} higher</b>. A charge may have posted after the closing date, or a credit or payment is missing.`}${after.length ? ` ${after.length} imported transaction${after.length === 1 ? ' is' : 's are'} dated after the closing date and aren\u2019t counted here.` : ''}</div>${near.length ? `<div class="xs mute" style="margin:10px 0 4px">Transactions near the closing date</div>${near.map(t => `<div class="row sm" style="padding:5px 0;border-top:1px solid var(--line)"><span>${fmtShort(t.date)} ${esc(t.note || '')}</span><b>${t.type === 'payment' ? money(-num(t.amount), { force: true }) : money(num(t.amount), { force: true })}</b></div>`).join('')}` : ''}</section>`}
+      <div class="stack" style="gap:8px;margin-top:12px"><button class="btn ${ok ? 'ghost' : ''} block" data-act="stmtAnchor" data-id="${d.id}" data-bal="${num(v.bal)}" data-date="${v.date}">Use this statement as the starting point</button></div><div class="xs mute" style="margin-top:6px">That sets the starting balance to ${money(v.bal, { force: true })} and counts only transactions after ${fmtShort(v.date)}, so the running total matches your statement from here on.</div>`);
+    }
+  });
+}
+
+/* ---------- rules ---------- */
+function ruleFor(note) { const n = String(note || '').toLowerCase(); return rules().find(r => r.text && n.includes(r.text.toLowerCase()) && S.cats.some(c => c.id === r.cat)); }
+function rulesHtml() {
+  return sheetHead('Auto-categorize rules', 'Done') + `<p class="sm mute" style="margin:-4px 0 12px">Rules run first on every import. If a description contains the text, the transaction goes to that category.</p>` +
+    (rules().length ? `<div class="list">${rules().map(r => `<button class="li" data-act="editRule" data-id="${r.id}"><span class="ic">${I(catById(r.cat).icon)}</span><span class="main"><span class="t">Contains \u201c${esc(r.text)}\u201d</span><span class="s">Goes to ${esc(catById(r.cat).name)}</span></span></button>`).join('')}</div>` : '<div class="empty">No rules yet. Example: anything containing UBER goes to Transportation.</div>') +
+    `<div class="stack" style="gap:8px;margin-top:12px"><button class="btn block" data-act="addRule">Add rule</button>${rules().length ? '<button class="btn ghost block" data-act="applyRules">Apply rules to existing transactions</button>' : ''}</div>`;
+}
+function openRules() { const ov = openSheet(rulesHtml()); ov._rules = true; }
+function refreshRules() { $$('#sheets .ov').forEach(ov => { if (ov._rules) ov.querySelector('.sheet').innerHTML = '<div class="grab"></div>' + rulesHtml(); }); }
+function ruleForm(r, pre = {}) {
+  const isNew = !r; r = r || { text: pre.text || '', cat: pre.cat || uncategorized() };
+  openForm({
+    title: isNew ? 'Add rule' : 'Edit rule', focus: isNew, fields: [
+      { k: 'text', label: 'If the description contains', type: 'text', v: r.text, ph: 'e.g. UBER' },
+      { k: 'cat', label: 'Put it in', type: 'select', opts: catOpts(), v: r.cat }
+    ], saveLabel: isNew ? 'Add rule' : 'Save rule',
+    onDelete: isNew ? null : () => { S.rules = rules().filter(x => x.id !== r.id); save(); refreshRules(); },
+    onSave: v => { if (!v.text) { toast('Enter some text to match'); return; } if (isNew) rules().push({ id: uid(), text: v.text, cat: v.cat }); else Object.assign(r, { text: v.text, cat: v.cat }); save(); refreshRules(); toast('Rule saved'); }
+  });
+}
+
+/* ---------- card alerts ---------- */
+function nextDueDay(day) { const t = stripTime(new Date()); let d = new Date(t.getFullYear(), t.getMonth(), Math.min(day, daysIn(t))); if (d < t) { const n = new Date(t.getFullYear(), t.getMonth() + 1, 1); d = new Date(n.getFullYear(), n.getMonth(), Math.min(day, daysIn(n))); } return d; }
+function extraAlerts() {
+  const out = [], t = stripTime(new Date());
+  S.debts.forEach(d => {
+    if (num(d.dueDay) && num(d.balance) > 0) { const due = nextDueDay(num(d.dueDay)), n = Math.round((due - t) / 864e5); if (n <= 5) out.push({ t: `${d.name} payment is due ${n === 0 ? 'today' : n === 1 ? 'tomorrow' : 'in ' + n + ' days'} (${fmtShort(due)}). ${d.type === 'cc' ? 'Balance' : 'Minimum'} ${money(d.type === 'cc' ? d.balance : d.min)}.`, act: 'goDebt' }); }
+    if (d.type === 'cc' && num(d.limit) > 0) { const u = num(d.balance) / num(d.limit); if (u > .3) out.push({ t: `${d.name} is using ${pct(u, 0)} of its limit. Keeping it under 30% helps your credit score.`, act: 'goDebt' }); }
+  });
+  const subs = detectSubs(); if (subs.length) out.push({ t: `Found ${subs.length} repeating charge${subs.length === 1 ? '' : 's'} in your imports that look like subscriptions.`, info: true, act: 'goBills' });
+  if (t.getDate() <= 7 && S.txns.some(x => inRange(x.date, monthRange(-1)))) out.push({ t: `Your ${MONTHS[pd(monthRange(-1).s).getMonth()]} report is ready.`, info: true, act: 'report' });
+  return out;
+}
+
+/* ---------- actions ---------- */
+Object.assign(ACT, {
+  undo: () => undoLast(),
+  backup: () => { closeAll(); backupForm(); },
+  restore: () => restoreForm(),
+  applyUpdate: () => applyUpdate(),
+  dismissUpd: () => { $('#upd').hidden = true; },
+  report: d => openReport(d.m != null && d.m !== '' ? +d.m : -1),
+  calPrev: () => { UI.calOff = (UI.calOff || 0) - 1; render(); },
+  calNext: () => { UI.calOff = (UI.calOff || 0) + 1; render(); },
+  calNow: () => { UI.calOff = 0; render(); },
+  calDay: d => { UI.calDay = d.d; render(); },
+  subAdd: d => {
+    const s = detectSubs().find(x => x.key === d.k); if (!s) return;
+    checkpoint();
+    S.bills.push({ id: uid(), name: s.name, amount: s.amount, cat: s.cat, freq: s.freq, day: s.day, month: s.month, anchor: s.lastDate, sub: true, noLog: s.card, start: todayISO(), last: todayISO(), detected: true });
+    commit(); offerUndo(`${s.name} added to subscriptions`);
+  },
+  subIgnore: d => { checkpoint(); S.settings.subDismiss = [...(S.settings.subDismiss || []), d.k]; commit(); offerUndo('Hidden'); },
+  sugApply: d => { const c = S.cats.find(x => x.id === d.id); if (!c) return; checkpoint(); c.budget = +d.v; commit(); offerUndo(`${c.name} budget set to ${money(+d.v, { force: true })}`); },
+  sugApplyAll: () => { checkpoint(); budgetSuggestions().list.forEach(x => { x.c.budget = x.sug; }); commit(); offerUndo('Budgets updated'); },
+  splitTx: d => { const t = S.txns.find(x => x.id === d.id); if (!t) return; closeSheet(); splitSheet(t); },
+  splitSave: d => {
+    const t = S.txns.find(x => x.id === d.id), ov = topSheet(); if (!t || !ov) return;
+    const parts = $$('.splitrow', ov).map(r => ({ cat: $('.sp-c', r).value, amount: Math.round(num($('.sp-a', r).value) * 100) / 100 })).filter(p => p.amount > 0);
+    if (parts.some(p => !p.cat)) { toast('Pick a category for each amount'); return; }
+    if (Math.abs(splitLeft()) >= .005) { toast('The split has to add up to the full amount'); return; }
+    checkpoint();
+    if (parts.length < 2) { delete t.splits; t.cat = parts[0] ? parts[0].cat : t.cat; } else { t.splits = parts; t.cat = parts.slice().sort((a, b) => b.amount - a.amount)[0].cat; }
+    closeSheet(); commit(); offerUndo(parts.length < 2 ? 'Saved without a split' : `Split across ${parts.length} categories`);
+  },
+  splitClear: d => { const t = S.txns.find(x => x.id === d.id); if (!t) return; checkpoint(); delete t.splits; closeSheet(); commit(); offerUndo('Split removed'); },
+  stmtCheck: d => { const x = S.debts.find(y => y.id === d.id); if (x) stmtForm(x); },
+  stmtAnchor: d => { const x = S.debts.find(y => y.id === d.id); if (!x) return; checkpoint(); x.startBal = +d.bal; x.since = d.date; closeAll(); commit(); offerUndo(`${x.name} now starts from your ${fmtShort(d.date)} statement`); },
+  rules: () => openRules(),
+  addRule: () => ruleForm(),
+  editRule: d => { const r = rules().find(x => x.id === d.id); if (r) ruleForm(r); },
+  applyRules: () => {
+    checkpoint(); let n = 0;
+    S.txns.forEach(t => { if (t.type !== 'expense' || t.splits) return; const r = ruleFor(t.note); if (r && t.cat !== r.cat) { t.cat = r.cat; n++; } });
+    closeAll(); commit(); if (n) offerUndo(`Recategorized ${n} transaction${n === 1 ? '' : 's'}`); else { UNDO = null; toast('Everything already matches your rules'); }
+  },
+  makeRule: d => { const t = S.txns.find(x => x.id === d.id); if (!t) return; closeSheet(); ruleForm(null, { text: prettyName(t.note).split(' ')[0].toUpperCase(), cat: t.cat }); }
+});
+Object.assign(INP, { splitAmt: () => splitLeft() });
+
+/* ---------- boot hooks ---------- */
+function afterInit() {
+  rules();
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { }
+  if (!$('#upd')) document.body.insertAdjacentHTML('beforeend', `<div id="upd" hidden role="status"><span>A new version of Compound is ready.</span><button data-act="applyUpdate">Update</button><button data-act="dismissUpd" aria-label="Not now" class="x">\u2715</button></div>`);
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => { });
+  setTimeout(checkUpdate, 2500);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkUpdate(); });
+  window.addEventListener('offline', () => toast('You\u2019re offline. Everything still works. Live prices update when you\u2019re back.'));
+}
 
 </script>
 </body>
