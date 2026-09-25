@@ -29,7 +29,8 @@ button:disabled{opacity:.35}
 .top-act{display:flex;gap:7px;align-items:center}
 .ib{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--surf);box-shadow:var(--shadow);flex:none;color:var(--text)}
 .ib svg{width:18px;height:18px}
-svg.i{stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+svg.i{stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;width:20px;height:20px;flex:none}
+.btn svg.i,.chip svg.i{width:18px;height:18px}
 .stack{display:flex;flex-direction:column;gap:var(--gap)}
 .card{background:var(--surf);border-radius:var(--r);padding:14px;box-shadow:var(--shadow)}
 .card.hero{border-radius:var(--r-lg);padding:18px}
@@ -277,6 +278,15 @@ body.practicing #fab{bottom:calc(112px + env(safe-area-inset-bottom))}
 .coach-hole{position:fixed;border-radius:16px;box-shadow:0 0 0 9999px rgba(3,8,18,.72);transition:all .25s;pointer-events:none}
 .coach-tip{position:fixed;left:16px;right:16px;max-width:420px;margin:0 auto;background:var(--surf);border-radius:18px;padding:14px 16px;box-shadow:0 16px 40px rgba(0,0,0,.45)}
 @media (prefers-reduced-motion:reduce){.confetti{display:none}}
+.pctin{display:flex;align-items:center;gap:4px}
+.pctin input{width:64px;text-align:right;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surf2);font-size:16px;color:var(--text)}
+.paynext{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 2px}
+.paynext .tag{background:var(--surf2);color:var(--text)}
+.paynext .tag.est{color:var(--mute);border:1px dashed var(--line);background:transparent}
+.paydates{display:flex;flex-wrap:wrap;gap:6px}
+.pdchip{display:inline-flex;align-items:center;gap:6px;background:var(--surf2);border-radius:999px;padding:5px 6px 5px 12px;font-size:13px;font-weight:600}
+.pdchip.past{opacity:.55}
+.pdchip button{width:22px;height:22px;border-radius:50%;background:var(--line);font-size:11px;display:grid;place-items:center}
 </style>
 </head>
 <body>
@@ -1148,7 +1158,7 @@ function scrInvest() {
 }
 function acctSheetHtml(a) {
   const t = typeOf(a), v = acctValue(a), c = acctCost(a), g = v - c;
-  const hs = (a.holdings || []).map(x => { const val = num(x.shares) * num(x.price), cb = num(x.shares) * (x.cost === '' || x.cost == null ? num(x.price) : num(x.cost)); return `<button class="li" data-act="editHolding" data-a="${a.id}" data-h="${x.id}"><span class="ic" style="font-size:11px;font-weight:700;color:var(--text)">${esc((x.ticker || '?').slice(0, 5))}</span><span class="main"><span class="t">${esc(x.ticker || 'Holding')}</span><span class="s">${num(x.shares)} shares at ${money(x.price)}${isLive(x) ? `, <span class="${num(x.dayPct) < 0 ? 'neg' : 'pos'}">${num(x.dayPct) >= 0 ? '+' : ''}${num(x.dayPct).toFixed(2)}% today</span>` : x.manualPrice ? ', price set by you' : ''}</span></span><span class="amt">${money(val)}<div class="xs ${val - cb < 0 ? 'neg' : 'pos'}">${money(val - cb, { sign: true })}</div></span></button>`; }).join('');
+  const hs = (a.holdings || []).map(x => { const val = num(x.shares) * num(x.price), cb = num(x.shares) * (x.cost === '' || x.cost == null ? num(x.price) : num(x.cost)); return `<button class="li" data-act="editHolding" data-a="${a.id}" data-h="${x.id}"><span class="ic" style="font-size:11px;font-weight:700;color:var(--text)">${esc((x.ticker || '?').slice(0, 5))}</span><span class="main"><span class="t">${esc(x.ticker || 'Holding')}</span><span class="s">${+num(x.shares).toFixed(4)} shares at ${money(x.price)}${isLive(x) ? `, <span class="${num(x.dayPct) < 0 ? 'neg' : 'pos'}">${num(x.dayPct) >= 0 ? '+' : ''}${num(x.dayPct).toFixed(2)}% today</span>` : x.manualPrice ? ', price set by you' : ''}</span></span><span class="amt">${money(val)}<div class="xs ${val - cb < 0 ? 'neg' : 'pos'}">${money(val - cb, { sign: true })}</div></span></button>`; }).join('');
   const vest = a.type === 'match' ? `<div class="grid2" style="margin-top:10px">${stat('Vested', pct(vestedPct(a), 0))}${stat('Vested value', money(v * vestedPct(a)))}</div>` : '';
   return sheetHead(a.name, 'Done') + `<div class="row"><span class="tag">${t.label}</span><span class="tag">${t.tax}</span></div><div class="big" style="margin-top:10px">${money(v)}</div><div class="sm ${g < 0 ? 'neg' : 'pos'}">${money(g, { sign: true })} gain on holdings</div>${dayChange([a]) ? `<div class="sm">${dayLine(dayChange([a]), 'today')}</div>` : ''}<div class="sm ${daysAgo(a.updated) > 7 ? 'neg' : 'mute'}" style="margin-top:2px">${agoText(a.updated)}</div>${vest}
   <section class="card" style="margin-top:14px"><h2><span>Holdings</span></h2><div class="list"><button class="li" data-act="editCash" data-a="${a.id}"><span class="ic">${I('cash')}</span><span class="main"><span class="t">${a.type === 'hsa' ? 'Cash (not invested)' : 'Cash'}</span><span class="s">Tap to edit</span></span><span class="amt">${money(a.cash)}</span></button>${hs}</div><button class="btn ghost block" style="margin-top:10px" data-act="addHolding" data-a="${a.id}">Add holding</button></section>
@@ -1215,7 +1225,7 @@ function contribForm(c, acctId) {
       let made = '';
       if (v.acctOther) { const ex = S.accounts.find(x => x.name.toLowerCase() === v.acct.toLowerCase()); if (ex) v.acct = ex.id; else { const na = { id: uid(), type: 'brokerage', name: v.acct, cash: 0, holdings: [], updated: todayISO() }; S.accounts.push(na); v.acct = na.id; made = na.name; } }
       v.lim = v.kind === 'employer' ? false : !!v.lim;
-      if (isNew) { S.contribs.push({ id: uid(), acct: v.acct, amount: v.amount, date: v.date || todayISO(), kind: v.kind, lim: v.lim }); if (v.add) { const a = S.accounts.find(x => x.id === v.acct); if (a) { a.cash = num(a.cash) + v.amount; a.updated = todayISO(); } } }
+      if (isNew) { S.contribs.push({ id: uid(), acct: v.acct, amount: v.amount, date: v.date || todayISO(), kind: v.kind, lim: v.lim }); if (v.add) { const a = S.accounts.find(x => x.id === v.acct); if (a) investDeposit(a, v.amount); } }
       else Object.assign(c, { acct: v.acct, amount: v.amount, date: v.date, kind: v.kind, lim: v.lim });
       commit(); toast(made ? `Added ${made} as a new account. Change its type in Investing.` : isNew ? 'Contribution added' : 'Contribution saved');
     }
@@ -1237,9 +1247,10 @@ function logPaycheckForm() {
     onSave: v => {
       const missing = [];
       if (v.net > 0) S.txns.push({ id: uid(), date: v.date, amount: v.net, type: 'income', src: 'salary', note: 'Paycheck' });
-      const put = (types, amt, kind, label) => { if (!(amt > 0)) return; const a = types.map(t => S.accounts.find(x => x.type === t)).find(Boolean); if (!a) { missing.push(label); return; } S.contribs.push({ id: uid(), date: v.date, acct: a.id, amount: amt, kind }); if (v.add) { a.cash = num(a.cash) + amt; a.updated = todayISO(); } };
+      const autoSkip = [];
+      const put = (types, amt, kind, label) => { if (!(amt > 0)) return; const a = types.map(t => S.accounts.find(x => x.type === t)).find(Boolean); if (!a) { missing.push(label); return; } if (payrollAuto(types, kind)) { autoSkip.push(label); return; } S.contribs.push({ id: uid(), date: v.date, acct: a.id, amount: amt, kind }); if (v.add) investDeposit(a, amt); };
       put(['k401'], v.k, 'you', '401(k)'); put(['roth401k', 'k401'], v.r, 'you', 'Roth 401(k)'); put(['match', 'k401'], v.m, 'employer', 'employer match'); put(['hsa'], v.h, 'you', 'HSA');
-      commit(); toast(missing.length ? 'Paycheck logged. Add a ' + missing.join(', ') + ' account to track the rest.' : 'Paycheck logged');
+      commit(); toast((missing.length ? 'Paycheck logged. Add a ' + missing.join(', ') + ' account to track the rest.' : 'Paycheck logged') + (autoSkip.length ? `${missing.length ? '' : '.'} ${autoSkip.join(' and ')} ${autoSkip.length === 1 ? 'is' : 'are'} already added automatically.` : ''));
     }
   });
 }
@@ -1411,7 +1422,7 @@ function budPay() {
   const sel = (path, label, opts) => `<div class="fld"><label for="b-${path}">${label}</label><select id="b-${path}" data-bind="${path}" data-t="str">${opts.map(([v, l]) => `<option value="${v}" ${String(getPath(S, path)) === String(v) ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>`;
   let h = `<section class="card hero" id="payres"></section>`;
   h += card('Raise simulator', `<div class="row sm"><span>If your salary went up by</span><b id="raiseLbl">${UI.raise}%</b></div><input type="range" min="0" max="30" step="1" value="${UI.raise}" data-inp="raise" aria-label="Raise percent"><div class="sm" id="raiseRes" style="margin-top:6px"></div>`);
-  h += card('Your pay', `<div class="grid2">${inp('pay.salary', 'Annual salary ($)')}${sel('pay.freq', 'Paid', [[26, 'Every 2 weeks'], [24, 'Twice a month'], [52, 'Weekly'], [12, 'Monthly']])}${sel('profile.state', 'State', Object.entries(STATES).map(([k, v]) => [k, v[0]]))}${sel('profile.filing', 'Filing status', [['single', 'Single'], ['mfj', 'Married filing jointly'], ['hoh', 'Head of household'], ['mfs', 'Married filing separately']])}</div><div class="fld"><label for="b-anchor">A recent payday</label><input id="b-anchor" type="date" data-bind="pay.anchor" data-t="str" value="${esc(p.anchor)}"><div class="hint">Used to line up pay periods when you budget by paycheck.</div></div>`);
+  h += card('Your pay', `<div class="grid2"><div style="grid-column:1/-1">${inp('pay.salary', 'Annual salary ($)')}</div>${payFreqHtml()}${sel('profile.state', 'State', Object.entries(STATES).map(([k, v]) => [k, v[0]]))}${sel('profile.filing', 'Filing status', [['single', 'Single'], ['mfj', 'Married filing jointly'], ['hoh', 'Head of household'], ['mfs', 'Married filing separately']])}</div>${payMode() === 'standard' ? `<div class="fld"><label for="b-anchor">A recent payday</label><input id="b-anchor" type="date" data-bind="pay.anchor" data-t="str" value="${esc(p.anchor)}"><div class="hint">Used to line up pay periods when you budget by paycheck.</div></div>` : ''}<div id="paySched">${payScheduleHtml()}</div>`);
   h += card('Deductions', `<div class="grid2">${inp('pay.k401', '401(k) %')}${inp('pay.roth401', 'Roth 401(k) %')}${inp('pay.matchPct', 'Employer matches %')}${inp('pay.matchUpTo', 'Up to % of pay')}${inp('pay.hsa', 'HSA per paycheck ($)')}${sel('pay.hsaCover', 'HSA coverage', [['self', 'Self only'], ['family', 'Family']])}${inp('pay.health', 'Health premiums per paycheck ($)')}${inp('pay.otherPre', 'Other pre-tax per paycheck ($)')}</div>${inp('pay.ira', 'Roth IRA per month ($)')}<div class="xs mute">A match of 100% up to 5% means your employer adds a dollar for each dollar you put in, up to 5% of your salary.</div>`);
   h += `<div class="xs mute" style="padding:0 4px">Federal brackets, FICA and contribution limits are 2026 figures. State taxes are estimates using simplified brackets and don\u2019t include local or city taxes. Check a pay stub to confirm.</div>`;
   AFTER.push(renderPayRes); LIVE = renderPayRes;
@@ -1859,7 +1870,7 @@ function onboard() {
   const step2 = () => openForm({
     title: 'Your paycheck', lock: true, noCancel: true, fields: [
       { k: 'salary', label: 'Annual salary before taxes', type: 'money', v: S.pay.salary },
-      { k: 'freq', label: 'How often you\u2019re paid', type: 'select', opts: [[26, 'Every 2 weeks'], [24, 'Twice a month'], [52, 'Weekly'], [12, 'Monthly']], v: S.pay.freq },
+      { k: 'freq', label: 'How often you\u2019re paid', type: 'select', opts: PAY_OPTS, v: payFreqValue(), hint: 'If your two paydays move around, pick \u201cdates vary\u201d and add them under Plan, Tools, Paycheck.' },
       { k: 'anchor', label: 'Your most recent payday', type: 'date', v: S.pay.anchor },
       { k: 'k401', label: '401(k) contribution', type: 'pct', v: S.pay.k401 },
       { k: 'roth401', label: 'Roth 401(k) contribution', type: 'pct', v: S.pay.roth401, hint: 'Leave at 0 if your plan doesn\u2019t have a Roth option.' },
@@ -1868,7 +1879,7 @@ function onboard() {
       { k: 'hsa', label: 'HSA contribution per paycheck', type: 'money', v: S.pay.hsa },
       { k: 'ira', label: 'Roth IRA contribution per month', type: 'money', v: S.pay.ira }
     ], saveLabel: 'Continue',
-    onSave: v => { Object.assign(S.pay, { salary: num(v.salary), freq: +v.freq, anchor: v.anchor || todayISO(), k401: num(v.k401), roth401: num(v.roth401), matchPct: num(v.matchPct), matchUpTo: num(v.matchUpTo), hsa: num(v.hsa), ira: num(v.ira) }); step3(); }
+    onSave: v => { Object.assign(S.pay, { salary: num(v.salary), ...payFreqFields(v.freq, v.anchor || todayISO()), anchor: v.anchor || todayISO(), k401: num(v.k401), roth401: num(v.roth401), matchPct: num(v.matchPct), matchUpTo: num(v.matchUpTo), hsa: num(v.hsa), ira: num(v.ira) }); step3(); }
   });
   const step3 = () => openForm({
     title: 'Your balances', lock: true, noCancel: true, intro: 'Enter today\u2019s totals. You can break them into individual holdings later in Investing. Leave any at 0 you don\u2019t have.', fields: [
@@ -2042,7 +2053,7 @@ async function init() {
 }
 init();
 /* ================= v2 features ================= */
-const APP_VERSION = '2026.09.26-4';
+const APP_VERSION = '2026.09.26-7';
 const rules = () => S.rules || (S.rules = []);
 
 /* ---------- undo ---------- */
@@ -2587,7 +2598,7 @@ function bonusResult(v) {
 function bonusRecord() {
   const B = UI.bonus; if (!B) return; checkpoint(); const today = todayISO(), miss = [];
   S.txns.push({ id: uid(), date: today, amount: B.net, type: 'income', src: B.kind === 'refund' ? 'other' : 'bonus', note: B.kind === 'refund' ? 'Tax refund' : B.kind === 'bonus' ? 'Bonus' : 'Windfall' });
-  const acct = t => S.accounts.find(a => a.type === t), bump = (a, v) => { a.cash = num(a.cash) + v; a.updated = today; };
+  const acct = t => S.accounts.find(a => a.type === t), bump = (a, v) => { investDeposit(a, v); };
   B.plan.forEach(p => {
     if (p.kind === 'debt') { const d = S.debts.find(x => x.id === p.ref); if (!d) return; if (d.link) S.txns.push({ id: uid(), date: today, amount: p.v, type: 'payment', acct: d.link, note: 'Extra payment' }); else d.balance = Math.max(0, num(d.balance) - p.v); }
     else if (p.kind === 'ef') { const a = S.accounts.find(x => x.ef) || acct('savings'); a ? bump(a, p.v) : miss.push('savings'); }
@@ -3233,6 +3244,259 @@ afterInit = function () {
   if (S.onboarded && !S.practice) rpLoad().then(l => { if (!l.length || Date.now() - l[0].at > 864e5) addRestorePoint('Daily snapshot', JSON.stringify(S)); });
   save(); render();
 };
+/* ================= automatic investing ================= */
+const PAYROLL_TYPES = ['k401', 'roth401k', 'hsa'];
+const fmtShares = x => (Math.abs(x) >= 1 ? x.toFixed(3) : x.toFixed(4)).replace(/\.?0+$/, '');
+
+/* Put a deposit into an account: buys holdings by the account's split, rest stays cash. */
+function investDeposit(a, amt) {
+  amt = Math.round(num(amt) * 100) / 100; if (!a || !(amt > 0)) return '';
+  a.updated = todayISO();
+  const al = a.auto && a.auto.on ? (a.auto.alloc || {}) : null;
+  const hs = al ? (a.holdings || []).filter(h => num(al[h.id]) > 0 && num(h.price) > 0) : [];
+  if (!hs.length) { a.cash = Math.round((num(a.cash) + amt) * 100) / 100; return ''; }
+  let used = 0; const bought = [];
+  hs.forEach(h => {
+    const part = Math.round(amt * num(al[h.id])) / 100; if (part <= 0) return;
+    const add = part / num(h.price), oldSh = num(h.shares), oldCost = h.cost === '' || h.cost == null ? num(h.price) : num(h.cost);
+    h.shares = Math.round((oldSh + add) * 1e6) / 1e6;
+    h.cost = Math.round((oldSh * oldCost + part) / h.shares * 1e4) / 1e4;
+    used += part; bought.push(`${fmtShares(add)} ${h.ticker}`);
+  });
+  const rest = Math.round((amt - used) * 100) / 100; if (rest > 0) a.cash = Math.round((num(a.cash) + rest) * 100) / 100;
+  return bought.join(', ');
+}
+
+/* Is this paycheck contribution already handled by an automatic payroll deposit? */
+function payrollAuto(types, kind) {
+  if (kind === 'employer') return S.accounts.some(x => x.recur && x.recur.on && x.recur.match);
+  const a = types.map(t => S.accounts.find(x => x.type === t)).find(Boolean);
+  return !!(a && a.recur && a.recur.on && a.recur.fromPay);
+}
+
+function recurAmounts(a) {
+  const c = calcPay(), per = x => c.n ? Math.round(x / c.n * 100) / 100 : 0, r = a.recur || {};
+  let you = num(r.amount);
+  if (r.fromPay) you = a.type === 'hsa' ? per(c.h) : a.type === 'roth401k' ? per(c.r) : per(c.k + (S.accounts.some(x => x.type === 'roth401k') ? 0 : c.r));
+  const match = r.match && ['k401', 'roth401k'].includes(a.type) ? per(c.match) : 0;
+  return { you, match };
+}
+function recurDates(r, s, e) {
+  if (r.freq === 'payday') return paydaysBetween(s, e);
+  const out = [];
+  for (let d = new Date(s); d <= e; d = addDays(d, 1)) {
+    if (r.freq === 'monthly' && d.getDate() === Math.min(num(r.day) || 1, daysIn(d))) out.push(new Date(d));
+    if (r.freq === 'semimonthly' && (d.getDate() === 15 || d.getDate() === daysIn(d))) out.push(new Date(d));
+  }
+  return out;
+}
+function nextRecur(a) { const r = a.recur; if (!r || !r.on) return null; const t = addDays(stripTime(new Date()), 1); return recurDates(r, t, addDays(t, 45))[0] || null; }
+
+function runAutoDeposits() {
+  const today = stripTime(new Date()); let n = 0, total = 0; const matched = new Set();
+  S.accounts.forEach(a => {
+    const r = a.recur; if (!r || !r.on) return;
+    const start = r.last ? addDays(pd(r.last), 1) : pd(r.start || todayISO());
+    if (start <= today) recurDates(r, start, today).slice(-60).forEach(d => {
+      const { you, match } = recurAmounts(a), day = iso(d);
+      if (you > 0) { S.contribs.push({ id: uid(), date: day, acct: a.id, amount: you, kind: 'you', auto: true }); investDeposit(a, you); n++; total += you; }
+      if (match > 0 && !matched.has(day)) { matched.add(day); const ma = S.accounts.find(x => x.type === 'match') || a; S.contribs.push({ id: uid(), date: day, acct: ma.id, amount: match, kind: 'employer', auto: true }); investDeposit(ma, match); total += match; }
+    });
+    r.last = iso(today);
+  });
+  return { n, total };
+}
+
+/* ---------- account sheet section ---------- */
+function autoSummaryHtml(a) {
+  if (!TYPES[a.type] || !TYPES[a.type].inv) return '';
+  const al = a.auto && a.auto.on ? a.auto.alloc || {} : null, hs = a.holdings || [];
+  const split = al ? hs.filter(h => num(al[h.id]) > 0).map(h => `${esc(h.ticker)} ${num(al[h.id])}%`) : [];
+  const cashPct = al ? 100 - sum(hs.map(h => num(al[h.id]))) : 0;
+  const r = a.recur, nx = nextRecur(a), amt = r && r.on ? recurAmounts(a) : null;
+  const freqTxt = r ? { payday: 'each payday', monthly: `on the ${ordinal(num(r.day) || 1)} of each month`, semimonthly: 'on the 15th and last day of each month' }[r.freq] : '';
+  return `<section class="card" style="margin-top:14px"><h2><span>Automatic investing</span>${al || (r && r.on) ? '<span class="tag" style="color:var(--pos)">On</span>' : ''}</h2>
+  <div class="row sm" style="align-items:flex-start"><span class="mute">New money buys</span><span style="text-align:right">${split.length ? split.join(', ') + (cashPct > 0 ? `, cash ${cashPct}%` : '') : 'Nothing, it stays as cash'}</span></div>
+  <div class="row sm" style="margin-top:6px;align-items:flex-start"><span class="mute">Deposits</span><span style="text-align:right">${r && r.on ? `${money(amt.you)}${amt.match ? ` + ${money(amt.match)} match` : ''} ${freqTxt}${nx ? `<br><span class="mute">Next: ${fmtShort(nx)}</span>` : ''}` : 'Added by hand'}</span></div>
+  <button class="btn ghost block" style="margin-top:12px" data-act="aiOpen" data-a="${a.id}">${al || (r && r.on) ? 'Change' : 'Set up automatic investing'}</button></section>`;
+}
+const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
+const _acctSheetHtml = acctSheetHtml;
+acctSheetHtml = function (a) {
+  const h = _acctSheetHtml(a), extra = autoSummaryHtml(a), mark = 'Add holding</button></section>';
+  return extra && h.includes(mark) ? h.replace(mark, mark + extra) : h + extra;
+};
+
+/* ---------- setup sheet ---------- */
+function autoSheet(a) {
+  const hs = (a.holdings || []).filter(h => h.ticker), al = (a.auto && a.auto.alloc) || {}, tot = sum(hs.map(h => num(h.shares) * num(h.price)));
+  const def = h => al[h.id] != null ? num(al[h.id]) : tot ? Math.round(num(h.shares) * num(h.price) / tot * 100) : Math.floor(100 / Math.max(1, hs.length));
+  const payroll = PAYROLL_TYPES.includes(a.type), r = a.recur || { on: false, freq: payroll ? 'payday' : 'monthly', amount: '', day: 5, fromPay: payroll, match: a.type === 'k401' };
+  const c = calcPay(), per = x => c.n ? x / c.n : 0;
+  const payAmt = a.type === 'hsa' ? per(c.h) : a.type === 'roth401k' ? per(c.r) : per(c.k + (S.accounts.some(x => x.type === 'roth401k') ? 0 : c.r));
+  const tg = (id, label, on, hint = '') => `<div class="tgl"><label for="${id}">${label}${hint ? `<div class="xs mute">${hint}</div>` : ''}</label><input type="checkbox" class="sw" id="${id}" ${on ? 'checked' : ''}></div>`;
+  const html = sheetHead('Automatic investing') + `<div class="sm mute" style="margin:-4px 0 12px">${esc(a.name)}</div>
+  <section class="card"><h2><span>1. How new money is invested</span></h2>
+  ${hs.length ? tg('ai-on', 'Invest deposits automatically', a.auto ? a.auto.on : true, 'Each deposit buys shares at the current price, split like this.') + `<div id="aiRows">${hs.map(h => `<div class="row ai-row" style="margin:8px 0"><span><b>${esc(h.ticker)}</b> <span class="xs mute">${money(h.price)}</span></span><span class="pctin"><input class="ai-p" data-h="${h.id}" type="text" inputmode="decimal" value="${def(h)}" data-inp="aiPct" aria-label="${esc(h.ticker)} percent"><span>%</span></span></div>`).join('')}</div><div class="row sm" style="margin-top:6px"><span class="mute">Total</span><b id="aiTot"></b></div><div class="xs mute" style="margin-top:4px">Anything under 100% stays as cash in the account.</div>` : '<div class="sm mute">Add your holdings first (like VTI or FXAIX), then come back to choose how new money is split.</div>'}</section>
+  <section class="card" style="margin-top:12px"><h2><span>2. Automatic deposits</span></h2>
+  ${tg('rc-on', 'Add deposits automatically', r.on, 'Recorded on schedule, so you don\u2019t have to log them.')}
+  <div class="fld"><label for="rc-freq">How often</label><select id="rc-freq">${[['payday', 'Each payday'], ['semimonthly', 'Twice a month (15th and last day)'], ['monthly', 'Once a month']].map(([v, l]) => `<option value="${v}" ${r.freq === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+  <div class="fld" id="rc-dayf"><label for="rc-day">Day of the month</label><input id="rc-day" type="text" inputmode="numeric" value="${num(r.day) || 5}"></div>
+  ${payroll ? tg('rc-pay', `Use my paycheck contribution (${money(payAmt, { force: true })})`, r.fromPay, 'Follows your Paycheck settings, so raises and % changes carry over.') : ''}
+  <div class="fld" id="rc-amtf"><label for="rc-amt">Amount each time ($)</label><input id="rc-amt" type="text" inputmode="decimal" value="${r.amount === '' ? '' : num(r.amount)}" placeholder="e.g. 300"></div>
+  ${['k401', 'roth401k'].includes(a.type) && c.match > 0 ? tg('rc-match', `Add the employer match too (${money(per(c.match), { force: true })})`, r.match, S.accounts.some(x => x.type === 'match') ? 'Goes into your Employer match account.' : 'Goes into this account.') : ''}
+  <div class="xs mute">Deposits start with the next scheduled date. If you also tap Log paycheck, Compound won\u2019t double-count contributions that are automatic here.</div></section>
+  <button class="btn block" style="margin-top:12px" data-act="aiSave" data-a="${a.id}">Save</button>`;
+  const ov = openSheet(html); ov._ai = a.id;
+  const sync = () => {
+    const f = $('#rc-freq', ov).value, pay = $('#rc-pay', ov);
+    $('#rc-dayf', ov).style.display = f === 'monthly' ? '' : 'none';
+    $('#rc-amtf', ov).style.display = pay && pay.checked ? 'none' : '';
+    aiTotal();
+  };
+  ov.addEventListener('change', sync); sync();
+}
+function aiTotal() {
+  const ov = topSheet(); if (!ov || !ov._ai) return 0;
+  const t = sum($$('.ai-p', ov).map(i => num(i.value))), el = $('#aiTot', ov);
+  if (el) { el.textContent = t + '%'; el.className = t > 100 ? 'neg' : t === 100 ? 'pos' : ''; }
+  return t;
+}
+function aiSave(id) {
+  const a = S.accounts.find(x => x.id === id), ov = topSheet(); if (!a || !ov) return;
+  if (aiTotal() > 100) { toast('The split adds up to more than 100%'); return; }
+  const onEl = $('#ai-on', ov), alloc = {};
+  $$('.ai-p', ov).forEach(i => { const v = clamp(num(i.value), 0, 100); if (v > 0) alloc[i.dataset.h] = v; });
+  const rcOn = $('#rc-on', ov).checked, pay = $('#rc-pay', ov), match = $('#rc-match', ov);
+  const rec = { on: rcOn, freq: $('#rc-freq', ov).value, day: clamp(Math.round(num($('#rc-day', ov).value)) || 1, 1, 31), amount: num($('#rc-amt', ov).value), fromPay: !!(pay && pay.checked), match: !!(match && match.checked) };
+  if (rcOn && !rec.fromPay && !(rec.amount > 0)) { toast('Enter the deposit amount'); return; }
+  if (rcOn && rec.freq === 'payday' && !num(S.pay.salary)) { toast('Add your salary and a recent payday under Plan, Tools, Paycheck first'); return; }
+  checkpoint();
+  a.auto = onEl ? { on: onEl.checked && Object.keys(alloc).length > 0, alloc } : a.auto;
+  const was = a.recur && a.recur.on;
+  a.recur = Object.assign({}, rec, { last: was && a.recur.last ? a.recur.last : todayISO(), start: todayISO() });
+  if (rec.match) S.accounts.forEach(x => { if (x !== a && x.recur) x.recur.match = false; });
+  closeSheet(); commit();
+  const nx = nextRecur(a);
+  offerUndo(rcOn ? `Automatic investing on. Next deposit ${nx ? fmtShort(nx) : 'soon'}.` : a.auto && a.auto.on ? 'New deposits will buy your holdings automatically' : 'Saved');
+}
+
+/* ---------- hooks ---------- */
+Object.assign(ACT, {
+  aiOpen: d => { const a = S.accounts.find(x => x.id === d.a); if (a) autoSheet(a); },
+  aiSave: d => aiSave(d.a)
+});
+Object.assign(INP, { aiPct: () => aiTotal() });
+function autoDepositToast(r) { if (r.n) toast(`Added ${r.n} automatic deposit${r.n === 1 ? '' : 's'} (${money(r.total, { force: true })}) and invested ${r.n === 1 ? 'it' : 'them'}`); }
+const _pullRefresh = pullRefresh;
+pullRefresh = async function () { const r = runAutoDeposits(); await _pullRefresh(); autoDepositToast(r); };
+const _afterInit5 = afterInit;
+afterInit = function () {
+  _afterInit5();
+  if (S.onboarded && !S.practice) { const r = runAutoDeposits(); if (r.n) { commit(); setTimeout(() => autoDepositToast(r), 900); } }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && S.onboarded && !S.practice) { const r = runAutoDeposits(); if (r.n) { commit(); autoDepositToast(r); } } });
+};
+/* ================= flexible pay schedules ================= */
+/* S.pay.mode (only when freq is 24): 'standard' = 15th and last day, 'days' = two set days, 'custom' = your own dates */
+const payMode = () => +S.pay.freq === 24 ? (S.pay.mode || 'standard') : 'standard';
+function adjWeekend(d) {
+  const w = S.pay.wknd || 'before', g = d.getDay();
+  if (w === 'none' || (g !== 0 && g !== 6)) return d;
+  return w === 'before' ? addDays(d, g === 6 ? -1 : -2) : addDays(d, g === 6 ? 2 : 1);
+}
+/* Two typical days of the month, learned from the dates you've entered or logged */
+function payPattern() {
+  const ds = (S.pay.dates || []).slice().sort().slice(-8).map(x => pd(x).getDate());
+  if (!ds.length) return null;
+  const med = a => { const s = a.slice().sort((x, y) => x - y); return s[Math.floor((s.length - 1) / 2)]; };
+  const early = ds.filter(x => x <= 15), late = ds.filter(x => x > 15);
+  if (early.length && late.length) return [med(early), med(late)];
+  const one = med(ds); return one <= 15 ? [one, one + 15] : [one - 15, one];
+}
+const _paydaysBetween = paydaysBetween;
+paydaysBetween = function (s, e) {
+  const m = payMode();
+  if (m === 'standard') return _paydaysBetween(s, e);
+  const out = [], seen = new Set(), push = (d, est) => { const k = iso(d); if (d >= s && d <= e && !seen.has(k)) { seen.add(k); if (est) d.est = true; out.push(d); } };
+  const months = []; for (let mm = new Date(s.getFullYear(), s.getMonth() - 1, 1); mm <= e; mm = new Date(mm.getFullYear(), mm.getMonth() + 1, 1)) months.push(mm);
+  if (m === 'days') {
+    const days = (S.pay.days || [1, 15]).map(num).filter(x => x >= 1 && x <= 31).sort((a, b) => a - b);
+    months.forEach(mm => days.forEach(dd => push(adjWeekend(new Date(mm.getFullYear(), mm.getMonth(), Math.min(dd, daysIn(mm)))))));
+  } else {
+    const list = (S.pay.dates || []).map(pd), have = new Set(list.map(d => d.getFullYear() + '-' + d.getMonth()));
+    list.forEach(d => push(d, false));
+    const pat = payPattern();
+    if (pat) months.forEach(mm => { if (have.has(mm.getFullYear() + '-' + mm.getMonth())) return; pat.forEach(dd => push(adjWeekend(new Date(mm.getFullYear(), mm.getMonth(), Math.min(dd, daysIn(mm)))), true)); });
+  }
+  return out.sort((a, b) => a - b);
+};
+/* Budget by paycheck: periods run from one real payday to the next */
+const _period = period;
+period = function (offset = 0) {
+  if (S.settings.period !== 'paycheck' || payMode() === 'standard') return _period(offset);
+  const ref = stripTime(new Date()), span = 40 + 17 * Math.abs(offset);
+  const ps = paydaysBetween(addDays(ref, -span), addDays(ref, span));
+  const i = ps.findIndex((d, k) => d <= ref && (!ps[k + 1] || ps[k + 1] > ref));
+  const a = ps[i + offset], b = ps[i + offset + 1];
+  if (i < 0 || !a || !b) return _period(offset);
+  const e = addDays(b, -1), days = Math.round((b - a) / 864e5);
+  return { s: iso(a), e: iso(e), label: fmtShort(a) + ' to ' + fmtShort(e), frac: days * 12 / 365 };
+};
+/* Map the "Paid" choice to settings */
+function payFreqFields(v, anchor) {
+  const a = pd(anchor || todayISO()), day = a.getDate();
+  if (v === '24d') return { freq: 24, mode: 'days', days: S.pay.days && S.pay.days.length === 2 ? S.pay.days : (day <= 15 ? [day, Math.min(day + 15, 31)] : [Math.max(day - 15, 1), day]) };
+  if (v === '24c') return { freq: 24, mode: 'custom', dates: (S.pay.dates && S.pay.dates.length) ? S.pay.dates : [iso(a)] };
+  return { freq: +v || 26, mode: 'standard' };
+}
+const payFreqValue = () => +S.pay.freq === 24 ? ({ days: '24d', custom: '24c' }[payMode()] || '24') : String(+S.pay.freq || 26);
+const PAY_OPTS = [['26', 'Every 2 weeks'], ['24', 'Twice a month (15th and last day)'], ['24d', 'Twice a month on set days'], ['24c', 'Twice a month, dates vary'], ['52', 'Weekly'], ['12', 'Monthly']];
+function payFreqHtml() {
+  return `<div class="fld" style="grid-column:1/-1"><label for="b-freq">Paid</label><select id="b-freq" data-chg="payFreq">${PAY_OPTS.map(([v, l]) => `<option value="${v}" ${v === payFreqValue() ? 'selected' : ''}>${l}</option>`).join('')}</select></div>`;
+}
+function payScheduleHtml() {
+  const m = payMode(), wk = `<div class="fld"><label for="b-wk">If payday lands on a weekend</label><select id="b-wk" data-bind="pay.wknd" data-t="str">${[['before', 'Paid the Friday before'], ['after', 'Paid the Monday after'], ['none', 'Paid that day anyway']].map(([v, l]) => `<option value="${v}" ${(S.pay.wknd || 'before') === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>`;
+  const next = paydaysBetween(addDays(stripTime(new Date()), 1), addDays(stripTime(new Date()), 75)).slice(0, 4);
+  const preview = `<div id="payNext">${payNextHtml()}</div>`;
+  const _unused = next.length ? `<div class="paynext"><span class="xs mute">Next paydays</span>${next.map(d => `<span class="tag${d.est ? ' est' : ''}">${fmtShort(d)}${d.est ? ' (est.)' : ''}</span>`).join('')}</div>` : '';
+  if (m === 'days') {
+    const d = S.pay.days || [1, 15];
+    return `<div class="grid2"><div class="fld"><label for="b-d1">First payday</label><input id="b-d1" type="text" inputmode="numeric" data-bind="pay.days.0" data-t="num" value="${num(d[0]) || ''}" placeholder="e.g. 7"></div><div class="fld"><label for="b-d2">Second payday</label><input id="b-d2" type="text" inputmode="numeric" data-bind="pay.days.1" data-t="num" value="${num(d[1]) || ''}" placeholder="e.g. 22"></div></div>${wk}${preview}`;
+  }
+  if (m === 'custom') {
+    const t = todayISO(), list = (S.pay.dates || []).slice().sort(), up = list.filter(x => x >= t), past = list.filter(x => x < t).slice(-3);
+    const pat = payPattern();
+    return `<div class="sm mute" style="margin-bottom:8px">Add your pay dates as you learn them, like from your employer\u2019s pay calendar. Each paycheck you log is added automatically.${pat ? ` After your last date, Compound estimates paydays around the ${ordinal(pat[0])} and ${ordinal(pat[1])}.` : ''}</div>
+    <div class="paydates">${[...past, ...up].map(x => `<span class="pdchip${x < t ? ' past' : ''}">${fmtShort(x)}${pd(x).getFullYear() !== new Date().getFullYear() ? ' ' + pd(x).getFullYear() : ''}<button data-act="payDateDel" data-d="${x}" aria-label="Remove ${fmtDate(x)}">\u2715</button></span>`).join('') || '<span class="xs mute">No dates yet.</span>'}</div>
+    <div class="row" style="gap:8px;margin:10px 0 4px"><input id="pdAdd" type="date" aria-label="Add a payday" style="flex:1;padding:10px 12px;border-radius:11px;border:1px solid var(--line);background:var(--surf2);font-size:16px;min-height:44px"><button class="btn" data-act="payDateAdd">Add</button></div>${wk}${preview}`;
+  }
+  return preview ? `<div style="margin-top:-4px">${preview}</div>` : '';
+}
+/* Learn pay dates from logged paychecks */
+function learnPayDates() {
+  if (payMode() !== 'custom') return false;
+  const set = new Set(S.pay.dates || []), before = set.size, since = iso(addDays(new Date(), -150));
+  S.txns.forEach(t => { if (t.type === 'income' && t.src === 'salary' && t.date >= since) set.add(t.date); });
+  if (set.size === before) return false;
+  S.pay.dates = [...set].sort().slice(-40); return true;
+}
+const _commit6 = commit;
+commit = function () { learnPayDates(); _commit6(); };
+
+Object.assign(CHG, {
+  payFreq: t => { Object.assign(S.pay, payFreqFields(t.value, S.pay.anchor)); save(); render(); toast(t.value === '24c' ? 'Add your upcoming pay dates below' : t.value === '24d' ? 'Set your two paydays below' : 'Pay schedule updated'); }
+});
+Object.assign(ACT, {
+  payDateAdd: () => { const i = $('#pdAdd'); if (!i || !i.value) { toast('Pick a date first'); return; } S.pay.dates = [...new Set([...(S.pay.dates || []), i.value])].sort().slice(-40); save(); render(); },
+  payDateDel: d => { S.pay.dates = (S.pay.dates || []).filter(x => x !== d.d); save(); render(); }
+});
+
+function payNextHtml() {
+  const t = stripTime(new Date()), next = paydaysBetween(addDays(t, 1), addDays(t, 75)).slice(0, 4);
+  return next.length ? `<div class="paynext"><span class="xs mute">Next paydays</span>${next.map(d => `<span class="tag${d.est ? ' est' : ''}">${fmtShort(d)}${d.est ? ' (est.)' : ''}</span>`).join('')}</div>` : '';
+}
+const _renderPayRes = renderPayRes;
+renderPayRes = function () { _renderPayRes(); const el = $('#payNext'); if (el) el.innerHTML = payNextHtml(); };
 
 </script>
 </body>

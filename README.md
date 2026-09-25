@@ -82,3 +82,19 @@ Settings → Help and planning lets you take the tour, build your money plan, or
 - **App icon badge** asks for notification permission once and shows how many things need you.
 - **Receipt scanner** reads photos on your phone. The first scan downloads the text reader (about 10 MB), so use Wi-Fi.
 - **Change history** in Settings keeps restore points before every import, delete and bulk change, plus a daily snapshot.
+
+## Automatic investing
+
+Open any investment account in Investing and tap **Set up automatic investing**.
+
+1. **How new money is invested:** set a percentage for each holding (for example VTI 70%, VXUS 20%, BND 10%). Every deposit buys fractional shares at the current price and updates your cost basis. Anything under 100% stays as cash.
+1. **Automatic deposits:** each payday, twice a month, or monthly. For a 401(k), use your paycheck contribution and add the employer match. Deposits are recorded on schedule, and Log paycheck won’t double-count them.
+
+## Pay schedules
+
+Plan → Tools → Paycheck → **Paid**:
+
+- **Twice a month on set days:** for example the 7th and 22nd. Choose what happens when a payday lands on a weekend.
+- **Twice a month, dates vary:** add dates from your employer’s pay calendar. Each paycheck you log is added automatically, and future paydays are estimated from your pattern (shown as “est.”).
+
+Your calendar, payday checklist, automatic deposits, and paycheck-based budgets all follow this schedule.
