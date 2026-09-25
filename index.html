@@ -1115,7 +1115,8 @@ const isLive = h => !h.manualPrice && h.quoteAt && Date.now() - h.quoteAt < 5 * 
 async function fetchQuote(sym, key) {
   const r = await fetch('https://finnhub.io/api/v1/quote?symbol=' + encodeURIComponent(sym) + '&token=' + encodeURIComponent(key));
   const fail = code => Object.assign(new Error(code), { code });
-  if (r.status === 401 || r.status === 403) throw fail('key');
+  if (r.status === 401) throw fail('key');
+  if (r.status === 403) return { denied: true };
   if (r.status === 429) throw fail('limit');
   if (!r.ok) throw fail('http');
   const j = await r.json();
@@ -1130,7 +1131,7 @@ async function refreshQuotes(opts = {}) {
   S.accounts.forEach(a => (a.holdings || []).forEach(h => { if (h.manualPrice) return; const s = quoteSymbol(h, a); if (!s) return; if (!map.has(s)) map.set(s, []); map.get(s).push({ a, h }); }));
   if (!map.size) { if (!opts.silent) toast('Add holdings with tickers to get live prices'); return; }
   quoting = true; if (!opts.silent) toast('Updating prices\u2026');
-  const syms = [...map.keys()], miss = [], touched = new Set(); let ok = 0, err = null;
+  const syms = [...map.keys()], miss = [], denied = [], touched = new Set(); let ok = 0, err = null;
   try {
     for (let i = 0; i < syms.length; i += 5) {
       if (i && syms.length > 50) await new Promise(r => setTimeout(r, 5500));
@@ -1139,6 +1140,7 @@ async function refreshQuotes(opts = {}) {
         const s = batch[j];
         if (r.status === 'rejected') { err = err || r.reason; miss.push(s); return; }
         if (!r.value) { miss.push(s); return; }
+        if (r.value.denied) { miss.push(s); denied.push(s); return; }
         ok++;
         map.get(s).forEach(({ a, h }) => { h.price = r.value.c; h.dayChg = r.value.d; h.dayPct = r.value.dp; h.quoteAt = r.value.t; touched.add(a); });
       });
@@ -1149,7 +1151,7 @@ async function refreshQuotes(opts = {}) {
   if (ok) S.settings.lastQuote = Date.now();
   commit();
   const code = err && err.code;
-  if (code === 'key') return toast('Finnhub didn\u2019t accept that key. Check it in Settings, under Live prices.');
+  if (code === 'key' || (!ok && denied.length && denied.length === syms.length)) return toast(code === 'key' ? 'Finnhub says the key is invalid (error 401). Re-copy it from your Finnhub dashboard.' : 'Finnhub refused every ticker (error 403). The key may be wrong, or these holdings aren\u2019t on the free plan.');
   if (code === 'limit') return toast('Finnhub\u2019s rate limit was reached. Try again in a minute.');
   if (err && !ok) return toast('Couldn\u2019t reach Finnhub. Check your connection and try again.');
   if (opts.silent && !miss.length) return;

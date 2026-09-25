@@ -23,6 +23,16 @@ Your financial data is never uploaded. The hosted files are only the app itself;
 - Deleting the Home Screen app, or clearing Safari website data, erases it.
 - If you forget your passcode, you’ll need to erase the app’s data and restore a backup.
 
+## Importing Amex and bank transactions
+
+1. On americanexpress.com (use **Request Desktop Website** in Safari), open your activity list, choose a date range, tap **Download**, and pick **CSV**. Statement PDFs can’t be imported.
+1. In Compound, go to **Budget → Transactions → Import CSV** and choose the file.
+
+- Card payments are skipped automatically, so they don’t count as income or double up with your checking account.
+- Refunds and credits lower the spending in their category.
+- Charges are sorted using the card’s own category column (Amex, Chase) and known merchants. Anything unmatched goes to **Needs a category**. When you pick a category there, future imports from that merchant use it.
+- Importing the same file twice is safe; duplicates are skipped.
+
 ## Live prices
 
 1. Create a free account at finnhub.io/register and copy your API key from the Finnhub dashboard.
