@@ -356,7 +356,7 @@ function defaults() {
     settings: {
       theme: 'system', hide: false, ret: 7, infl: 3, vol: 15, raise: 3, real: true, escalate: false, escStep: 1, escCap: 15,
       extra: 200, threshold: 6, efMonths: 6, period: 'month', pin: null, autolock: true, paceAlerts: true,
-      dash: DASH_W.slice(), dashHidden: [], lastBackup: null, quoteKey: '', autoQuotes: true, lastQuote: 0,
+      dash: DASH_W.slice(), dashHidden: [], lastBackup: null, quoteKey: '', autoQuotes: true, lastQuote: 0, catMap: {},
       refi: { bal: 15000, apr: 9, months: 48, napr: 6, nterm: 48, fees: 300 }
     }
   };
@@ -1210,24 +1210,42 @@ function budOverview() {
   h += card('Monthly spending', '<div class="chart" id="c-trend"></div>', '<small>last 6 months</small>');
   return h + '</div>';
 }
-function txList(list) {
+function txList(list, run) {
   if (!list.length) return '<div class="empty">No transactions here. Tap + to add one, or import a CSV from your bank.</div>';
   let last = '', h = '<div class="list">';
   list.forEach(t => {
     if (t.date !== last) { h += `<div class="xs mute" style="margin:12px 0 0;font-weight:600">${fmtDate(t.date)}</div>`; last = t.date; }
-    const c = catById(t.cat), inc = t.type === 'income';
-    h += `<button class="li" data-act="editTx" data-id="${t.id}"><span class="ic">${inc ? I('cash') : I(c.icon)}</span><span class="main"><span class="t">${esc(t.note || (inc ? 'Income' : c.name))}</span><span class="s">${inc ? esc(srcLabel(t.src)) : esc(c.name)}${t.bill ? ', recurring' : ''}</span></span>${t.receipt ? `<img class="thumb" src="${t.receipt}" alt="Receipt">` : ''}<span class="amt ${inc ? 'pos' : ''}">${inc ? money(t.amount, { sign: true }) : money(-num(t.amount))}</span></button>`;
+    const c = catById(t.cat), inc = t.type === 'income', pay = t.type === 'payment', a = num(t.amount), credit = !inc && !pay && a < 0;
+    const ic = inc ? I('cash') : pay ? I('card') : I(c.icon);
+    const sub = inc ? esc(srcLabel(t.src)) : pay ? 'Card payment, not spending' : (credit ? 'Credit, ' : '') + esc(c.name);
+    const amt = inc ? `<span class="pos">${money(a, { sign: true })}</span>` : pay ? `<span class="mute">${money(-a)}</span>` : credit ? `<span class="pos">${money(a)}</span>` : money(a);
+    const rt = run && run.has(t.id) ? `<div class="xs mute">${run.label} ${money(run.get(t.id))}</div>` : '';
+    h += `<button class="li" data-act="editTx" data-id="${t.id}"><span class="ic">${ic}</span><span class="main"><span class="t">${esc(t.note || (inc ? 'Income' : pay ? 'Card payment' : c.name))}</span><span class="s">${sub}${t.acct ? ', ' + esc(t.acct) : ''}${t.bill ? ', recurring' : ''}</span></span>${t.receipt ? `<img class="thumb" src="${t.receipt}" alt="Receipt">` : ''}<span class="amt">${amt}${rt}</span></button>`;
   });
   return h + '</div>';
 }
 function budTx() {
+  const un = uncategorized(), uncList = S.txns.filter(t => t.type === 'expense' && t.cat === un);
+  if (UI.txFilter === 'unc' && !uncList.length) UI.txFilter = '';
+  const filt = uncList.length ? `<div style="margin-bottom:10px">${seg('txFilter', [['', 'All'], ['unc', `Needs a category (${uncList.length})`]], UI.txFilter || '')}</div>` : '';
+  if (UI.txFilter === 'unc') return filt + card('', `<div class="sm mute" style="margin-bottom:4px">Tap each one to pick a category. Future imports from the same merchant will use your choice.</div>` + txList(uncList.sort((a, b) => a.date < b.date ? 1 : -1)));
   const ranged = UI.from && UI.to, p = ranged ? { s: UI.from, e: UI.to, label: fmtShort(UI.from) + ' to ' + fmtDate(UI.to) } : period(UI.pOff);
-  let h = ranged ? `<div class="pnav"><div class="lbl">${esc(p.label)}</div><button class="chip" data-act="clearRange">Clear dates</button></div>` : `<div class="swipe">${pnav(p.label, UI.pOff)}</div>`;
+  let h = filt + (ranged ? `<div class="pnav"><div class="lbl">${esc(p.label)}</div><button class="chip" data-act="clearRange">Clear dates</button></div>` : `<div class="swipe">${pnav(p.label, UI.pOff)}</div>`);
   h += `<div class="grid2" style="margin-bottom:10px"><div class="fld" style="margin:0"><label for="rf">From</label><input type="date" id="rf" data-chg="from" value="${UI.from}"></div><div class="fld" style="margin:0"><label for="rt">To</label><input type="date" id="rt" data-chg="to" value="${UI.to}"></div></div>`;
-  const list = S.txns.filter(t => inRange(t.date, p)).sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
-  const inc = sum(list.filter(t => t.type === 'income').map(t => num(t.amount))), out = sum(list.filter(t => t.type === 'expense').map(t => num(t.amount)));
-  h += `<div class="grid3" style="margin-bottom:10px">${stat('In', money(inc), 'pos')}${stat('Out', money(out))}${stat('Net', money(inc - out, { sign: true }), inc - out < 0 ? 'neg' : '')}</div>`;
-  h += card('', txList(list) + `<div class="btns" style="margin-top:12px"><button class="btn" data-act="addTx">Add transaction</button><button class="btn ghost" data-act="importCsv">Import CSV</button></div>`);
+  const inPer = S.txns.filter(t => inRange(t.date, p)), accts = [...new Set(inPer.map(t => t.acct).filter(Boolean))];
+  if (UI.txAcct && !accts.includes(UI.txAcct)) UI.txAcct = '';
+  if (accts.length) h += `<div class="segwrap">${seg('txAcct', [['', 'All'], ...accts.map(a => [a, a])], UI.txAcct || '')}</div>`;
+  const list = inPer.filter(t => !UI.txAcct || t.acct === UI.txAcct).sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : (S.txns.indexOf(a) < S.txns.indexOf(b) ? 1 : -1));
+  const inc = sum(list.filter(t => t.type === 'income').map(t => num(t.amount))), charged = sum(list.filter(t => t.type === 'expense').map(t => num(t.amount))), paid = sum(list.filter(t => t.type === 'payment').map(t => num(t.amount)));
+  const cardView = UI.txAcct && !list.some(t => t.type === 'income');
+  const run = new Map(); let tot = 0;
+  list.slice().reverse().forEach(t => { const a = num(t.amount); if (t.type === 'expense') tot += a; else if (cardView && t.type === 'payment') tot -= a; else if (!cardView && t.type === 'income') return; else if (t.type !== 'expense') return; run.set(t.id, tot); });
+  run.label = cardView ? 'Balance' : 'Charged so far';
+  h += cardView
+    ? `<div class="grid3" style="margin-bottom:10px">${stat('Charged', money(charged))}${stat('Payments', money(paid), 'pos')}${stat('Balance change', money(charged - paid, { sign: true }))}</div>`
+    : `<div class="grid3" style="margin-bottom:10px">${stat('In', money(inc), 'pos')}${stat('Charged', money(charged))}${stat('Net', money(inc - charged, { sign: true }), inc - charged < 0 ? 'neg' : '')}</div>`;
+  h += `<div class="xs mute" style="margin:-2px 2px 10px">${cardView ? 'Balance adds each charge and subtracts credits and payments, oldest first.' : 'Charged so far is a running total of spending this period. Credits reduce it; card payments and income don\u2019t count as spending.'}</div>`;
+  h += card('', txList(list, run) + `<div class="btns" style="margin-top:12px"><button class="btn" data-act="addTx">Add transaction</button><button class="btn ghost" data-act="importCsv">Import CSV</button></div>`);
   return h;
 }
 function budBills() {
@@ -1296,8 +1314,9 @@ function txForm(t, type) {
   const isNew = !t; t = t || { type: type || 'expense', amount: '', date: todayISO(), cat: uncategorized(), note: '', src: 'bonus', receipt: '' };
   openForm({
     title: isNew ? (t.type === 'income' ? 'Add income' : 'Add expense') : 'Edit transaction', focus: isNew, fields: [
-      { k: 'type', label: 'Type', type: 'select', opts: [['expense', 'Expense'], ['income', 'Income']], v: t.type },
-      { k: 'amount', label: 'Amount', type: 'money', v: t.amount },
+      { k: 'type', label: 'Type', type: 'select', opts: [['expense', 'Expense'], ['income', 'Income'], ['payment', 'Card payment (not spending or income)']], v: t.type },
+      { k: 'amount', label: 'Amount', type: 'money', v: t.amount === '' ? '' : Math.abs(num(t.amount)) },
+      { k: 'refund', label: 'This is a refund or credit', type: 'toggle', v: num(t.amount) < 0, hint: 'Refunds lower what you\u2019ve spent in their category.', when: v => v.type === 'expense' },
       { k: 'note', label: 'Description', type: 'text', v: t.note, ph: 'e.g. H-E-B' },
       { k: 'cat', label: 'Category', type: 'select', opts: catOpts(), v: t.cat, other: true, otherPh: 'New category name', when: v => v.type === 'expense' },
       { k: 'src', label: 'Income type', type: 'select', opts: SRCS, v: t.src === 'other' ? 'Other income' : (t.src || 'bonus'), other: true, otherPh: 'e.g. Tax refund, Freelance, Dividends', when: v => v.type === 'income' },
@@ -1309,8 +1328,10 @@ function txForm(t, type) {
     onSave: v => {
       if (!(v.amount > 0)) { toast('Enter an amount above zero'); return; }
       const nc = v.type === 'expense' && v.catOther && !S.cats.some(c => c.name.toLowerCase() === v.cat.toLowerCase());
-      const o = { type: v.type, amount: v.amount, note: v.note, cat: v.type === 'expense' ? ensureCat(v) : '', src: v.type === 'income' ? v.src : '', date: v.date || todayISO(), receipt: v.type === 'expense' ? v.receipt : '' };
+      const prevCat = t.cat;
+      const o = { type: v.type, amount: v.type === 'expense' && v.refund ? -v.amount : v.amount, note: v.note, cat: v.type === 'expense' ? ensureCat(v) : '', src: v.type === 'income' ? v.src : '', date: v.date || todayISO(), receipt: v.type === 'expense' ? v.receipt : '' };
       if (isNew) S.txns.push({ id: uid(), ...o }); else Object.assign(t, o);
+      if (!isNew && t.srcCat && o.cat && o.cat !== prevCat) { S.settings.catMap = S.settings.catMap || {}; S.settings.catMap[t.srcCat.toLowerCase()] = o.cat; }
       commit();
       if (isNew && o.type === 'expense') { const a = catAvail(catById(o.cat), 0); if (a.spent > a.avail + .5 && a.avail > 0 && inRange(o.date, period(0))) toast(`${catById(o.cat).name} is now ${money(a.spent - a.avail)} over budget`); else toast('Expense added'); }
       else toast(isNew ? 'Income added' : 'Transaction saved');
@@ -1461,7 +1482,7 @@ function openSettings() {
   <section class="card" style="margin-top:12px"><h2><span>Budget</span></h2>${sel('settings.period', 'Budget period', [['month', 'Calendar month'], ['paycheck', 'Each paycheck']])}${tg('settings.paceAlerts', 'Warn when behind on maxing accounts')}</section>
   <section class="card" style="margin-top:12px" id="liveprices"><h2><span>Live prices</span></h2><div class="sm mute" style="margin-bottom:10px">Updates stock, ETF and crypto prices from Finnhub. Create a free account at <a href="https://finnhub.io/register" target="_blank" rel="noopener" style="color:var(--acc)">finnhub.io/register</a>, then copy the API key from your Finnhub dashboard and paste it here. It stays on this phone.</div><div class="fld"><label for="s-qk">Finnhub API key</label><input id="s-qk" type="text" data-bind="settings.quoteKey" data-t="str" value="${esc(s.quoteKey || '')}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Paste your key"></div>${tg('settings.autoQuotes', 'Update prices when the app opens')}<button class="btn ghost block" data-act="refreshQuotes">Update prices now</button>${s.lastQuote ? `<div class="xs mute" style="margin-top:8px">${quoteAsOf()}</div>` : ''}<div class="xs mute" style="margin-top:8px">Mutual funds and many 401(k) funds aren’t covered on the free plan. Those keep the price you enter.</div></section>
   <section class="card" style="margin-top:12px"><h2><span>Security</span></h2><div class="sm mute" style="margin-bottom:10px">${s.pin ? 'A passcode protects the app.' : 'No passcode set. Anyone with your unlocked phone can open the app.'}</div>${s.pin ? tg('settings.autolock', 'Lock after 1 minute in the background') : ''}<div class="btns"><button class="btn ghost" data-act="setPin">${s.pin ? 'Change passcode' : 'Set passcode'}</button>${s.pin ? '<button class="btn danger" data-act="removePin">Turn off passcode</button>' : ''}</div></section>
-  <section class="card" style="margin-top:12px"><h2><span>Your data</span></h2><div class="sm mute" style="margin-bottom:10px">Everything is stored only on this phone.${s.lastBackup ? ' Last backup ' + fmtDate(s.lastBackup) + '.' : ' You haven\u2019t made a backup yet.'}</div><div class="stack" style="gap:8px"><button class="btn block" data-act="backup">Back up all data</button><button class="btn ghost block" data-act="restore">Restore from backup</button><button class="btn ghost block" data-act="expTx">Export transactions (CSV for Excel)</button><button class="btn ghost block" data-act="expAcct">Export accounts and debts (CSV)</button><button class="btn ghost block" data-act="pdf">Save a PDF report</button><button class="btn ghost block" data-act="importCsv">Import bank CSV</button></div></section>
+  <section class="card" style="margin-top:12px"><h2><span>Your data</span></h2><div class="sm mute" style="margin-bottom:10px">Everything is stored only on this phone.${s.lastBackup ? ' Last backup ' + fmtDate(s.lastBackup) + '.' : ' You haven\u2019t made a backup yet.'}</div><div class="stack" style="gap:8px"><button class="btn block" data-act="backup">Back up all data</button><button class="btn ghost block" data-act="restore">Restore from backup</button><button class="btn ghost block" data-act="expTx">Export transactions (CSV for Excel)</button><button class="btn ghost block" data-act="expAcct">Export accounts and debts (CSV)</button><button class="btn ghost block" data-act="pdf">Save a PDF report</button><button class="btn ghost block" data-act="importCsv">Import transactions (CSV)</button></div></section>
   <section class="card" style="margin-top:12px"><h2><span>Start over</span></h2><div class="btns"><button class="btn ghost" data-act="rerunSetup">Run setup again</button><button class="btn danger" data-act="reset">Erase all data</button></div></section>
   <p class="xs mute" style="text-align:center;margin-top:16px">Compound. Estimates only, not financial or tax advice.</p>`;
   const ov = openSheet(html); ov._settings = true;
@@ -1479,7 +1500,7 @@ function runSearch(q) {
   S.debts.filter(d => m(d.name)).forEach(d => r.push(`<button class="li" data-act="editDebt" data-id="${d.id}"><span class="ic">${I('card')}</span><span class="main"><span class="t">${esc(d.name)}</span><span class="s">Debt</span></span><span class="amt">${money(d.balance)}</span></button>`));
   S.bills.filter(b => m(b.name)).forEach(b => r.push(`<button class="li" data-act="editBill" data-id="${b.id}"><span class="ic">${I('repeat')}</span><span class="main"><span class="t">${esc(b.name)}</span><span class="s">${b.sub ? 'Subscription' : 'Bill'}</span></span><span class="amt">${money(b.amount)}</span></button>`));
   S.goals.filter(g => m(g.name)).forEach(g => r.push(`<button class="li" data-act="editGoal" data-id="${g.id}"><span class="ic">${I('target')}</span><span class="main"><span class="t">${esc(g.name)}</span><span class="s">Goal</span></span><span class="amt">${money(g.saved)}</span></button>`));
-  S.txns.filter(t => m(t.note) || m(catById(t.cat).name) || String(t.amount).includes(q)).sort((a, b) => a.date < b.date ? 1 : -1).slice(0, 60).forEach(t => r.push(`<button class="li" data-act="editTx" data-id="${t.id}"><span class="ic">${I(t.type === 'income' ? 'cash' : catById(t.cat).icon)}</span><span class="main"><span class="t">${esc(t.note || catById(t.cat).name)}</span><span class="s">${fmtDate(t.date)}, ${t.type === 'income' ? 'income' : esc(catById(t.cat).name)}</span></span><span class="amt ${t.type === 'income' ? 'pos' : ''}">${t.type === 'income' ? money(t.amount, { sign: true }) : money(-num(t.amount))}</span></button>`));
+  S.txns.filter(t => m(t.note) || m(catById(t.cat).name) || String(t.amount).includes(q)).sort((a, b) => a.date < b.date ? 1 : -1).slice(0, 60).forEach(t => r.push(`<button class="li" data-act="editTx" data-id="${t.id}"><span class="ic">${I(t.type === 'income' ? 'cash' : catById(t.cat).icon)}</span><span class="main"><span class="t">${esc(t.note || catById(t.cat).name)}</span><span class="s">${fmtDate(t.date)}, ${t.type === 'income' ? 'income' : t.type === 'payment' ? 'card payment' : esc(catById(t.cat).name)}</span></span><span class="amt ${t.type === 'income' || num(t.amount) < 0 ? 'pos' : ''}">${t.type === 'income' ? money(t.amount, { sign: true }) : t.type === 'payment' ? money(-num(t.amount)) : money(num(t.amount))}</span></button>`));
   el.innerHTML = r.length ? r.join('') : '<div class="empty">No matches.</div>';
 }
 function openFab() {
@@ -1513,33 +1534,109 @@ function parseDateLoose(s) {
   if ((m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/))) { let y = +m[3]; if (y < 100) y += 2000; return iso(new Date(y, +m[1] - 1, +m[2])); }
   const d = new Date(s); return isNaN(d) ? null : iso(d);
 }
+const PAY_RE = /thank you|autopay|auto pay|automatic payment|payment received|online payment|mobile payment|electronic payment|^payment\b|pymt|e-?payment/i;
+const CARD_THANKS_RE = /payment\b.*thank you|thank you.*payment|autopay payment|payment received|mobile payment|online payment - thank/i;
+const CARDPAY_RE = /american express|amex|chase card|chase credit|citi ?card|discover|capital one|barclay|synchrony|card services|credit card|crd pmt|cardmember|applecard|apple card/i;
+const MERCHANT_RULES = [
+  [/netflix|spotify|hulu|disney ?(\+|plus)|hbo ?max|max\.com|youtube ?(premium|tv)|apple\.com\/bill|audible|patreon|paramount|peacock|icloud|adobe|dropbox|microsoft ?365|chatgpt|openai|anthropic|siriusxm/i, 'Subscriptions'],
+  [/h-e-b|\bheb\b|whole ?foods|trader joe|kroger|safeway|costco|aldi|sprouts|central market|instacart|wegmans|publix/i, 'Groceries'],
+  [/uber ?eats|doordash|grubhub|starbucks|chipotle|mcdonald|taco|pizza|cafe|coffee|restaurant|grill|bbq|sushi|chick-fil|whataburger|torchy/i, 'Dining out'],
+  [/shell oil|exxon|chevron|valero|buc-?ee|circle k|mobil|citgo|\buber\b(?! ?eats)|\blyft\b|parking|toll ?(way|road)|txtag|capital metro/i, 'Transportation'],
+  [/airbnb|delta air|united air|american air|southwest|alaska air|marriott|hilton|hyatt|expedia|vrbo/i, 'Travel'],
+  [/\bcvs\b|walgreens|pharmacy/i, 'Health'],
+  [/at&t|verizon|t-mobile|spectrum|comcast|xfinity|austin energy|google fi|atmos|texas gas|utilit|water|electric/i, 'Utilities'],
+  [/amazon|amzn|target|best buy|home depot|lowe'?s|ikea|apple store|nike|walmart/i, 'Shopping']
+];
+const CAT_RULES = [
+  [/restaurant|food ?& ?drink|dining|fast food|bars? ?& ?caf|coffee/i, 'Dining out'],
+  [/grocer|supermarket/i, 'Groceries'],
+  [/airline|air travel|lodging|hotel|travel|car rental|cruise|vacation/i, 'Travel'],
+  [/fuel|gas station|^gas$|automotive|auto service|parking|toll|taxi|rideshare|transportation|transit|rail/i, 'Transportation'],
+  [/utilit|cable|internet|communication|phone|wireless|bills/i, 'Utilities'],
+  [/insurance/i, 'Insurance'],
+  [/health|pharmac|drug ?store|medical|dental|doctor|vision|fitness/i, 'Health'],
+  [/entertainment|theat|movie|cinema|sport|music|concert|amusement|recreation/i, 'Entertainment'],
+  [/subscription|streaming/i, 'Subscriptions'],
+  [/merchandise|retail|clothing|department|electronic|shopping|general|home improvement|hardware|book|office suppl/i, 'Shopping'],
+  [/rent\b|mortgage|housing/i, 'Housing']
+];
+const catIdByName = n => { const c = S.cats.find(x => x.name.toLowerCase() === n.toLowerCase()); return c ? c.id : null; };
+const merchKey = note => String(note || '').toLowerCase().replace(/[0-9#*]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 14);
+function guessCat(note, srcCat, known) {
+  const k = merchKey(note); if (k && known[k]) return known[k];
+  const map = S.settings.catMap || {}, sc = String(srcCat || '').toLowerCase().trim();
+  if (sc && map[sc] && S.cats.some(c => c.id === map[sc])) return map[sc];
+  for (const [re, n] of MERCHANT_RULES) if (re.test(note)) { const id = catIdByName(n); if (id) return id; }
+  if (sc) for (const [re, n] of CAT_RULES) if (re.test(sc)) { const id = catIdByName(n); if (id) return id; }
+  return uncategorized();
+}
+const parseAmt = x => { const s = String(x ?? '').trim(); if (!s) return 0; const neg = /^\(.*\)$/.test(s) || /-/.test(s); const v = Math.abs(num(s.replace(/[()]/g, ''))); return neg ? -v : v; };
 function importCsvForm() {
   openForm({
-    title: 'Import bank CSV', intro: 'Download transactions as a CSV from your bank\u2019s website, then choose the file here. Duplicates are skipped, and transactions you\u2019ve categorized before are matched automatically.', fields: [
+    title: 'Import transactions', intro: 'Choose a CSV downloaded from your card or bank\u2019s website, such as American Express activity. Card payments are recorded as transfers, not income. Credits reduce what\u2019s been charged, and charges are sorted into your categories. Duplicates are skipped.', fields: [
       { k: 'file', label: 'CSV file', type: 'file', accept: '.csv,text/csv' },
-      { k: 'sign', label: 'In this file, spending shows as', type: 'select', opts: [['neg', 'Negative numbers (most banks)'], ['pos', 'Positive numbers (most credit cards)']], v: 'neg' }
+      { k: 'kind', label: 'This file is from', type: 'select', opts: [['auto', 'Figure it out for me'], ['card', 'A credit card, like Amex'], ['bank', 'A checking or savings account']], v: 'auto' },
+      { k: 'acct', label: 'Card or account name', type: 'text', v: '', ph: 'Filled in automatically, e.g. American Express', hint: 'Used to keep a running balance for this card.' }
     ],
     saveLabel: 'Import',
     onSave: async v => {
       if (!v.file) { toast('Choose a CSV file'); return; }
-      try {
-        const rows = parseCsv(await readText(v.file)); if (rows.length < 2) { toast('That file has no rows'); return; }
-        const hd = rows[0].map(x => x.toLowerCase().trim()), f = re => hd.findIndex(x => re.test(x));
-        const di = f(/date/), ni = f(/desc|name|memo|payee|detail|merchant/), ai = f(/^amount|amount/), dbi = f(/debit|withdraw/), cri = f(/credit|deposit/);
-        if (di < 0 || (ai < 0 && dbi < 0)) { toast('Couldn\u2019t find date and amount columns'); return; }
-        const known = {}; S.txns.forEach(t => { if (t.note && t.cat) known[t.note.toLowerCase().slice(0, 12)] = t.cat; });
-        let n = 0, dup = 0;
-        rows.slice(1).forEach(r => {
-          const date = parseDateLoose(r[di]); if (!date) return;
-          let amt, type;
-          if (ai >= 0 && r[ai] !== undefined && r[ai].trim() !== '') { const a = num(r[ai].replace(/[()]/g, m => m === '(' ? '-' : '')); if (!a) return; const exp = v.sign === 'neg' ? a < 0 : a > 0; type = exp ? 'expense' : 'income'; amt = Math.abs(a); }
-          else { const d = num(r[dbi]), c = cri >= 0 ? num(r[cri]) : 0; if (d) { type = 'expense'; amt = Math.abs(d); } else if (c) { type = 'income'; amt = Math.abs(c); } else return; }
-          const note = ni >= 0 ? (r[ni] || '').trim() : '';
-          if (S.txns.some(t => t.date === date && Math.abs(num(t.amount) - amt) < .005 && (t.note || '') === note)) { dup++; return; }
-          S.txns.push({ id: uid(), date, amount: amt, type, note, cat: type === 'expense' ? (known[note.toLowerCase().slice(0, 12)] || uncategorized()) : '', src: type === 'income' ? 'other' : '' }); n++;
-        });
-        commit(); toast(`Imported ${n} transaction${n === 1 ? '' : 's'}${dup ? `, skipped ${dup} duplicate${dup === 1 ? '' : 's'}` : ''}`);
-      } catch (e) { toast('Couldn\u2019t read that file'); }
+      let rows;
+      try { rows = parseCsv(await readText(v.file)); } catch (e) { toast('Couldn\u2019t read that file'); return; }
+      const hi = rows.findIndex(r => r.some(c => /date/i.test(c)) && r.some(c => /amount|debit|credit/i.test(c)));
+      if (hi < 0) { toast('Couldn\u2019t find date and amount columns in that file'); return; }
+      const hd = rows[hi].map(x => x.toLowerCase().trim()), f = re => hd.findIndex(x => re.test(x)), body = rows.slice(hi + 1);
+      const di = f(/^date$|transaction date|trans\. date|posted date|^date/), ni = f(/^description$|desc|payee|merchant|^name$|memo|detail/), ai = f(/^amount$|amount/), dbi = f(/debit|withdraw/), cri = f(/credit|deposit/), ci = f(/^category$|category/), ti = f(/^type$|transaction type/);
+      if (di < 0 || (ai < 0 && dbi < 0)) { toast('Couldn\u2019t find date and amount columns in that file'); return; }
+      const cardHeaders = hd.some(x => /card member|card no|card number|appears on your statement|extended details/.test(x)) || (ti >= 0 && body.some(r => /^(sale|payment|return)$/i.test((r[ti] || '').trim())));
+      // decide which sign means spending
+      let sign = 'neg', isCard = v.kind === 'card' || (v.kind === 'auto' && cardHeaders);
+      if (ai >= 0) {
+        let pp = 0, pn = 0, p = 0, n = 0;
+        body.forEach(r => { const a = parseAmt(r[ai]); if (!a) return; const pay = PAY_RE.test(r[ni] || '') || (ti >= 0 && /payment/i.test(r[ti] || '')); if (pay) a > 0 ? pp++ : pn++; else a > 0 ? p++ : n++; });
+        sign = (pp || pn) ? (pn >= pp ? 'pos' : 'neg') : (p >= n ? 'pos' : 'neg');
+        if (v.kind === 'bank') sign = p > n * 3 && !(pp || pn) ? 'pos' : 'neg';
+        if (v.kind === 'auto' && sign === 'pos') isCard = true;
+      }
+      if (v.kind === 'bank') isCard = false;
+      const amexHdr = hd.some(x => /card member|appears on your statement|extended details/.test(x)) || body.some(r => /american express|amex/i.test((r[ni] || '') + (r[ci] || '')));
+      const acct = v.acct || (amexHdr && isCard ? 'American Express' : (ti >= 0 && isCard ? 'Chase card' : (v.file.name || 'Imported').replace(/\.csv$/i, '')));
+      if (ai >= 0 && ni >= 0) { const th = body.filter(r => CARD_THANKS_RE.test(r[ni] || '')).map(r => parseAmt(r[ai])).filter(Boolean); if (th.length) { isCard = true; sign = th.filter(x => x < 0).length >= th.length / 2 ? 'pos' : 'neg'; } }
+      const known = {}; S.txns.forEach(t => { if (t.note && t.cat && t.type === 'expense') known[merchKey(t.note)] = t.cat; });
+      const un = uncategorized(), runIds = new Set(); let nE = 0, nR = 0, nI = 0, nP = 0, dup = 0, fixed = 0, unc = 0;
+      body.forEach(r => {
+        const date = parseDateLoose(r[di] || ''); if (!date) return;
+        let spend;
+        if (ai >= 0 && String(r[ai] ?? '').trim() !== '') { const a = parseAmt(r[ai]); if (!a) return; spend = sign === 'pos' ? a : -a; }
+        else { const d = dbi >= 0 ? Math.abs(parseAmt(r[dbi])) : 0, c = cri >= 0 ? Math.abs(parseAmt(r[cri])) : 0; if (d) spend = d; else if (c) spend = -c; else return; }
+        const note = (ni >= 0 ? r[ni] || '' : '').replace(/\s+/g, ' ').trim(), tv = ti >= 0 ? (r[ti] || '').trim() : '', srcCat = ci >= 0 ? (r[ci] || '').trim().replace(/^['"]+|['"]+$/g, '') : '';
+        let type = 'expense', amount = spend;
+        const isPay = /payment/i.test(tv) || CARD_THANKS_RE.test(note) || PAY_RE.test(note);
+        if (spend < 0) {
+          if (isCard || CARD_THANKS_RE.test(note)) { if (isPay) { type = 'payment'; amount = -spend; } else amount = spend; }
+          else { type = 'income'; amount = -spend; }
+        } else if (!isCard && CARDPAY_RE.test(note) && /pay|pmt|epay/i.test(note)) { type = 'payment'; }
+        amount = Math.round(amount * 100) / 100;
+        const same = t => !runIds.has(t.id) && t.date === date && (t.note || '') === note && Math.abs(Math.abs(num(t.amount)) - Math.abs(amount)) < .005;
+        const old = S.txns.find(t => same(t) && t.type === 'income' && type !== 'income');
+        if (old) {
+          old.type = type; old.amount = amount; old.src = ''; old.acct = acct; old.imported = true;
+          old.cat = type === 'expense' ? guessCat(note, srcCat, known) : ''; if (srcCat) old.srcCat = srcCat;
+          fixed++; return;
+        }
+        const ex = S.txns.find(t => same(t) && t.type === type && Math.abs(num(t.amount) - amount) < .005);
+        if (ex) { if (!ex.acct) ex.acct = acct; dup++; return; }
+        const t = { id: uid(), date, amount, type, note, imported: true, acct };
+        if (type === 'expense') { t.cat = guessCat(note, srcCat, known); if (srcCat) t.srcCat = srcCat; if (t.cat === un) unc++; amount < 0 ? nR++ : nE++; }
+        else if (type === 'income') { t.cat = ''; t.src = 'other'; nI++; }
+        else { t.cat = ''; nP++; }
+        runIds.add(t.id); S.txns.push(t);
+      });
+      commit();
+      const pl = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`, parts = [];
+      if (nE) parts.push(pl(nE, 'charge')); if (nR) parts.push(pl(nR, 'credit')); if (nP) parts.push(pl(nP, 'card payment')); if (nI) parts.push(pl(nI, 'deposit'));
+      toast((parts.length ? 'Imported ' + parts.join(', ') + '.' : 'Nothing new to import.') + (fixed ? ` Fixed ${pl(fixed, 'earlier entry')} that had been counted as income.` : '') + (dup ? ` Skipped ${pl(dup, 'duplicate')}.` : '') + (unc ? ` ${unc} need${unc === 1 ? 's' : ''} a category.` : ''));
+      UI.tab = 'budget'; UI.bsub = 'tx'; UI.txAcct = acct; UI.txFilter = ''; render();
     }
   });
 }
@@ -1674,6 +1771,8 @@ const ACT = {
   expTx: () => download(`transactions-${todayISO()}.csv`, toCsv([['Date', 'Type', 'Category', 'Description', 'Amount'], ...S.txns.slice().sort((a, b) => a.date < b.date ? -1 : 1).map(t => [t.date, t.type, t.type === 'expense' ? catById(t.cat).name : t.src, t.note, (t.type === 'expense' ? -1 : 1) * num(t.amount)])]), 'text/csv'),
   expAcct: () => download(`accounts-${todayISO()}.csv`, toCsv([['Name', 'Kind', 'Type', 'Tax treatment', 'Balance', 'APR', 'Updated'], ...S.accounts.map(a => [a.name, 'Account', typeOf(a).label, typeOf(a).tax, acctValue(a).toFixed(2), '', a.updated || '']), ...S.debts.map(d => [d.name, 'Debt', optLabel(DEBT_TYPES, d.type), '', (-num(d.balance)).toFixed(2), d.apr, ''])]), 'text/csv'),
   pdf: () => printReport(),
+  txFilter: d => { UI.txFilter = d.v; render(); },
+  txAcct: d => { UI.txAcct = d.v; render(); },
   refreshQuotes: () => refreshQuotes(),
   quoteSetup: () => { openSettings(); setTimeout(() => { const el = $('#liveprices'); if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); const i = $('#s-qk'); if (i) i.focus(); }, 320); },
   importCsv: () => importCsvForm(),
@@ -1732,12 +1831,21 @@ function bindEvents() {
   });
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
 }
+function cleanCardPayments() {
+  const bad = S.txns.filter(t => t.type === 'income' && (t.src === 'other' || t.imported) && CARD_THANKS_RE.test(t.note || ''));
+  if (!bad.length) return 0;
+  const ids = new Set(bad.map(t => t.id)); S.txns = S.txns.filter(t => !ids.has(t.id));
+  return bad.length;
+}
 async function init() {
   S = merge(await Store.load());
+  S.txns.forEach(t => { if (t.type === 'income' && t.src !== 'salary' && (CARD_THANKS_RE.test(t.note || '') || /^(autopay|mobile|online|electronic) payment/i.test(t.note || ''))) { t.type = 'payment'; t.src = ''; t.cat = ''; } });
   applyTheme(); bindEvents();
   runBills(); render();
   if (S.settings.pin) showLock();
   if (!S.onboarded) onboard();
+  const cleaned = cleanCardPayments();
+  if (cleaned) { render(); setTimeout(() => toast(`Removed ${cleaned} credit card payment${cleaned === 1 ? '' : 's'} that had been counted as income.`), 600); }
   save();
   if (S.onboarded && S.settings.quoteKey && S.settings.autoQuotes) refreshQuotes({ silent: true });
 }
