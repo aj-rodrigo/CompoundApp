@@ -2,7 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -294,6 +294,81 @@ body.practicing #fab{bottom:calc(112px + env(safe-area-inset-bottom))}
 .imflip{display:block;margin:4px 0 0 auto;border:0;cursor:pointer}
 .imas{display:block;margin:4px 0 0 auto;font-size:13px;padding:5px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surf2);color:var(--text)}
 .impl .li .main{cursor:pointer}
+.domgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:4px}
+.domgrid button{height:40px;border-radius:10px;background:var(--surf2);color:var(--text);font-size:15px;font-weight:600;border:1.5px solid transparent}
+.domgrid button.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
+/* ===== v6: no zoom, home page, contributions, refresh ===== */
+html{touch-action:manipulation;-webkit-text-size-adjust:100%}
+input:not([type=range]):not([type=checkbox]):not([type=file]),select,textarea{font-size:16px!important}
+.qa-amt input{font-size:44px!important}
+.imas{padding:4px 8px}
+.home-top{display:flex;justify-content:space-between;align-items:flex-start;padding:16px 2px 18px}
+.home-date{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);font-weight:650}
+.home-hi{font-size:28px;line-height:1.1;font-weight:750;letter-spacing:-.025em;margin:6px 0 0}
+.avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(145deg,var(--acc),var(--c3));color:#fff;font-weight:750;font-size:16px;display:grid;place-items:center;box-shadow:var(--shadow)}
+.avatar svg{width:18px;height:18px}
+.hero2{position:relative;overflow:hidden;border-radius:26px;padding:18px 20px 16px;color:#fff;background:radial-gradient(120% 90% at 100% 0%,rgba(154,140,245,.55) 0%,rgba(154,140,245,0) 55%),linear-gradient(150deg,#3B7BF0 0%,#1F4FC4 45%,#132F7A 100%);box-shadow:0 18px 40px rgba(20,60,160,.35)}
+[data-theme=light] .hero2{box-shadow:0 14px 34px rgba(29,106,229,.28)}
+.h2seg{display:inline-flex;background:rgba(255,255,255,.14);border-radius:999px;padding:3px}
+.h2seg button{color:rgba(255,255,255,.75);font-size:13px;font-weight:650;padding:6px 12px;border-radius:999px}
+.h2seg button.on{background:rgba(255,255,255,.95);color:#1B3E9E}
+.h2eye{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.14);display:grid;place-items:center;color:#fff}
+.h2eye svg{width:17px;height:17px}
+.h2lbl{margin-top:18px;font-size:13px;font-weight:600;color:rgba(255,255,255,.75);letter-spacing:.02em}
+.h2big{font-size:42px;font-weight:780;letter-spacing:-.035em;line-height:1.05;margin-top:2px;position:relative;z-index:1}
+.h2pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;position:relative;z-index:1;min-height:4px}
+.h2pill{background:rgba(255,255,255,.16);border-radius:999px;padding:4px 10px;font-size:13px;font-weight:650}
+.h2spark{display:block;width:calc(100% + 40px);height:74px;margin:6px -20px 0}
+.h2row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;position:relative;z-index:1}
+.h2row>div{background:rgba(255,255,255,.12);border-radius:14px;padding:9px 12px;display:flex;flex-direction:column}
+.h2row span{font-size:12px;color:rgba(255,255,255,.72);font-weight:600}
+.h2row b{font-size:16px;font-weight:700;margin-top:1px}
+.qa-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0 6px}
+.qa-row button{display:flex;flex-direction:column;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--text)}
+.qa-row button span{width:54px;height:54px;border-radius:18px;background:var(--surf);box-shadow:var(--shadow);display:grid;place-items:center;color:var(--acc)}
+.qa-row button span svg{width:22px;height:22px}
+.qa-row button:active span{transform:scale(.94)}
+.glance{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 4px}
+.gl{background:var(--surf);border-radius:18px;padding:12px 11px;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:flex-start;text-align:left;min-width:0}
+.gl-ic{width:28px;height:28px;border-radius:9px;background:var(--surf2);display:grid;place-items:center;color:var(--acc);margin-bottom:8px}
+.gl-ic svg{width:15px;height:15px}
+.gl-l{font-size:11.5px;color:var(--mute);font-weight:600;white-space:nowrap;letter-spacing:-.01em;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.gl-b{font-size:18px;font-weight:750;margin-top:1px;letter-spacing:-.01em}
+.gl-s{font-size:12px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.home-sec{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);font-weight:700;margin:22px 4px 10px}
+.home-edit{display:block;margin:18px auto 6px;color:var(--acc);font-size:14px;font-weight:600;padding:8px 14px}
+/* payoff method cards */
+.stcard{background:var(--surf2);border-radius:14px;padding:12px;text-align:left;border:2px solid transparent;color:var(--text);display:block;width:100%}
+.stcard.chosen{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,var(--surf2))}
+.chosen-tag{background:var(--acc);color:var(--acc-ink);font-size:11px}
+.porder{margin:8px 0 0;padding-left:18px;font-size:12.5px}
+.porder li{margin:2px 0}
+/* bulk contributions */
+.bcrow{display:grid;grid-template-columns:1.25fr 1fr 34px;gap:6px;margin-bottom:6px;align-items:center}
+.bcrow input{padding:9px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surf);min-height:42px;width:100%;color:var(--text)}
+.bcrow button{width:34px;height:34px;border-radius:50%;background:var(--surf2);font-size:12px}
+.cfbar{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.cfbar select{padding:9px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surf);color:var(--text);min-height:40px}
+.cfbar select:last-child{grid-column:1/-1}
+/* pull to refresh */
+#ptr{display:none!important}
+#ptr2{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 6px);width:40px;height:40px;border-radius:50%;background:var(--surf);box-shadow:0 6px 18px rgba(0,0,0,.25);z-index:30;pointer-events:none;will-change:transform,opacity}
+#ptr2 svg{width:40px;height:40px;fill:none;stroke-linecap:round;stroke-linejoin:round}
+#ptr2 .trk{stroke:var(--line);stroke-width:2.5}
+#ptr2 .arc{stroke:var(--acc);stroke-width:2.5;stroke-dasharray:100;stroke-dashoffset:100;transform:rotate(-90deg);transform-origin:20px 20px}
+#ptr2 .arw{stroke:var(--mute);stroke-width:2;transform-origin:20px 20px;transition:transform .2s ease,stroke .2s}
+#ptr2.ready .arw{transform:rotate(180deg);stroke:var(--acc)}
+#ptr2 .chk{stroke:var(--pos);stroke-width:2.6;stroke-dasharray:20;stroke-dashoffset:20;opacity:0}
+#ptr2.spin .arw{opacity:0}
+#ptr2.spin .arc{stroke-dasharray:28 72;stroke-dashoffset:0!important;animation:ptr2spin .8s linear infinite}
+@keyframes ptr2spin{to{transform:rotate(270deg)}}
+#ptr2.done .arw{opacity:0}
+#ptr2.done .arc{stroke:var(--pos);stroke-dashoffset:0!important}
+#ptr2.done .chk{opacity:1;stroke-dashoffset:0;transition:stroke-dashoffset .3s ease .05s}
+@media (prefers-reduced-motion:reduce){#ptr2.spin .arc{animation:none}}
+.chosen-tag{display:inline-block;background:var(--acc);color:var(--acc-ink);font-size:11.5px;font-weight:750;padding:3px 9px;border-radius:999px}
+.chosen-tag.ghost{background:transparent;color:var(--mute);border:1px solid var(--line)}
+body.on-today #fab{display:none}
 </style>
 </head>
 <body>
@@ -645,7 +720,7 @@ function project(a, H) {
     contrib.push(sal * (kp + mp) / 100 + hsaA + a.ira * 12 + num(a.extraInv) * 12);
   }
   const start = assetsTotal();
-  const ds = payoff(S.debts, a.extra, 'avalanche').series;
+  const ds = payoff(S.debts, a.extra, planStrat()).series;
   if (num(a.afterDebt)) { const free = ds.length - 1; for (let y = 0; y < H; y++) contrib[y] += num(a.afterDebt) * clamp((y + 1) * 12 - free, 0, 12); }
   const debtAt = y => ds[Math.min(y * 12, ds.length - 1)] || 0;
   const N = 1000; const paths = Array.from({ length: H + 1 }, () => new Float64Array(N));
@@ -1094,7 +1169,7 @@ const W = {
   },
   debt() {
     if (!S.debts.length) return card('Debt', '<div class="sm mute">No debts added. Add one with the + button.</div>');
-    const pf = payoff(S.debts, S.settings.extra, 'avalanche'), mi = sum(S.debts.map(d => num(d.balance) * num(d.apr) / 1200));
+    const pf = payoff(S.debts, S.settings.extra, planStrat()), mi = sum(S.debts.map(d => num(d.balance) * num(d.apr) / 1200));
     return card('Debt', `<div class="row" style="align-items:flex-end"><div><div class="sm mute">Debt-free</div><div class="mid">${pf.never ? 'Not on current payments' : fmtMonYr(monthsFromNow(pf.months))}</div></div><button class="chip" data-act="goDebt">Plan</button></div><div class="grid2" style="margin-top:12px">${stat('Total debt', money(debtTotal()))}${stat('Interest this month', money(mi))}</div>`);
   },
   retire() {
@@ -1160,7 +1235,7 @@ function scrInvest() {
   }).join('');
   h += card('Accounts', (rows ? `<div class="list">${rows}</div>` : '<div class="empty">No accounts yet.</div>') + `<button class="btn ghost block" style="margin-top:10px" data-act="addAcct">Add account</button>`);
   const rc = S.contribs.slice().sort((a, b) => a.date < b.date ? 1 : -1).slice(0, 10);
-  h += card('Recent contributions', rc.length ? `<div class="list">${rc.map(c => { const a = S.accounts.find(x => x.id === c.acct); return `<button class="li" data-act="editContrib" data-id="${c.id}"><span class="main"><span class="t">${esc(a ? a.name : 'Deleted account')}</span><span class="s">${fmtDate(c.date)}${c.kind && c.kind !== 'you' ? ', ' + esc(optLabel(KINDS, c.kind)) : ''}</span></span><span class="amt pos">${money(c.amount, { sign: true })}</span></button>`; }).join('')}</div>` : '<div class="sm mute">Log a paycheck to record 401(k), match and HSA contributions in one step.</div>');
+  h += withContribTools(card('Recent contributions', rc.length ? `<div class="list">${rc.map(c => { const a = S.accounts.find(x => x.id === c.acct); return `<button class="li" data-act="editContrib" data-id="${c.id}"><span class="main"><span class="t">${esc(a ? a.name : 'Deleted account')}</span><span class="s">${fmtDate(c.date)}${c.kind && c.kind !== 'you' ? ', ' + esc(optLabel(KINDS, c.kind)) : ''}</span></span><span class="amt pos">${money(c.amount, { sign: true })}</span></button>`; }).join('')}</div>` : '<div class="sm mute">Log a paycheck to record 401(k), match and HSA contributions in one step.</div>'));
   return h + '</div>';
 }
 function acctSheetHtml(a) {
@@ -1579,7 +1654,7 @@ function planDebt() {
   let h = `<section class="card hero" id="debtSum"></section>`;
   const xMax = Math.max(3000, Math.ceil(debtTotal() / 500) * 500, Math.ceil(num(S.settings.extra) / 500) * 500), xStep = xMax > 20000 ? 100 : xMax > 6000 ? 50 : 25;
   h += card('Extra payment each month', `<div class="row"><span class="sm mute">On top of minimums</span><b id="extraLbl">${money(S.settings.extra, { force: true })}</b></div><input type="range" min="0" max="${xMax}" step="${xStep}" value="${num(S.settings.extra)}" data-inp="extra" data-chg="extraDone" aria-label="Extra monthly payment"><div class="row xs mute" style="margin-top:-4px"><span>$0</span><span>${money(xMax, { force: true, whole: true })}</span></div><div class="fld" style="margin:10px 0 8px"><label for="extraExact">Or type an exact amount</label><input id="extraExact" type="text" inputmode="decimal" data-chg="extraExact" value="${num(S.settings.extra)}"></div><div class="sm" id="extraRes"></div>`);
-  h += card('Avalanche vs snowball', `<div class="cmp" id="debtCmp"></div><div class="chart" id="c-debt" style="margin-top:12px"></div><div class="xs mute" style="margin-top:6px">Avalanche pays the highest interest rate first. Snowball pays the smallest balance first for quicker wins.</div>`);
+  h += card('Your payoff method', `<div class="sm mute" style="margin:-4px 0 10px">Your extra payment goes to one debt at a time. Tap a method to use it for your plan.</div><div class="cmp" id="debtCmp"></div><div id="debtWhy"></div><div class="chart" id="c-debt" style="margin-top:12px"></div>`, '<small>tap to choose</small>');
   const mi = d => num(d.balance) * num(d.apr) / 1200;
   h += card('Your debts', `<div class="list">${S.debts.map(d => { const t = esc(optLabel(DEBT_TYPES, d.type) || 'Debt'); const util = d.type === 'cc' && num(d.limit) ? num(d.balance) / num(d.limit) : null; return `<button class="li" data-act="editDebt" data-id="${d.id}" style="flex-wrap:wrap"><span class="ic">${I(d.type === 'car' ? 'car' : d.type === 'mortgage' ? 'home' : d.type === 'student' ? 'book' : 'card')}</span><span class="main"><span class="t">${esc(d.name)}</span><span class="s">${t}, ${num(d.apr)}% APR, ${money(d.min)} minimum, ${money(mi(d))} interest a month${d.link ? (() => { const r = linkedTotals(d); return `<br><span style="color:var(--acc)">Running total of ${r.count} ${esc(d.link)} transaction${r.count === 1 ? '' : 's'}</span>: ${num(d.startBal) ? money(d.startBal) + ' start + ' : ''}${money(r.charges)} charged \u2212 ${money(r.credits)} credits \u2212 ${money(r.payments)} paid${r.running < 0 ? `. Payments are ${money(-r.running)} more than the charges imported, so this shows $0. Add a starting balance to fix it.` : ''}`; })() : ''}</span></span><span class="amt">${money(d.balance)}${d.link ? '<div class="xs mute">auto</div>' : ''}</span>${util != null ? `<span style="flex-basis:100%;padding-left:42px;margin-top:6px"><span class="xs ${util > .3 ? 'neg' : 'mute'}">${pct(util, 0)} of ${money(d.limit)} limit used${util > .3 ? ', above the 30% that helps credit scores' : ''}</span>${bar(util, util > .3 ? 'var(--neg)' : 'var(--pos)', .3)}</span>` : ''}</button>`; }).join('')}</div><button class="btn ghost block" style="margin-top:10px" data-act="addDebt">Add debt</button>`);
   const th = num(S.settings.threshold), ret = num(S.settings.ret);
@@ -2063,7 +2138,7 @@ async function init() {
 }
 init();
 /* ================= v2 features ================= */
-const APP_VERSION = '2026.09.26-11';
+const APP_VERSION = '2026.09.27-12';
 const rules = () => S.rules || (S.rules = []);
 
 /* ---------- undo ---------- */
@@ -2536,7 +2611,7 @@ function renderWhatIf() {
   const avg = c ? sum([1, 2, 3].map(i => spentIn(c.id, monthRange(-i)))) / 3 : 0;
   let debtTxt = '';
   if (S.debts.some(d => num(d.balance) > 0)) {
-    const b = payoff(S.debts, S.settings.extra, 'avalanche'), a = payoff(S.debts, num(S.settings.extra) + (toDebt ? amt : 0), 'avalanche');
+    const b = payoff(S.debts, S.settings.extra, planStrat()), a = payoff(S.debts, num(S.settings.extra) + (toDebt ? amt : 0), planStrat());
     debtTxt = toDebt && !b.never ? `<div class="row sm" style="margin-top:6px"><span class="mute">Debt-free</span><b class="pos">${b.months - a.months} months sooner, ${fmtMonYr(monthsFromNow(a.months))}</b></div><div class="row sm"><span class="mute">Interest saved</span><b class="pos">${money(b.interest - a.interest)}</b></div>` : '';
   }
   el.innerHTML = `<div class="sm mute">Cutting ${esc(cName.toLowerCase())} by ${money(amt)} a month${avg > 1 ? ` (${pct(amt / avg, 0)} of what you usually spend)` : ''}</div><div class="big pos">+${compact(alt.p50[30] - base.p50[30])}</div><div class="sm mute">more net worth in 30 years${S.settings.real ? ', in today\u2019s dollars' : ''}</div><div class="grid3" style="margin-top:12px">${stat('10 years', '+' + compact(alt.p50[10] - base.p50[10]), 'pos')}${stat('20 years', '+' + compact(alt.p50[20] - base.p50[20]), 'pos')}${stat('Per year', money(amt * 12, { whole: true }))}</div>${debtTxt}<div class="chart" id="c-wi" style="margin-top:12px"></div><div class="xs mute" style="margin-top:6px">${toDebt ? 'Extra goes to debt first, highest interest rate first. Once you\u2019re debt-free, the same amount is invested each month.' : 'Assumes the money is invested each month at your expected return.'}</div>`;
@@ -2864,13 +2939,13 @@ async function pullRefresh() {
   lastUpdCheck = 0; await checkUpdate(); commit();
   toast(S.settings.quoteKey ? 'Prices and bills are up to date' : 'Up to date');
 }
-(function ptrInit() {
+function ptrInitOld() {
   const ind = document.createElement('div'); ind.id = 'ptr'; ind.setAttribute('aria-hidden', 'true'); ind.innerHTML = '<svg viewBox="0 0 24 24" class="i"><path d="M12 5v14 M6 13l6 6 6-6"/></svg>'; document.body.appendChild(ind);
   let y0 = null, dy = 0, busy = false;
   window.addEventListener('touchstart', e => { if (busy || window.scrollY > 0 || $$('#sheets .ov').length || UI.locked || e.touches.length > 1 || (e.target.closest && e.target.closest('.swrow,.chart,input,select,textarea'))) { y0 = null; return; } y0 = e.touches[0].clientY; dy = 0; }, { passive: true });
   window.addEventListener('touchmove', e => { if (y0 == null) return; dy = e.touches[0].clientY - y0; if (dy <= 0 || window.scrollY > 0) { ind.style.opacity = 0; return; } const p = Math.min(dy, 130); ind.style.transform = `translate(-50%, ${p * .55}px) rotate(${Math.min(180, dy * 2)}deg)`; ind.style.opacity = Math.min(1, p / 80); ind.classList.toggle('ready', dy > 85); }, { passive: true });
   window.addEventListener('touchend', () => { if (y0 == null) return; const go = dy > 85; y0 = null; if (!go) { ind.style.opacity = 0; ind.classList.remove('ready'); return; } busy = true; ind.classList.add('spin'); pullRefresh().finally(() => { busy = false; ind.classList.remove('spin', 'ready'); ind.style.opacity = 0; ind.style.transform = ''; }); });
-})();
+}
 
 /* ---------- app icon badge ---------- */
 let badgeT;
@@ -3098,7 +3173,7 @@ async function exitPractice() {
 const TOUR = [
   ['[data-w="hero"]', 'Your big picture', 'Net worth, or tap Cash flow to see money in and out this month.'],
   ['[data-w="safe"]', 'Safe to spend', 'What you can spend per day and still stay on budget.'],
-  ['#fab', 'Log in two taps', 'Tap + then type the amount and pick a category. You can scan receipts here too.'],
+  ['.qa-row', 'Quick actions', 'Log an expense in two taps, scan a receipt, log a paycheck, or import statements. On other screens, use the + button.'],
   ['#tabs [data-tab="budget"]', 'Spending', 'Budgets, transactions, bills, goals and your cash-flow calendar. Swipe a transaction to delete it or change its category.'],
   ['#tabs [data-tab="invest"]', 'Investing', 'Accounts, holdings, live prices and your contribution limits.'],
   ['#tabs [data-tab="plan"]', 'Plan', 'Your future, debt payoff, where your next dollar should go, and handy tools.'],
@@ -3163,7 +3238,7 @@ function plan5() {
 function planDone() {
   S.planDone = todayISO(); commit();
   const tk = calcPay().net / 12, bud = sum(S.cats.map(c => num(c.budget))), left = tk - bud, efm = num(S.settings.efMonths), nm = needsMonthly(), ef = efTotal();
-  const f = fiInfo(), pf = S.debts.some(d => num(d.balance) > 0) ? payoff(S.debts, S.settings.extra, 'avalanche') : null, g = S.goals[S.goals.length - 1];
+  const f = fiInfo(), pf = S.debts.some(d => num(d.balance) > 0) ? payoff(S.debts, S.settings.extra, planStrat()) : null, g = S.goals[S.goals.length - 1];
   const row = (ic, t, d) => `<div class="li"><span class="ic">${I(ic)}</span><span class="main"><span class="t">${t}</span><span class="s">${d}</span></span></div>`;
   openSheet(sheetHead('Your money plan', 'Done') + `<section class="card hero">${bud ? `<div class="sm mute">Each month you keep</div><div class="big ${left < 0 ? 'neg' : 'pos'}">${money(left, { whole: true })}</div><div class="sm">${tk ? `${pct(Math.max(0, left) / tk, 0)} of take-home, goal ${num(S.settings.saveTarget) || 20}%` : ''}</div>` : `<div class="sm mute">You take home</div><div class="big">${money(tk, { whole: true })}</div><div class="sm">a month. Set budgets to see how much you keep.</div>`}</section><section class="card" style="margin-top:12px"><div class="list">
     ${row('wallet', bud ? `Budgets: ${money(bud, { whole: true })} a month` : 'Budgets: not set yet', !bud ? 'Import a month of spending, then rebuild your plan to get suggested budgets.' : left < 0 ? 'More than you take home. Trim a Wants category.' : 'Tracked in Spending, with a safe-to-spend number on Today.')}
@@ -3364,7 +3439,7 @@ function autoSheet(a) {
   ${tg('rc-on', 'Add deposits automatically', r.on, 'Recorded on schedule, so you don\u2019t have to log them.')}
   <div class="fld"><label for="rc-freq">How often</label><select id="rc-freq">${[['payday', 'Each payday'], ['semimonthly', 'Twice a month (15th and last day)'], ['monthly', 'Once a month'], ['weeks', 'Custom: every few weeks'], ['days', 'Custom: specific days of the month'], ['dates', 'Custom: specific dates']].map(([v, l]) => `<option value="${v}" ${r.freq === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
   <div id="rc-weeksf"><div><div class="fld"><label for="rc-every">Repeat</label><select id="rc-every">${[1, 2, 3, 4, 6, 8].map(n => `<option value="${n}" ${(num(r.every) || 2) === n ? 'selected' : ''}>${n === 1 ? 'Every week' : 'Every ' + n + ' weeks'}</option>`).join('')}</select></div><div class="fld"><label for="rc-start">Starting</label><input id="rc-start" type="date" value="${esc(r.startDate || todayISO())}"></div></div></div>
-  <div class="fld" id="rc-domf"><label for="rc-dom">Days of the month</label><input id="rc-dom" type="text" inputmode="numeric" value="${esc((r.dom || [1, 15]).join(', '))}" placeholder="e.g. 1, 10, 20"><div class="hint">Separate days with commas. 31 means the last day of shorter months.</div></div>
+  <div class="fld" id="rc-domf"><label>Days of the month</label><input id="rc-dom" type="hidden" value="${esc((r.dom || [1, 15]).join(','))}"><div class="domgrid" role="group" aria-label="Days of the month">${Array.from({ length: 31 }, (_, k) => k + 1).map(d => `<button type="button" class="${(r.dom || [1, 15]).map(Number).includes(d) ? 'on' : ''}" data-act="domTog" data-d="${d}" aria-pressed="${(r.dom || [1, 15]).map(Number).includes(d)}">${d}</button>`).join('')}</div><div class="hint" id="rc-domtxt"></div></div>
   <div id="rc-datesf"><div class="xs mute" style="margin-bottom:6px">Deposit dates</div><div class="paydates" id="rc-dlist"></div><div class="row" style="gap:8px;margin:8px 0 12px"><input id="rc-dadd" type="date" aria-label="Add a deposit date" style="flex:1;padding:10px 12px;border-radius:11px;border:1px solid var(--line);background:var(--surf2);font-size:16px;min-height:44px"><button class="btn" data-act="rcDateAdd">Add</button></div></div>
   <div class="fld" id="rc-dayf"><label for="rc-day">Day of the month</label><input id="rc-day" type="text" inputmode="numeric" value="${num(r.day) || 5}"></div>
   ${payroll ? tg('rc-pay', `Use my paycheck contribution (${money(payAmt, { force: true })})`, r.fromPay, 'Follows your Paycheck settings, so raises and % changes carry over.') : ''}
@@ -3372,7 +3447,7 @@ function autoSheet(a) {
   ${['k401', 'roth401k'].includes(a.type) && c.match > 0 ? tg('rc-match', `Add the employer match too (${money(per(c.match), { force: true })})`, r.match, S.accounts.some(x => x.type === 'match') ? 'Goes into your Employer match account.' : 'Goes into this account.') : ''}
   <div class="xs mute">Deposits start with the next scheduled date. If you also tap Log paycheck, Compound won\u2019t double-count contributions that are automatic here.</div></section>
   <button class="btn block" style="margin-top:12px" data-act="aiSave" data-a="${a.id}">Save</button>`;
-  const ov = openSheet(html); ov._ai = a.id; ov._dates = (r.dates || []).slice().sort();
+  const ov = openSheet(html); ov._ai = a.id; ov._dates = (r.dates || []).slice().sort(); setTimeout(() => domText(ov), 0);
   const sync = () => {
     const f = $('#rc-freq', ov).value, pay = $('#rc-pay', ov);
     $('#rc-dayf', ov).style.display = f === 'monthly' ? '' : 'none';
@@ -3453,6 +3528,12 @@ Object.assign(ACT, {
   rcDateDel: d => { const ov = topSheet(); if (!ov) return; ov._dates = (ov._dates || []).filter(x => x !== d.d); rcDatesRender(ov); },
   aiNow: d => { const a = S.accounts.find(x => x.id === d.a); if (a) depositNowForm(a); }
 });
+
+function domText(ov) {
+  const el = $('#rc-domtxt', ov), v = $('#rc-dom', ov).value.split(',').map(Number).filter(Boolean).sort((a, b) => a - b); if (!el) return;
+  el.textContent = v.length ? `Deposits on the ${v.map(ordinal).join(', ').replace(/, ([^,]*)$/, ' and $1')} of each month.${v.some(d => d > 28) ? ' In shorter months, days past the end move to the last day.' : ''}` : 'Tap the days you want deposits on.';
+}
+Object.assign(ACT, { domTog: (d, el) => { const ov = topSheet(), inp = $('#rc-dom', ov); let v = inp.value.split(',').map(Number).filter(Boolean); const n = +d.d; v = v.includes(n) ? v.filter(x => x !== n) : [...v, n]; inp.value = v.sort((a, b) => a - b).join(','); el.classList.toggle('on', v.includes(n)); el.setAttribute('aria-pressed', v.includes(n)); domText(ov); } });
 /* ================= flexible pay schedules ================= */
 /* S.pay.mode (only when freq is 24): 'standard' = 15th and last day, 'days' = two set days, 'custom' = your own dates */
 const payMode = () => +S.pay.freq === 24 ? (S.pay.mode || 'standard') : 'standard';
@@ -3638,12 +3719,15 @@ function acctForStatement(st) {
   return S.accounts.find(a => a.stmtLast4 && a.stmtLast4 === st.last4) || S.accounts.find(a => a.type === want) || S.accounts.find(a => TYPES[a.type] && TYPES[a.type].inv);
 }
 function statementPlan(st, a) {
-  const contribs = st.txns.filter(t => t.type === 'Contribution' && t.amount > 0).map(t => {
-    const date = t.settle, dup = S.contribs.find(c => c.acct === a.id && Math.abs(num(c.amount) - t.amount) < .005 && Math.abs((pd(c.date) - pd(date)) / 864e5) <= 4);
-    return { date, amount: t.amount, taxYear: t.taxYear || +date.slice(0, 4), dup: !!dup, note: t.name.replace(/\s+ACH.*$/i, '') };
+  const sel = UI.stmtSelFor === st ? (UI.stmtSel || {}) : {}, used = new Set();
+  const contribs = st.txns.filter(t => t.type === 'Contribution' && t.amount > 0).map((t, i) => {
+    const date = t.settle, m = findContribMatch(a.id, t.amount, date, used); if (m) used.add(m.id);
+    const dupAuto = !!(m && m.auto && m.src !== 'statement' && m.src !== 'import');
+    const inc = i in sel ? sel[i] : (!m || dupAuto);
+    return { i, date, amount: t.amount, taxYear: t.taxYear || +date.slice(0, 4), dup: !!m, dupAuto, dupId: m && m.id, dupDate: m && m.date, inc, note: t.name.replace(/\s+ACH.*$/i, '') };
   });
   const known = sum(S.contribs.filter(c => c.acct === a.id && (c.ty || +c.date.slice(0, 4)) === st.year && (c.lim === true || (c.lim == null && c.kind === 'you'))).map(c => num(c.amount)));
-  const adding = sum(contribs.filter(c => !c.dup && c.taxYear === st.year).map(c => c.amount));
+  const adding = sum(contribs.filter(c => c.inc && !c.dupAuto && c.taxYear === st.year).map(c => c.amount));
   const gap = st.ytd != null ? Math.round((st.ytd - known - adding) * 100) / 100 : 0;
   const newer = !a.stmtDate || st.end >= a.stmtDate;
   return { contribs, gap, known, adding, newer };
@@ -3656,7 +3740,7 @@ function statementReview(st) {
   const hv = sum(st.holdings.map(h => h.value)) + st.cash;
   const html = sheetHead('Statement found', 'Cancel') + `<section class="card hero"><div class="sm mute">${esc(st.provider)} ${esc(st.kind)}${st.last4 ? ' \u2022\u2022' + esc(st.last4) : ''}</div><div class="big">${money(st.value || hv, { force: true })}</div><div class="sm mute">as of ${fmtDate(st.end)}</div></section>
   <div class="fld" style="margin-top:12px"><label for="stAcct">Add to this Compound account</label><select id="stAcct" data-chg="stmtAcct">${accts.map(x => `<option value="${x.id}" ${x.id === a.id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></div>
-  <section class="card"><h2><span>Contributions</span><small>${pl.contribs.filter(c => !c.dup).length} new</small></h2>${pl.contribs.length ? `<div class="list">${pl.contribs.map(c => `<div class="li"><span class="ic">${I('plus')}</span><span class="main"><span class="t">${money(c.amount, { force: true })}${c.taxYear !== +c.date.slice(0, 4) ? ` <span class="tag">for ${c.taxYear}</span>` : ''}</span><span class="s">${fmtDate(c.date)}</span></span><span class="${c.dup ? 'mute' : 'pos'} sm">${c.dup ? 'Already logged' : 'New'}</span></div>`).join('')}</div>` : '<div class="sm mute">No contributions this period.</div>'}
+  <section class="card"><h2><span>Contributions</span><small>${pl.contribs.filter(c => c.inc).length} to add</small></h2>${pl.contribs.length ? `<div class="list">${pl.contribs.map(c => `<div class="li imrow${c.inc ? '' : ' off'}"><button class="imchk" data-act="stSel" data-i="${c.i}" role="checkbox" aria-checked="${c.inc}" aria-label="Include ${money(c.amount, { force: true })} on ${fmtDate(c.date)}">${c.inc ? '\u2713' : ''}</button><span class="main" data-act="stSel" data-i="${c.i}"><span class="t">${money(c.amount, { force: true })}${c.taxYear !== +c.date.slice(0, 4) ? ` <span class="tag">for ${c.taxYear}</span>` : ''}</span><span class="s">${fmtDate(c.date)}${c.dupAuto ? ` \u00b7 <span class="ac">${c.inc ? 'replaces' : 'matches'} your automatic deposit on ${fmtShort(c.dupDate)}</span>` : c.dup ? ` \u00b7 already logged on ${fmtShort(c.dupDate)}${c.inc ? ', adding again' : ''}` : ' \u00b7 new'}</span></span></div>`).join('')}</div>` : '<div class="sm mute">No contributions this period.</div>'}
   ${st.ytd != null ? `<div class="row sm" style="margin-top:10px"><span class="mute">${esc(st.provider)}\u2019s ${st.year} total</span><b>${money(st.ytd, { force: true })}</b></div><div class="row sm"><span class="mute">Compound after import</span><b>${money(pl.known + pl.adding, { force: true })}</b></div>${pl.gap > .005 ? `<div class="tgl" style="margin-top:6px"><label for="stGap">Fill in the missing ${money(pl.gap, { force: true })} from earlier in ${st.year}<div class="xs mute">Adds one entry so your ${st.year} limit progress matches ${esc(st.provider)}. Import older statements to see the individual dates.</div></label><input type="checkbox" class="sw" id="stGap" checked></div>` : pl.gap < -.005 ? `<div class="xs neg" style="margin-top:6px">Compound shows ${money(-pl.gap, { force: true })} more than ${esc(st.provider)}. Check Recent contributions for extras.</div>` : '<div class="xs pos" style="margin-top:6px">Matches exactly.</div>'}` : ''}</section>
   <section class="card" style="margin-top:12px"><h2><span>Holdings on ${fmtShort(st.end)}</span></h2>${st.holdings.map(h => `<div class="row sm" style="padding:6px 0;border-top:1px solid var(--line)"><span><b>${esc(h.ticker)}</b> <span class="mute">${h.shares} sh at ${money(h.price, { force: true })}</span></span><span>${money(h.value, { force: true })}<div class="xs mute">cost ${money(h.cost, { force: true })}</div></span></div>`).join('')}<div class="row sm" style="padding:6px 0;border-top:1px solid var(--line)"><span>Cash and money market</span><span>${money(st.cash, { force: true })}</span></div>
   ${pl.newer ? `<div class="tgl" style="margin-top:6px"><label for="stHold">Update holdings to match<div class="xs mute">Sets shares, cost basis and cash. Live prices take over after.</div></label><input type="checkbox" class="sw" id="stHold" checked></div>` : `<div class="xs mute" style="margin-top:8px">This statement is older than one you already imported (${fmtShort(a.stmtDate)}), so holdings won\u2019t be changed.</div>`}</section>
@@ -3670,7 +3754,7 @@ function statementApply() {
   const a = S.accounts.find(x => x.id === UI.stmtAcct); if (!a) return;
   const pl = statementPlan(st, a), gapOn = $('#stGap', ov) && $('#stGap', ov).checked, holdOn = $('#stHold', ov) && $('#stHold', ov).checked;
   checkpoint(); let n = 0;
-  pl.contribs.filter(c => !c.dup).forEach(c => { S.contribs.push({ id: uid(), date: c.date, acct: a.id, amount: c.amount, kind: 'you', lim: true, ty: c.taxYear, src: 'statement' }); n++; });
+  let rep = 0; pl.contribs.filter(c => c.inc).forEach(c => { if (c.dupAuto) { S.contribs = S.contribs.filter(x => x.id !== c.dupId); rep++; } S.contribs.push({ id: uid(), date: c.date, acct: a.id, amount: c.amount, kind: 'you', lim: true, ty: c.taxYear, src: 'statement' }); n++; }); UI.stmtSel = {};
   if (gapOn && pl.gap > .005) S.contribs.push({ id: uid(), date: st.year + '-01-01', acct: a.id, amount: pl.gap, kind: 'you', lim: true, ty: st.year, src: 'statement', note: `Earlier ${st.year} contributions (from statement)` });
   if (holdOn && pl.newer) {
     a.holdings = a.holdings || [];
@@ -3683,7 +3767,7 @@ function statementApply() {
   }
   if (st.last4) a.stmtLast4 = st.last4;
   closeAll(); commit();
-  offerUndo(`Added ${n} contribution${n === 1 ? '' : 's'}${gapOn && pl.gap > .005 ? ` plus ${money(pl.gap, { force: true })} from earlier in ${st.year}` : ''}${holdOn && pl.newer ? ', holdings updated' : ''}`);
+  offerUndo(`Added ${n} contribution${n === 1 ? '' : 's'}${rep ? ` (${rep} replaced automatic deposit${rep === 1 ? '' : 's'})` : ''}${gapOn && pl.gap > .005 ? ` plus ${money(pl.gap, { force: true })} from earlier in ${st.year}` : ''}${holdOn && pl.newer ? ', holdings updated' : ''}`);
 }
 function statementSheet(acctId) {
   if (acctId) UI.stmtAcct = acctId;
@@ -3725,6 +3809,13 @@ acctSheetHtml = function (a) {
 };
 const _openSettings8 = openSettings;
 openSettings = function () { _openSettings8(); const b = $('[data-act=importCsv]', topSheet()); if (b) b.insertAdjacentHTML('afterend', '<button class="btn ghost block" data-act="stmtImport">Import investment statements (CSV or PDF)</button>'); };
+
+/* Match an imported contribution to one already in Compound: same account and amount, within 4 days */
+function findContribMatch(acctId, amount, date, used) {
+  return S.contribs.filter(c => c.acct === acctId && !(used && used.has(c.id)) && Math.abs(num(c.amount) - amount) < .005 && Math.abs((pd(c.date) - pd(date)) / 864e5) <= 4)
+    .sort((x, y) => Math.abs(pd(x.date) - pd(date)) - Math.abs(pd(y.date) - pd(date)))[0] || null;
+}
+Object.assign(ACT, { stSel: d => { const st = UI.stmt; if (UI.stmtSelFor !== st) { UI.stmtSelFor = st; UI.stmtSel = {}; } const a = S.accounts.find(x => x.id === UI.stmtAcct), pl = statementPlan(st, a), c = pl.contribs[+d.i]; UI.stmtSel[+d.i] = !c.inc; const sh = topSheet(), sc = sh ? sh.querySelector('.sheet').scrollTop : 0; statementReview(st); const n = topSheet(); if (n) n.querySelector('.sheet').scrollTop = sc; } });
 /* ================= import any CSV or PDF, pointed where you choose ================= */
 const MON3 = MONTHS.map(m => m.toLowerCase());
 const DATE_START = /^(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?|\d{1,2}-\d{1,2}(?:-\d{2,4})?|20\d\d-\d{2}-\d{2}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\.? \d{1,2}(?:,? \d{4})?)(?=\s|$)/i;
@@ -3908,13 +3999,13 @@ function invReview(rows, acctId, problems = []) {
 }
 function renderInvReview() {
   const { rows, acctId, problems, holdings } = UI.impInv, a = S.accounts.find(x => x.id === acctId); if (!a) return;
-  rows.forEach(r => { r.dup = (r.as === 'you' || r.as === 'match') && S.contribs.some(c => c.acct === a.id && Math.abs(num(c.amount) - r.amount) < .005 && Math.abs((pd(c.date) - pd(r.date)) / 864e5) <= 4); });
-  const add = rows.filter(r => (r.as === 'you' || r.as === 'match') && !r.dup), buys = rows.filter(r => r.as === 'buy');
+  const used = new Set(); rows.forEach(r => { const m = (r.as === 'you' || r.as === 'match') ? findContribMatch(a.id, r.amount, r.date, used) : null; if (m) used.add(m.id); r.dup = !!m; r.dupAuto = !!(m && m.auto && m.src !== 'statement' && m.src !== 'import'); r.dupId = m && m.id; r.dupDate = m && m.date; r.inc = r.incSet != null ? r.incSet : (!m || r.dupAuto); });
+  const add = rows.filter(r => (r.as === 'you' || r.as === 'match') && r.inc), buys = rows.filter(r => r.as === 'buy');
   const sorted = rows.map((r, i) => [r, i]).sort((x, y) => x[0].date < y[0].date ? -1 : 1), opts = [['you', 'Contribution'], ['match', 'Employer match'], ['buy', 'Buy'], ['skip', 'Skip']];
   const html = sheetHead('Review investment activity', 'Cancel') + `<div class="sm mute" style="margin:-4px 0 10px">${rows.length} lines found, going to <b>${esc(a.name)}</b>. Check what each line is. Contributions count toward your yearly limit.${problems.length ? `<div class="neg" style="margin-top:4px">${problems.map(esc).join('<br>')}</div>` : ''}</div>
   <div class="grid2" style="margin-bottom:10px">${stat('Contributions to add', `${add.filter(r => r.as === 'you').length} \u00b7 ${money(sum(add.filter(r => r.as === 'you').map(r => r.amount)), { force: true })}`, 'pos')}${stat('Employer match', `${add.filter(r => r.as === 'match').length} \u00b7 ${money(sum(add.filter(r => r.as === 'match').map(r => r.amount)), { force: true })}`)}</div>
   ${buys.some(r => r.ticker && r.shares) ? `<div class="tgl"><label for="imHold">Add bought shares to holdings<div class="xs mute">Leave off if your holdings are already up to date.</div></label><input type="checkbox" class="sw" id="imHold" data-chg="impHold" ${holdings ? 'checked' : ''}></div>` : ''}
-  <div class="list impl">${sorted.map(([r, i]) => `<div class="li imrow${r.as === 'skip' || r.dup ? ' off' : ''}"><span class="main"><span class="t">${esc(r.desc || 'Activity')}</span><span class="s">${fmtDate(r.date)}${r.as === 'buy' && r.shares ? ` \u00b7 ${r.shares} ${esc(r.ticker)}${r.price ? ' at ' + money(r.price, { force: true }) : ''}` : ''}${r.dup ? ' \u00b7 already logged' : ''}${(r.as === 'you') && r.taxYear !== +r.date.slice(0, 4) ? ` \u00b7 for ${r.taxYear}` : ''}</span></span><span class="amt">${money(r.amount, { force: true })}<select class="imas" data-chg="impAs" data-i="${i}" aria-label="Treat as">${opts.map(([v, l]) => `<option value="${v}" ${r.as === v ? 'selected' : ''}>${l}</option>`).join('')}</select></span></div>`).join('')}</div>
+  <div class="list impl">${sorted.map(([r, i]) => `<div class="li imrow${r.as === 'skip' || ((r.as === 'you' || r.as === 'match') && !r.inc) ? ' off' : ''}">${r.as === 'you' || r.as === 'match' ? `<button class="imchk" data-act="invSel" data-i="${i}" role="checkbox" aria-checked="${r.inc}" aria-label="Include">${r.inc ? '\u2713' : ''}</button>` : ''}<span class="main"><span class="t">${esc(r.desc || 'Activity')}</span><span class="s">${fmtDate(r.date)}${r.as === 'buy' && r.shares ? ` \u00b7 ${r.shares} ${esc(r.ticker)}${r.price ? ' at ' + money(r.price, { force: true }) : ''}` : ''}${r.dupAuto ? ` \u00b7 <span class="ac">${r.inc ? 'replaces' : 'matches'} automatic deposit on ${fmtShort(r.dupDate)}</span>` : r.dup ? ` \u00b7 already logged on ${fmtShort(r.dupDate)}${r.inc ? ', adding again' : ''}` : ''}${(r.as === 'you') && r.taxYear !== +r.date.slice(0, 4) ? ` \u00b7 for ${r.taxYear}` : ''}</span></span><span class="amt">${money(r.amount, { force: true })}<select class="imas" data-chg="impAs" data-i="${i}" aria-label="Treat as">${opts.map(([v, l]) => `<option value="${v}" ${r.as === v ? 'selected' : ''}>${l}</option>`).join('')}</select></span></div>`).join('')}</div>
   <button class="btn block" style="margin-top:12px;position:sticky;bottom:8px" data-act="impInvGo">Add to ${esc(a.name)}</button>`;
   const top = topSheet(); let scroll = 0; if (top && top._impI) { scroll = top.querySelector('.sheet').scrollTop; top.remove(); }
   const ov = openSheet(html); ov._impI = true; ov.querySelector('.sheet').scrollTop = scroll;
@@ -3923,7 +4014,7 @@ function invImportGo() {
   const { rows, acctId, holdings } = UI.impInv, a = S.accounts.find(x => x.id === acctId); if (!a) return;
   checkpoint(); let nc = 0, nm = 0, nb = 0;
   rows.forEach(r => {
-    if ((r.as === 'you' || r.as === 'match') && !r.dup) { S.contribs.push({ id: uid(), date: r.date, acct: a.id, amount: r.amount, kind: r.as === 'you' ? 'you' : 'employer', lim: r.as === 'you', ty: r.as === 'you' ? r.taxYear : undefined, src: 'import' }); r.as === 'you' ? nc++ : nm++; }
+    if ((r.as === 'you' || r.as === 'match') && r.inc) { if (r.dupAuto) S.contribs = S.contribs.filter(x => x.id !== r.dupId); S.contribs.push({ id: uid(), date: r.date, acct: a.id, amount: r.amount, kind: r.as === 'you' ? 'you' : 'employer', lim: r.as === 'you', ty: r.as === 'you' ? r.taxYear : undefined, src: 'import' }); r.as === 'you' ? nc++ : nm++; }
     if (r.as === 'buy' && holdings && r.ticker && r.shares > 0) {
       a.holdings = a.holdings || []; let h = a.holdings.find(x => String(x.ticker).toUpperCase() === r.ticker);
       const px = r.price || (r.amount / r.shares);
@@ -3951,7 +4042,7 @@ Object.assign(ACT, {
   impInvGo: () => invImportGo()
 });
 Object.assign(CHG, {
-  impAs: t => { UI.impInv.rows[+t.dataset.i].as = t.value; renderInvReview(); },
+  impAs: t => { const r = UI.impInv.rows[+t.dataset.i]; r.as = t.value; r.incSet = null; renderInvReview(); },
   impHold: t => { UI.impInv.holdings = t.checked; }
 });
 
@@ -3962,6 +4053,185 @@ const _statementApply9 = statementApply;
 statementApply = function () { UI.quietUntil = Date.now() + 6000; return _statementApply9(); };
 const _invImportGo9 = invImportGo;
 invImportGo = function () { UI.quietUntil = Date.now() + 6000; return _invImportGo9(); };
+Object.assign(ACT, { invSel: d => { const r = UI.impInv.rows[+d.i]; r.incSet = !r.inc; renderInvReview(); } });
+/* ================= v6 fixes and polish ================= */
+function planStrat() { return S && S.settings && S.settings.strategy === 'snowball' ? 'snowball' : 'avalanche'; }
+
+/* ---------- debt: choose avalanche or snowball ---------- */
+renderDebt = function () {
+  const x = num(S.settings.extra), strat = planStrat(), av = payoff(S.debts, x, 'avalanche'), sn = payoff(S.debts, x, 'snowball');
+  const mine = strat === 'snowball' ? sn : av, other = strat === 'snowball' ? av : sn, base = payoff(S.debts, 0, strat), label = strat === 'snowball' ? 'snowball' : 'avalanche';
+  const mi = sum(S.debts.map(d => num(d.balance) * num(d.apr) / 1200));
+  const ds = $('#debtSum'); if (ds) ds.innerHTML = `<div class="mute sm">Debt-free date</div><div class="big">${mine.never ? 'Not on track' : fmtMonYr(monthsFromNow(mine.months))}</div><div class="sm mute" style="margin-top:2px">${mine.never ? 'Minimum payments don\u2019t cover the interest. Add an extra payment.' : `${mine.months} months with the ${label} method`}</div><div class="grid3" style="margin-top:12px">${stat('Total debt', compact(debtTotal()))}${stat('Interest this month', money(mi))}${stat('Interest to payoff', compact(mine.interest))}</div>`;
+  const er = $('#extraRes'); if (er) er.innerHTML = x > 0 && !base.never ? `Saves <b class="pos">${money(base.interest - mine.interest)}</b> in interest and gets you debt-free <b>${base.months - mine.months} months</b> sooner than minimums alone.` : x > 0 ? 'With minimums alone this debt never gets paid off.' : '<span class="mute">Slide to see how extra payments change your payoff.</span>';
+  const live = S.debts.filter(d => num(d.balance) > 0), order = p => live.slice().sort((a, b) => (p.paidOff[a.id] || 1e9) - (p.paidOff[b.id] || 1e9));
+  const oa = order(av), os = order(sn), same = oa.map(d => d.id).join() === os.map(d => d.id).join(), diff = Math.abs(av.interest - sn.interest);
+  const col = (p, name, k, tag, ord) => `<button class="stcard${strat === k ? ' chosen' : ''}" data-act="debtStrat" data-v="${k}" aria-pressed="${strat === k}">${strat === k ? '<span class="chosen-tag">\u2713 Your plan</span>' : '<span class="chosen-tag ghost">Tap to use</span>'}<div class="sm" style="font-weight:750;margin-top:8px">${name}</div><div class="xs mute">${tag}</div><div class="mid" style="margin-top:8px">${p.never ? 'Never' : fmtMonYr(monthsFromNow(p.months))}</div><div class="xs mute">${p.months} months</div><div class="sm" style="margin-top:6px">${money(p.interest)} <span class="mute">interest</span></div>${diff > 1 && p.interest < (k === 'avalanche' ? sn : av).interest ? `<div class="xs pos" style="margin-top:4px">Saves ${money(diff)}</div>` : ''}<ol class="porder">${ord.map(d => `<li>${esc(d.name)} <span class="mute">${p.paidOff[d.id] ? fmtShort(monthsFromNow(p.paidOff[d.id])).replace(/ \d+$/, '') + ' \u2019' + String(monthsFromNow(p.paidOff[d.id]).getFullYear()).slice(2) : ''}</span></li>`).join('')}</ol></button>`;
+  const dc = $('#debtCmp'); if (dc) dc.innerHTML = col(av, 'Avalanche', 'avalanche', 'Highest interest rate first', oa) + col(sn, 'Snowball', 'snowball', 'Smallest balance first', os);
+  const why = $('#debtWhy');
+  if (why) why.innerHTML = live.length < 2 ? '<div class="sm mute" style="margin-top:10px">With one debt, both methods are the same. The choice matters once you have two or more.</div>'
+    : same ? `<div class="sm" style="margin-top:10px;padding:10px 12px;background:var(--surf2);border-radius:12px">Both methods give the same result for you, because <b>${esc(oa[0].name)}</b> has the highest rate <i>and</i> the smallest balance, so both pay it off first. They\u2019d differ if you had a small debt with a low rate.</div>`
+    : `<div class="sm" style="margin-top:10px;padding:10px 12px;background:var(--surf2);border-radius:12px">${av.interest <= sn.interest ? `Avalanche costs <b>${money(diff)}</b> less in interest. Snowball pays off <b>${esc(os[0].name)}</b> sooner, which can help you stay motivated.` : `Here snowball also saves ${money(diff)}.`}</div>`;
+  const n = Math.max(av.series.length, sn.series.length, base.never ? 0 : base.series.length), L = Math.min(n, 600);
+  const pad = s => Array.from({ length: L }, (_, i) => i < s.length ? s[i] : 0);
+  const series = [{ name: strat === 'snowball' ? 'Snowball (your plan)' : 'Avalanche (your plan)', data: pad(mine.series), color: 'var(--c1)' }, { name: strat === 'snowball' ? 'Avalanche' : 'Snowball', data: pad(other.series), color: 'var(--c2)', dash: '5 4', w: 1.8 }];
+  if (x > 0 && !base.never && base.series.length <= 600) series.push({ name: 'Minimums only', data: pad(base.series), color: 'var(--c7)', dash: '2 4', w: 1.6 });
+  lineChart($('#c-debt'), { x: Array.from({ length: L }, (_, i) => i), series, xFmt: i => fmtMonYr(monthsFromNow(i)).replace(' 20', ' \u2019'), xTip: i => fmtMonYr(monthsFromNow(i)), label: 'Debt balance over time', h: 170 });
+  const el = $('#extraLbl'); if (el) el.textContent = money(x, { force: true });
+};
+ACT.debtStrat = d => { S.settings.strategy = d.v; save(); renderDebt(); toast(`Your plan now uses the ${d.v} method`); };
+
+/* ---------- contributions: add several at once, see all ---------- */
+function withContribTools(html) {
+  const n = S.contribs.length;
+  return html.replace(/<\/section>$/, `<div class="grid2" style="margin-top:12px"><button class="btn ghost" data-act="bulkContrib">Add several</button><button class="btn ghost" data-act="allContrib" ${n ? '' : 'disabled'}>See all${n ? ` (${n})` : ''}</button></div></section>`);
+}
+const invAccts = () => S.accounts.filter(a => TYPES[a.type] && TYPES[a.type].inv);
+function bulkContrib(acctId) {
+  const accts = invAccts(); if (!accts.length) { toast('Add an investment account first'); return; }
+  const a = accts.find(x => x.id === acctId) || accts[0];
+  const ov = openSheet(sheetHead('Add several contributions') + `<p class="sm mute" style="margin:-4px 0 12px">Great for catching up. Fill the list from a repeating schedule, or type each date and amount.</p>
+  <div class="grid2"><div class="fld"><label for="bcA">Account</label><select id="bcA">${accts.map(x => `<option value="${x.id}" ${x.id === a.id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></div><div class="fld"><label for="bcK">From</label><select id="bcK"><option value="you">You</option><option value="employer">Employer match</option></select></div></div>
+  <section class="card" style="margin-bottom:12px"><h2><span>Fill from a schedule</span><small>optional</small></h2><div class="grid2"><div class="fld"><label for="bcAmt">Amount each time ($)</label><input id="bcAmt" type="text" inputmode="decimal" placeholder="e.g. 250"></div><div class="fld"><label for="bcN">How many</label><input id="bcN" type="text" inputmode="numeric" value="6"></div></div>
+  <div><div class="fld"><label for="bcF">How often</label><select id="bcF"><option value="payday">Each payday</option><option value="w2">Every 2 weeks</option><option value="w1">Every week</option><option value="semimonthly">Twice a month (15th, last)</option><option value="monthly">Monthly</option></select></div><div class="fld"><label for="bcS">First date</label><input id="bcS" type="date" value="${iso(new Date(new Date().getFullYear(), 0, 1))}"></div></div>
+  <button class="btn ghost block" data-act="bcFill">Fill the list</button></section>
+  <div class="row" style="margin-bottom:6px"><b>Contributions</b><span class="sm mute" id="bcTot"></span></div><div id="bcRows"></div><button class="btn ghost block" style="margin-top:8px" data-act="bcAdd">Add a row</button>
+  <div class="tgl" style="margin-top:10px"><label for="bcBal">Also add to the account balance<div class="xs mute">Leave off when catching up on history your balance already includes.</div></label><input type="checkbox" class="sw" id="bcBal"></div>
+  <button class="btn block" style="margin-top:12px;position:sticky;bottom:8px" data-act="bcSave">Save contributions</button>`);
+  ov._bc = [{ date: todayISO(), amount: '' }, { date: '', amount: '' }, { date: '', amount: '' }];
+  bcRender(ov);
+}
+function bcRead(ov) { $$('.bcrow', ov).forEach((r, i) => { ov._bc[i] = { date: $('input[type=date]', r).value, amount: $('.bcamt', r).value }; }); }
+function bcRender(ov) {
+  const el = $('#bcRows', ov); if (!el) return;
+  el.innerHTML = ov._bc.map((r, i) => `<div class="bcrow"><input type="date" value="${esc(r.date)}" aria-label="Date ${i + 1}"><input class="bcamt" type="text" inputmode="decimal" placeholder="$0.00" value="${r.amount === '' ? '' : esc(r.amount)}" aria-label="Amount ${i + 1}" data-inp="bcTot"><button data-act="bcDel" data-i="${i}" aria-label="Remove row ${i + 1}">\u2715</button></div>`).join('') || '<div class="sm mute">No rows yet.</div>';
+  bcTotal(ov);
+}
+function bcTotal(ov) { const rows = $$('.bcrow', ov).map(r => ({ d: $('input[type=date]', r).value, a: num($('.bcamt', r).value) })).filter(r => r.d && r.a > 0); const t = $('#bcTot', ov); if (t) t.textContent = rows.length ? `${rows.length} \u00b7 ${money(sum(rows.map(r => r.a)), { force: true })}` : ''; }
+function bcFill() {
+  const ov = topSheet(); bcRead(ov);
+  const amt = num($('#bcAmt', ov).value), n = clamp(Math.round(num($('#bcN', ov).value)) || 0, 1, 104), f = $('#bcF', ov).value, s = pd($('#bcS', ov).value || todayISO());
+  if (!(amt > 0)) { toast('Enter the amount each time'); return; }
+  const r = f === 'w1' ? { freq: 'weeks', every: 1, startDate: iso(s) } : f === 'w2' ? { freq: 'weeks', every: 2, startDate: iso(s) } : f === 'monthly' ? { freq: 'monthly', day: s.getDate() } : { freq: f };
+  const dates = recurDates(r, s, addDays(s, 1200)).slice(0, n).map(iso);
+  if (!dates.length) { toast('No dates found for that schedule'); return; }
+  ov._bc = [...ov._bc.filter(x => x.date && num(x.amount) > 0), ...dates.map(d => ({ date: d, amount: amt.toFixed(2) }))];
+  bcRender(ov); toast(`Added ${dates.length} rows. Check them, then save.`);
+}
+function bcSave() {
+  const ov = topSheet(); bcRead(ov);
+  const acct = $('#bcA', ov).value, kind = $('#bcK', ov).value, bal = $('#bcBal', ov).checked, a = S.accounts.find(x => x.id === acct);
+  const rows = ov._bc.filter(r => r.date && num(r.amount) > 0);
+  if (!rows.length) { toast('Add at least one date and amount'); return; }
+  checkpoint(); UI.quietUntil = Date.now() + 5000; let n = 0, dup = 0; const used = new Set();
+  rows.forEach(r => {
+    const amt = Math.round(num(r.amount) * 100) / 100, m = findContribMatch(acct, amt, r.date, used);
+    if (m && m.date === r.date) { dup++; used.add(m.id); return; }
+    S.contribs.push({ id: uid(), date: r.date, acct, amount: amt, kind, lim: kind === 'you', src: 'bulk' }); n++;
+    if (bal && a) { if (typeof investDeposit === 'function') investDeposit(a, amt); else a.cash = num(a.cash) + amt; }
+  });
+  closeAll(); commit(); offerUndo(`Added ${n} contribution${n === 1 ? '' : 's'} to ${a ? a.name : 'the account'}${dup ? `. Skipped ${dup} already logged` : ''}`);
+}
+function allContrib() {
+  const f = UI.cf || (UI.cf = { acct: '', year: '', kind: '' }), years = [...new Set(S.contribs.map(c => (c.ty || c.date.slice(0, 4)) + ''))].sort().reverse();
+  const list = S.contribs.filter(c => (!f.acct || c.acct === f.acct) && (!f.year || String(c.ty || c.date.slice(0, 4)) === f.year) && (!f.kind || (f.kind === 'you' ? c.kind === 'you' : c.kind !== 'you'))).sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
+  const total = sum(list.map(c => num(c.amount))), byYear = {}; list.forEach(c => { const y = String(c.ty || c.date.slice(0, 4)); byYear[y] = (byYear[y] || 0) + num(c.amount); });
+  let last = '';
+  const rows = list.map(c => { const a = S.accounts.find(x => x.id === c.acct), mo = c.date.slice(0, 7), hd = mo !== last ? `<div class="dh">${MONTHS[+mo.slice(5) - 1]} ${mo.slice(0, 4)}</div>` : ''; last = mo; return hd + `<button class="li" data-act="editContrib" data-id="${c.id}"><span class="main"><span class="t">${esc(a ? a.name : 'Deleted account')}</span><span class="s">${fmtDate(c.date)}${c.kind !== 'you' ? ', employer' : ''}${c.ty && +c.ty !== +c.date.slice(0, 4) ? `, for ${c.ty}` : ''}${c.auto ? ', automatic' : c.src === 'statement' ? ', from statement' : ''}${c.note ? ', ' + esc(c.note) : ''}</span></span><span class="amt pos">${money(c.amount, { sign: true })}</span></button>`; }).join('');
+  const sel = (id, v, opts) => `<select data-chg="cf" data-k="${id}">${opts.map(([a, b]) => `<option value="${a}" ${a === v ? 'selected' : ''}>${esc(b)}</option>`).join('')}</select>`;
+  const html = sheetHead('All contributions', 'Done') + `<div class="cfbar">${sel('acct', f.acct, [['', 'All accounts'], ...invAccts().map(a => [a.id, a.name])])}${sel('year', f.year, [['', 'All years'], ...years.map(y => [y, y])])}${sel('kind', f.kind, [['', 'You and employer'], ['you', 'You only'], ['employer', 'Employer only']])}</div>
+  <section class="card hero" style="margin-top:10px"><div class="sm mute">${list.length} contribution${list.length === 1 ? '' : 's'}</div><div class="big">${money(total, { force: true })}</div>${Object.keys(byYear).length > 1 ? `<div class="grid3" style="margin-top:10px">${Object.entries(byYear).sort((a, b) => b[0].localeCompare(a[0])).slice(0, 6).map(([y, v]) => stat(y, compact(v))).join('')}</div>` : ''}</section>
+  <div class="row" style="margin:12px 0 4px"><span class="xs mute">Tap one to edit or delete it</span><button class="chip" data-act="bulkContrib">Add several</button></div>
+  <div class="list txl">${rows || '<div class="empty">No contributions match.</div>'}</div>`;
+  const top = topSheet(); let sc = 0; if (top && top._allc) { sc = top.querySelector('.sheet').scrollTop; top.remove(); }
+  const ov = openSheet(html); ov._allc = true; ov.querySelector('.sheet').scrollTop = sc;
+}
+Object.assign(ACT, {
+  bulkContrib: d => { closeAll(); bulkContrib(d.a); },
+  allContrib: () => { closeAll(); allContrib(); },
+  bcFill: () => bcFill(),
+  bcAdd: () => { const ov = topSheet(); bcRead(ov); ov._bc.push({ date: '', amount: '' }); bcRender(ov); },
+  bcDel: d => { const ov = topSheet(); bcRead(ov); ov._bc.splice(+d.i, 1); bcRender(ov); },
+  bcSave: () => bcSave()
+});
+Object.assign(INP, { bcTot: () => bcTotal(topSheet()) });
+Object.assign(CHG, { cf: t => { UI.cf[t.dataset.k] = t.value; allContrib(); } });
+/* editing from the full list returns to it */
+const _contribForm10 = contribForm;
+contribForm = function (c, acctId) { const fromAll = !!$$('#sheets .ov').find(o => o._allc); _contribForm10(c, acctId); if (fromAll && c) { const f = topSheet()._form, s0 = f.onSave, d0 = f.onDelete; f.onSave = v => { s0(v); if (!$$('#sheets .ov').some(o => o._allc)) setTimeout(allContrib, 50); else allContrib(); }; if (d0) f.onDelete = () => { d0(); allContrib(); }; } };
+
+/* ---------- Today: a warmer home page ---------- */
+const _scrDash10 = scrDash;
+function sparkPath(vals, w, h) {
+  if (vals.length < 2) return '';
+  const lo = Math.min(...vals), hi = Math.max(...vals), r = hi - lo || 1;
+  const pts = vals.map((v, i) => [i / (vals.length - 1) * w, h - 4 - (v - lo) / r * (h - 8)]);
+  return 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L');
+}
+function homeHero() {
+  const cf = UI.hero === 'cf', tgl = `<div class="h2seg"><button class="${cf ? '' : 'on'}" data-act="hero" data-v="nw">Net worth</button><button class="${cf ? 'on' : ''}" data-act="hero" data-v="cf">This month</button></div>`;
+  const eye = `<button class="h2eye" data-act="toggleHide" aria-label="${S.settings.hide ? 'Show balances' : 'Hide balances'}">${I(S.settings.hide ? 'eyeOff' : 'eye')}</button>`;
+  if (cf) {
+    const c = cashflowMonth();
+    return `<section class="hero2" data-w="hero"><div class="row">${tgl}${eye}</div><div class="h2lbl">${MONTHS[new Date().getMonth()]} so far</div><div class="h2big">${money(c.net, { sign: true, whole: Math.abs(c.net) >= 1000 })}</div><div class="h2row"><div><span>Money in</span><b>${money(c.inc, { whole: true })}</b></div><div><span>Money out</span><b>${money(c.out, { whole: true })}</b></div></div></section>`;
+  }
+  const nw = netWorth(), past = Object.entries(S.history).filter(([d]) => d <= iso(addDays(new Date(), -30))).sort().pop(), ch = past ? nw - past[1] : null;
+  const hist = Object.entries(S.history).filter(([d]) => d >= iso(addDays(new Date(), -120))).sort().map(([, v]) => v);
+  const path = sparkPath(hist.length > 1 ? hist : [], 320, 70), dc = typeof dayChange === 'function' ? dayChange(S.accounts) : null;
+  return `<section class="hero2" data-w="hero"><div class="row">${tgl}${eye}</div><div class="h2lbl">Net worth</div><div class="h2big">${money(nw, { whole: Math.abs(nw) >= 1000 })}</div><div class="h2pills">${ch != null ? `<span class="h2pill">${ch >= 0 ? '\u25B2' : '\u25BC'} ${money(Math.abs(ch), { whole: true })} this month</span>` : ''}${dc ? `<span class="h2pill">${dc.chg >= 0 ? '+' : '\u2212'}${money(Math.abs(dc.chg), { whole: true })} today</span>` : ''}</div>${path ? `<svg class="h2spark" viewBox="0 0 320 70" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="h2g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><path d="${path} L320 70 L0 70Z" fill="url(#h2g)"/><path d="${path}" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ''}<div class="h2row"><div><span>Assets</span><b>${money(assetsTotal(), { whole: true })}</b></div><div><span>Debts</span><b>${money(debtTotal(), { whole: true })}</b></div></div></section>`;
+}
+function homeGlance() {
+  const s = typeof safeToSpend === 'function' ? safeToSpend() : null, np = typeof nextPayday === 'function' ? nextPayday() : null, c = calcPay();
+  const bills = S.bills.map(b => ({ b, d: nextDue(b) })).filter(x => x.d).sort((a, b) => a.d - b.d), nb = bills[0];
+  const tile = (attr, ic, lbl, big, sub, act) => `<button class="gl" ${attr} ${act ? `data-act="${act}"` : ''}><span class="gl-ic">${I(ic)}</span><span class="gl-l">${lbl}</span><span class="gl-b">${big}</span><span class="gl-s">${sub}</span></button>`;
+  return `<div class="glance">${tile('data-w="safe"', 'wallet', 'Safe to spend', s ? money(s.perDay, { whole: true }) : '\u2013', s ? 'per day' : 'set budgets', 'goBudget')}${tile('', 'cash', 'Next payday', np ? fmtShort(np) : '\u2013', np && c.n ? money(c.net / c.n, { whole: true }) + (np.est ? ' (est.)' : '') : 'add your pay', '')}${tile('', 'doc', 'Next bill', nb ? fmtShort(nb.d) : '\u2013', nb ? esc(nb.b.name.slice(0, 14)) + ' ' + money(nb.b.amount, { whole: true }) : 'none set', 'goBills')}</div>`;
+}
+scrDash = function () {
+  if (UI.editDash) return _scrDash10();
+  const now = new Date(), hr = now.getHours(), greet = hr < 5 ? 'Good evening' : hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+  const first = String(S.profile.name || '').trim().split(/\s+/)[0], ini = first ? first[0].toUpperCase() : '';
+  let h = `<header class="home-top"><div><div class="home-date">${now.toLocaleDateString('en-US', { weekday: 'long' })}, ${MONTHS[now.getMonth()]} ${now.getDate()}</div><h1 class="home-hi">${greet}${first ? ',<br>' + esc(first) : ''}</h1></div><div class="top-act"><button class="ib" data-act="search" aria-label="Search">${I('search')}</button><button class="avatar" data-act="settings" aria-label="Settings">${ini || I('gear')}</button></div></header>`;
+  h += homeHero();
+  h += `<div class="qa-row"><button data-act="fab"><span>${I('plus')}</span>Expense</button><button data-act="scan"><span>${I('doc')}</span>Scan</button><button data-act="logPay"><span>${I('cash')}</span>Paycheck</button><button data-act="importCsv"><span>${I('repeat')}</span>Import</button></div>`;
+  h += homeGlance();
+  const rest = S.settings.dash.filter(id => !['hero', 'safe'].includes(id) && !S.settings.dashHidden.includes(id) && W[id]).map(id => { const w = W[id](); return w ? w.replace('<section ', `<section data-w="${id}" `) : ''; }).join('');
+  if (rest) h += `<div class="home-sec">Your money</div><div class="stack">${rest}</div>`;
+  h += `<button class="home-edit" data-act="dashEdit">Customize this page</button>`;
+  return h;
+};
+
+/* ---------- smooth pull to refresh ---------- */
+(function ptr2() {
+  const ind = document.createElement('div'); ind.id = 'ptr2'; ind.setAttribute('aria-hidden', 'true');
+  ind.innerHTML = '<svg viewBox="0 0 40 40"><circle class="trk" cx="20" cy="20" r="13"/><circle class="arc" cx="20" cy="20" r="13" pathLength="100"/><path class="arw" d="M20 13.5v12 M15.5 21l4.5 4.5 4.5-4.5"/><path class="chk" d="M14.5 20.5l4 4 7.5-8.5"/></svg>';
+  document.body.appendChild(ind);
+  const TH = 76; let y0 = null, dy = 0, busy = false, pulling = false;
+  const main = () => $('#main');
+  const hide = () => { ind.style.opacity = 0; ind.style.transform = 'translate(-50%,-48px) scale(.55)'; };
+  hide();
+  const setP = p => { const k = Math.min(p / TH, 1), m = main(); ind.style.opacity = Math.min(1, p / 28); ind.style.transform = `translate(-50%, ${Math.min(p * .5, 58) - 40}px) scale(${.55 + .45 * k})`; ind.querySelector('.arc').style.strokeDashoffset = 100 - k * 100; ind.classList.toggle('ready', p >= TH); if (m) m.style.transform = `translateY(${Math.min(p * .42, 70)}px)`; };
+  window.addEventListener('touchstart', e => { if (busy || window.scrollY > 2 || $$('#sheets .ov').length || UI.locked || e.touches.length > 1 || (e.target.closest && e.target.closest('.swrow,.chart,input,select,textarea,.coach,.celebrate'))) { y0 = null; return; } y0 = e.touches[0].clientY; dy = 0; pulling = false; const m = main(); if (m) m.style.transition = 'none'; ind.style.transition = 'none'; }, { passive: true });
+  window.addEventListener('touchmove', e => { if (y0 == null) return; dy = e.touches[0].clientY - y0; if (window.scrollY > 2) { y0 = null; return; } if (dy > 4) { pulling = true; setP(dy); } else if (pulling) setP(0); }, { passive: true });
+  window.addEventListener('touchend', () => {
+    if (y0 == null || !pulling) { y0 = null; return; } y0 = null; pulling = false;
+    const m = main(), ease = 'transform .42s cubic-bezier(.2,.9,.25,1), opacity .3s ease'; if (m) m.style.transition = ease; ind.style.transition = ease;
+    if (dy < TH) { if (m) m.style.transform = ''; hide(); return; }
+    busy = true; ind.classList.remove('ready'); ind.classList.add('spin'); ind.style.transform = 'translate(-50%, 14px) scale(1)'; if (m) m.style.transform = 'translateY(56px)';
+    const t0 = Date.now();
+    pullRefresh().catch(() => { }).finally(() => setTimeout(() => {
+      ind.classList.remove('spin'); ind.classList.add('done');
+      setTimeout(() => { if (m) m.style.transform = ''; hide(); setTimeout(() => { ind.classList.remove('done'); busy = false; if (m) m.style.transition = ''; }, 450); }, 520);
+    }, Math.max(0, 650 - (Date.now() - t0))));
+  });
+})();
+
+/* ---------- no accidental zoom ---------- */
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('gesturechange', e => e.preventDefault());
+
+/* Today has its own quick actions, so the floating + button steps aside there */
+const _render10 = render;
+render = function () { _render10(); document.body.classList.toggle('on-today', UI.tab === 'dash' && !UI.editDash); };
 
 </script>
 </body>

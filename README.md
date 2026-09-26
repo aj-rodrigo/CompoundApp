@@ -113,3 +113,12 @@ Spending → Transactions → **Import CSV or PDF** (also in Settings and on eac
 - Vanguard statements are recognized automatically: contributions, holdings, cost basis and cash update, and the year-to-date total fills any gap.
 
 PDFs are read on your phone; nothing is uploaded. Duplicates (already imported, or the same statement uploaded twice) are skipped. Scanned-image PDFs without text can’t be read yet.
+
+## What’s new
+
+- **Today** is now a home page: greeting, a net worth card with a 4-month trend, quick actions (Expense, Scan, Paycheck, Import), and at-a-glance tiles for safe to spend, next payday and next bill. Tap **Customize this page** at the bottom to reorder cards.
+- **Your payoff method** (Plan → Debt): tap Avalanche or Snowball to choose. Your debt-free date, projections and money plan follow your choice. Each card shows the order your debts get paid off.
+- **Contributions** (Investing): **Add several** fills a list from a schedule (like every 2 weeks since January) or lets you type many dates at once. **See all** shows every contribution with filters and yearly totals.
+- **Statement imports**: when a statement contribution matches one of your automatic deposits, the statement’s real date replaces the estimate. Every row has its own checkbox.
+- **Automatic deposits on specific days**: tap the days on a calendar grid.
+- **Pull down to refresh** has a new animation, and pinch or double-tap zoom is turned off so the layout stays put.
