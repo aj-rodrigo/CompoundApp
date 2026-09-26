@@ -1,0 +1,67 @@
+name: Update prices
+
+on:
+  schedule:
+    - cron: "*/30 13-23 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  prices:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read the Google Sheet and write prices.json
+        env:
+          SHEET_ID: PASTE_YOUR_SHEET_ID_HERE
+        run: |
+          python3 - <<'PY'
+          import csv, io, json, os, urllib.request, datetime
+          url = "https://docs.google.com/spreadsheets/d/%s/gviz/tq?tqx=out:csv" % os.environ["SHEET_ID"]
+          req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+          text = urllib.request.urlopen(req, timeout=30).read().decode("utf-8")
+          prices = {}
+          for row in list(csv.reader(io.StringIO(text)))[1:]:
+              if len(row) < 2 or not row[0].strip():
+                  continue
+              ticker = row[0].strip().upper().split(":")[-1]
+              try:
+                  price = float(row[1].replace("$", "").replace(",", ""))
+              except ValueError:
+                  continue
+              if price <= 0:
+                  continue
+              change = None
+              if len(row) > 2 and row[2].strip():
+                  try:
+                      change = float(row[2].replace("%", "").replace(",", ""))
+                  except ValueError:
+                      pass
+              prices[ticker] = {"price": price, "changePct": change}
+          now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+          old = {}
+          if os.path.exists("prices.json"):
+              try:
+                  old = json.load(open("prices.json"))
+              except Exception:
+                  old = {}
+          updated = now if old.get("prices") != prices else old.get("updated", now)
+          json.dump({"updated": updated, "checked": now, "source": "Google Sheet (GOOGLEFINANCE)", "prices": prices}, open("prices.json", "w"), indent=1)
+          print(prices)
+          PY
+      - name: Save prices.json
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add prices.json
+          if git diff --cached --quiet; then echo "No change"; exit 0; fi
+          git commit -m "Update prices"
+          git push
+      - name: Publish the site
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds" || true
