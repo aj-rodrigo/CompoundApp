@@ -2063,7 +2063,7 @@ async function init() {
 }
 init();
 /* ================= v2 features ================= */
-const APP_VERSION = '2026.09.26-10';
+const APP_VERSION = '2026.09.26-11';
 const rules = () => S.rules || (S.rules = []);
 
 /* ---------- undo ---------- */
@@ -3560,7 +3560,17 @@ const PDFJS_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.6.205/legacy/build/
 const PDFJS_WORKER = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.6.205/legacy/build/pdf.worker.min.mjs';
 const pdfErr = (name, e) => e && e.name === 'PasswordException' ? `${name} is password-protected. Open it, save a copy without a password, and try again.` : `${name} couldn\u2019t be read${e && (e.message || e.name) ? ' (' + String(e.message || e.name).slice(0, 120) + ')' : ''}. Send it to Claude so the reader can be fixed.`;
 let pdfjsLib = null;
+/* Safari can't loop over streams with for-await yet; the PDF reader needs it, so add it */
+function streamIterFallback() {
+  if (typeof ReadableStream === 'undefined' || ReadableStream.prototype[Symbol.asyncIterator]) return;
+  ReadableStream.prototype[Symbol.asyncIterator] = async function* () {
+    const reader = this.getReader();
+    try { for (;;) { const { done, value } = await reader.read(); if (done) return; yield value; } }
+    finally { try { reader.releaseLock(); } catch (e) { } }
+  };
+}
 async function loadPdfJs() {
+  streamIterFallback();
   if (pdfjsLib) return pdfjsLib;
   const lib = await import(PDFJS_URL);
   lib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
@@ -3571,8 +3581,10 @@ async function pdfLines(file) {
   const lib = await loadPdfJs(), data = new Uint8Array(await file.arrayBuffer());
   const doc = await lib.getDocument({ data }).promise, lines = [];
   for (let p = 1; p <= doc.numPages; p++) {
-    const tc = await (await doc.getPage(p)).getTextContent(), rows = [];
-    tc.items.forEach(it => {
+    const page = await doc.getPage(p), items = [], reader = page.streamTextContent().getReader();
+    for (;;) { const { done, value } = await reader.read(); if (done) break; if (value && value.items) items.push(...value.items); }
+    const rows = [];
+    items.forEach(it => {
       if (!it.str || !it.str.trim()) return;
       const x = it.transform[4], y = it.transform[5];
       let r = rows.find(r => Math.abs(r.y - y) < 3);
