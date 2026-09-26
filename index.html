@@ -369,6 +369,15 @@ input:not([type=range]):not([type=checkbox]):not([type=file]),select,textarea{fo
 .chosen-tag{display:inline-block;background:var(--acc);color:var(--acc-ink);font-size:11.5px;font-weight:750;padding:3px 9px;border-radius:999px}
 .chosen-tag.ghost{background:transparent;color:var(--mute);border:1px solid var(--line)}
 body.on-today #fab{display:none}
+.wdgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.wdgrid button{height:40px;border-radius:10px;background:var(--surf2);color:var(--text);font-size:14px;font-weight:650;border:1.5px solid transparent}
+.wdgrid button.on{background:var(--acc);color:var(--acc-ink)}
+.steps{margin:0;padding-left:20px;font-size:14px}
+.steps li{margin:6px 0}
+.sheetprev{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;display:flex;flex-direction:column;gap:2px}
+.sheetprev div{display:grid;grid-template-columns:110px 1fr;gap:8px;padding:5px 6px;border-radius:6px;background:var(--surf2)}
+.sheetprev div.hd{background:transparent;color:var(--mute);font-weight:700}
+.sheetprev span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -1363,7 +1372,7 @@ async function refreshQuotes(opts = {}) {
   if (!key) { if (!opts.silent) toast('Add your free Finnhub key in Settings, under Live prices'); return; }
   if (quoting) return;
   const map = new Map();
-  S.accounts.forEach(a => (a.holdings || []).forEach(h => { if (h.manualPrice) return; const s = quoteSymbol(h, a); if (!s) return; if (!map.has(s)) map.set(s, []); map.get(s).push({ a, h }); }));
+  S.accounts.forEach(a => (a.holdings || []).forEach(h => { if (h.manualPrice || (UI.sheetTickers && UI.sheetTickers.has(String(h.ticker || '').toUpperCase()))) return; const s = quoteSymbol(h, a); if (!s) return; if (!map.has(s)) map.set(s, []); map.get(s).push({ a, h }); }));
   if (!map.size) { if (!opts.silent) toast('Add holdings with tickers to get live prices'); return; }
   quoting = true; if (!opts.silent) toast('Updating prices\u2026');
   const syms = [...map.keys()], miss = [], denied = [], touched = new Set(); let ok = 0, err = null;
@@ -1873,6 +1882,7 @@ async function runCsvImport(v) {
           if (isCard || CARD_THANKS_RE.test(note)) { if (isPay) { type = 'payment'; amount = -spend; } else amount = spend; }
           else { type = 'income'; amount = -spend; }
         } else if (!isCard && CARDPAY_RE.test(note) && /pay|pmt|epay/i.test(note)) { type = 'payment'; }
+        if (!isCard && type === 'expense' && amount > 0 && /payroll|direct dep|dir dep|salary|interest paid|payroll dep/i.test(note)) { type = 'income'; }
         amount = Math.round(amount * 100) / 100;
         const same = t => !runIds.has(t.id) && t.date === date && (t.note || '') === note && Math.abs(Math.abs(num(t.amount)) - Math.abs(amount)) < .005;
         const old = S.txns.find(t => same(t) && t.type === 'income' && type !== 'income');
@@ -2138,7 +2148,7 @@ async function init() {
 }
 init();
 /* ================= v2 features ================= */
-const APP_VERSION = '2026.09.27-12';
+const APP_VERSION = '2026.09.27-19';
 const rules = () => S.rules || (S.rules = []);
 
 /* ---------- undo ---------- */
@@ -2355,7 +2365,7 @@ function paydaysBetween(s, e) {
 function cashEvents(s, e) {
   const map = {}, add = (d, ev) => { const k = iso(d); (map[k] = map[k] || []).push(ev); };
   const c = calcPay(), per = c.n ? c.net / c.n : 0, today = stripTime(new Date()), seenCard = new Set();
-  if (num(S.pay.salary)) paydaysBetween(s, e).forEach(d => add(d, { kind: 'pay', label: 'Payday', amt: per }));
+  if (num(S.pay.salary)) paydaysBetween(s, e).forEach(d => { if (hourlyOn()) { const c = hourlyCalc(d); add(d, { kind: 'pay', label: `Payday (${c.hours} hrs)`, amt: c.net / c.n }); } else add(d, { kind: 'pay', label: 'Payday', amt: per }); });
   for (let d = new Date(s); d <= e; d = addDays(d, 1)) {
     S.bills.forEach(b => { if (isDue(b, d)) add(d, { kind: b.noLog ? 'cardsub' : 'bill', label: b.name, amt: b.noLog ? 0 : -num(b.amount), show: num(b.amount) }); });
     S.debts.forEach(x => {
@@ -3359,8 +3369,8 @@ function payrollAuto(types, kind) {
   return !!(a && a.recur && a.recur.on && a.recur.fromPay);
 }
 
-function recurAmounts(a) {
-  const c = calcPay(), per = x => c.n ? Math.round(x / c.n * 100) / 100 : 0, r = a.recur || {};
+function recurAmounts(a, d) {
+  const c = d && hourlyOn() ? hourlyCalc(d) : calcPay(), per = x => c.n ? Math.round(x / c.n * 100) / 100 : 0, r = a.recur || {};
   let you = num(r.amount);
   if (r.fromPay) you = a.type === 'hsa' ? per(c.h) : a.type === 'roth401k' ? per(c.r) : per(c.k + (S.accounts.some(x => x.type === 'roth401k') ? 0 : c.r));
   const match = r.match && ['k401', 'roth401k'].includes(a.type) ? per(c.match) : 0;
@@ -3395,7 +3405,7 @@ function runAutoDeposits() {
     const r = a.recur; if (!r || !r.on) return;
     const start = r.last ? addDays(pd(r.last), 1) : pd(r.start || todayISO());
     if (start <= today) recurDates(r, start, today).slice(-60).forEach(d => {
-      const { you, match } = recurAmounts(a), day = iso(d);
+      const { you, match } = recurAmounts(a, d), day = iso(d);
       if (you > 0) { S.contribs.push({ id: uid(), date: day, acct: a.id, amount: you, kind: 'you', auto: true }); investDeposit(a, you); n++; total += you; }
       if (match > 0 && !matched.has(day)) { matched.add(day); const ma = S.accounts.find(x => x.type === 'match') || a; S.contribs.push({ id: uid(), date: day, acct: ma.id, amount: match, kind: 'employer', auto: true }); investDeposit(ma, match); total += match; }
     });
@@ -4232,6 +4242,380 @@ document.addEventListener('gesturechange', e => e.preventDefault());
 /* Today has its own quick actions, so the floating + button steps aside there */
 const _render10 = render;
 render = function () { _render10(); document.body.classList.toggle('on-today', UI.tab === 'dash' && !UI.editDash); };
+/* ================= v7: mutual funds follow an ETF, hourly paychecks ================= */
+
+/* ---------- hourly pay ---------- */
+function hourlyOn() { return !!(S.pay.hourly && S.pay.hourly.on && num(S.pay.hourly.rate) > 0); }
+function hrDefaults() { return { on: false, rate: Math.round(num(S.pay.salary) / 2080 * 100) / 100 || 25, hpd: 8, days: [1, 2, 3, 4, 5], basis: 'halves', auto: false, acct: '' }; }
+function workHours(s, e) { const h = S.pay.hourly, days = h.days || [1, 2, 3, 4, 5]; let n = 0; for (let d = new Date(s); d <= e; d = addDays(d, 1)) if (days.includes(d.getDay())) n++; return Math.round(n * num(h.hpd) * 100) / 100; }
+function payPeriodFor(d) {
+  const h = S.pay.hourly; d = stripTime(d);
+  if (h.basis === 'halves') {
+    const firstHalfEnd = new Date(d.getFullYear(), d.getMonth(), 15);
+    if (d > firstHalfEnd) return { s: new Date(d.getFullYear(), d.getMonth(), 1), e: firstHalfEnd };
+    return { s: new Date(d.getFullYear(), d.getMonth() - 1, 16), e: new Date(d.getFullYear(), d.getMonth(), 0) };
+  }
+  const prev = paydaysBetween(addDays(d, -40), addDays(d, -1)).pop();
+  return { s: prev || addDays(d, -14), e: addDays(d, -1) };
+}
+/* A full pay calculation for one paycheck, with taxes worked out as if every paycheck were this size (how payroll withholding works) */
+function hourlyCalc(d) {
+  const per = payPeriodFor(d), hours = workHours(per.s, per.e), gross = Math.round(hours * num(S.pay.hourly.rate) * 100) / 100, n = +S.pay.freq || 24;
+  return Object.assign(calcPay(0, { salary: gross * n }), { hours, gross, per });
+}
+function syncSalary() { const h = S.pay.hourly; if (!hourlyOn()) return; const perWeek = (h.days || []).length * num(h.hpd); S.pay.salary = Math.round(num(h.rate) * perWeek * 52); }
+/* Add each paycheck on payday: income in Spending, and the take-home into your checking balance */
+function runAutoPay() {
+  const h = S.pay.hourly; if (!hourlyOn() || !h.auto || !S.onboarded) return null;
+  const today = stripTime(new Date()), from = h.autoLast ? addDays(pd(h.autoLast), 1) : today;
+  const acct = S.accounts.find(a => a.id === h.acct) || S.accounts.find(a => a.type === 'checking');
+  const added = [];
+  if (from <= today) paydaysBetween(from, today).forEach(d => {
+    const day = iso(d), c = hourlyCalc(d), net = Math.round(c.net / c.n * 100) / 100;
+    if (S.txns.some(t => t.type === 'income' && Math.abs((pd(t.date) - d) / 864e5) <= 3 && (t.src === 'salary' || Math.abs(num(t.amount) - net) <= Math.max(5, net * .05)))) return;
+    S.txns.push({ id: uid(), date: day, amount: net, type: 'income', src: 'salary', note: `Paycheck (${c.hours} hrs)`, autoPay: true, acct: acct ? acct.name : '' });
+    if (acct) { acct.cash = Math.round((num(acct.cash) + net) * 100) / 100; acct.updated = todayISO(); }
+    added.push({ day, net, hours: c.hours });
+  });
+  h.autoLast = iso(today);
+  return added;
+}
+function autoPayNow(announce) {
+  const added = runAutoPay(); if (!added) return;
+  if (added.length) { commit(); if (announce) { const l = added[added.length - 1]; toast(added.length === 1 ? `Payday: ${money(l.net, { force: true })} (${l.hours} hrs) added to your balance` : `${added.length} paychecks added to your balance`); } } else save();
+}
+/* When a bank import brings in the real deposit, it replaces the estimated paycheck */
+const _runCsvImport11 = runCsvImport;
+runCsvImport = async function (v) {
+  const before = new Set(S.txns.map(t => t.id)); const r = await _runCsvImport11(v);
+  const fresh = S.txns.filter(t => !before.has(t.id) && t.type === 'income');
+  let swapped = 0;
+  fresh.forEach(t => { const auto = S.txns.find(x => x.autoPay && Math.abs((pd(x.date) - pd(t.date)) / 864e5) <= 4 && Math.abs(num(x.amount) - num(t.amount)) <= Math.max(5, num(t.amount) * .05)); if (auto) { S.txns = S.txns.filter(x => x.id !== auto.id); t.src = 'salary'; swapped++; } });
+  if (swapped) { commit(); toast(`Matched ${swapped} bank deposit${swapped === 1 ? '' : 's'} to your estimated paycheck${swapped === 1 ? '' : 's'}`); }
+  return r;
+};
+
+/* ---------- Paycheck screen: hourly card ---------- */
+function hourlyPreviewHtml() {
+  if (!hourlyOn()) return '';
+  const t = stripTime(new Date()), past = paydaysBetween(addDays(t, -40), t).slice(-1), next = paydaysBetween(addDays(t, 1), addDays(t, 80)).slice(0, 4);
+  return `<table class="tbl" style="margin-top:6px"><tr><th>Payday</th><th>Pays for</th><th class="r">Hours</th><th class="r">Take-home</th></tr>${[...past, ...next].map(d => { const c = hourlyCalc(d); return `<tr${d <= t ? ' class="mute"' : ''}><td>${fmtShort(d)}${d.est ? '*' : ''}</td><td>${fmtShort(c.per.s)}\u2013${fmtShort(c.per.e).replace(/^[A-Za-z]+ /, fmtShort(c.per.s).slice(0, 3) === fmtShort(c.per.e).slice(0, 3) ? '' : fmtShort(c.per.e).slice(0, 4))}</td><td class="r">${c.hours}</td><td class="r"><b>${money(c.net / c.n)}</b><div class="xs mute">${money(c.gross)} gross</div></td></tr>`; }).join('')}</table>${[...past, ...next].some(d => d.est) ? '<div class="xs mute">* estimated payday</div>' : ''}`;
+}
+function hourlyCardHtml() {
+  const h = S.pay.hourly || hrDefaults(), on = hourlyOn() || (S.pay.hourly && S.pay.hourly.on), checks = S.accounts.filter(a => a.type === 'checking' || a.type === 'savings');
+  const dayBtns = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((l, i) => `<button type="button" class="${(h.days || []).includes(i) ? 'on' : ''}" data-act="hrDay" data-d="${i}" aria-pressed="${(h.days || []).includes(i)}">${l}</button>`).join('');
+  return card('Paid by the hour', `<div class="tgl"><label for="hrOn">I\u2019m paid hourly<div class="xs mute">Each paycheck is the hours in its pay period times your rate, so paychecks with more workdays are bigger.</div></label><input type="checkbox" class="sw" id="hrOn" data-chg="hrOn" ${on ? 'checked' : ''}></div>
+  ${on ? `<div class="grid2"><div class="fld"><label for="hrRate">Hourly rate ($)</label><input id="hrRate" type="text" inputmode="decimal" data-chg="hrField" data-k="rate" value="${num(h.rate)}"></div><div class="fld"><label for="hrHpd">Hours per workday</label><input id="hrHpd" type="text" inputmode="decimal" data-chg="hrField" data-k="hpd" value="${num(h.hpd)}"></div></div>
+  <div class="fld"><label>Days you work</label><div class="wdgrid">${dayBtns}</div></div>
+  <div class="fld"><label for="hrBasis">Each paycheck pays for</label><select id="hrBasis" data-chg="hrField" data-k="basis"><option value="halves" ${h.basis === 'halves' ? 'selected' : ''}>Last finished half-month</option><option value="since" ${h.basis === 'since' ? 'selected' : ''}>Days since the last payday</option></select><div class="hint">With paydays on the 7th and 22nd, the half-month option means the 7th pays for the 16th to the end of last month, and the 22nd pays for the 1st to the 15th.</div></div>
+  <div class="tgl"><label for="hrAuto">Add each paycheck automatically<div class="xs mute">On payday, the take-home is added as income and to your balance. A bank import later replaces the estimate with the real deposit.</div></label><input type="checkbox" class="sw" id="hrAuto" data-chg="hrAuto" ${h.auto ? 'checked' : ''}></div>
+  ${h.auto ? `<div class="fld"><label for="hrAcct">Deposit into</label><select id="hrAcct" data-chg="hrField" data-k="acct">${checks.map(a => `<option value="${a.id}" ${(h.acct || (checks.find(x => x.type === 'checking') || {}).id) === a.id ? 'selected' : ''}>${esc(a.name)}</option>`).join('') || '<option value="">Add a checking account in Investing first</option>'}</select></div>` : ''}
+  <div id="hrPrev">${hourlyPreviewHtml()}</div><div class="xs mute" style="margin-top:6px">Holidays on your workdays count as paid hours. Taxes use 2026 tables for each paycheck\u2019s size. Overtime isn\u2019t included.</div>` : ''}`);
+}
+const _budPay11 = budPay;
+budPay = function () { const h = _budPay11(), mark = '<section class="card"><h2><span>Deductions'; const i = h.indexOf(mark); return i >= 0 ? h.slice(0, i) + hourlyCardHtml() + h.slice(i) : h + hourlyCardHtml(); };
+const _renderPayRes11 = renderPayRes;
+renderPayRes = function () { _renderPayRes11(); const el = $('#hrPrev'); if (el) el.innerHTML = hourlyPreviewHtml(); };
+Object.assign(CHG, {
+  hrOn: t => { S.pay.hourly = Object.assign(hrDefaults(), S.pay.hourly || {}, { on: t.checked }); syncSalary(); save(); render(); if (t.checked) toast(`About ${money(S.pay.salary, { force: true, whole: true })} a year at your rate. Check your paydays under Paid.`); },
+  hrField: t => { const h = S.pay.hourly, k = t.dataset.k; h[k] = ['rate', 'hpd'].includes(k) ? num(t.value) : t.value; syncSalary(); save(); if (k === 'basis' || k === 'acct') render(); else renderPayRes(); },
+  hrAuto: t => { const h = S.pay.hourly; h.auto = t.checked; if (t.checked) { h.autoLast = iso(addDays(new Date(), -1)); h.acct = h.acct || (S.accounts.find(a => a.type === 'checking') || {}).id || ''; } save(); render(); if (t.checked) { autoPayNow(true); toast('Paychecks will be added on each payday'); } }
+});
+ACT.hrDay = (d, el) => { const h = S.pay.hourly, i = +d.d; h.days = h.days.includes(i) ? h.days.filter(x => x !== i) : [...h.days, i].sort(); el.classList.toggle('on', h.days.includes(i)); syncSalary(); save(); renderPayRes(); };
+/* Log paycheck fills in this paycheck's hours-based amounts */
+const _calcPay11 = calcPay;
+const _logPaycheckForm11 = logPaycheckForm;
+logPaycheckForm = function () {
+  if (!hourlyOn()) return _logPaycheckForm11();
+  const d = stripTime(new Date()), pday = paydaysBetween(addDays(d, -5), addDays(d, 5)).sort((a, b) => Math.abs(a - d) - Math.abs(b - d))[0] || d, hc = hourlyCalc(pday);
+  calcPay = function (r, o) { return (r || o) ? _calcPay11(r, o) : hc; };
+  try { _logPaycheckForm11(); } finally { calcPay = _calcPay11; }
+  const sh = topSheet(); if (sh && sh._form) { const intro = sh.querySelector('p.sm'); if (intro) intro.textContent = `Filled in for ${hc.hours} hours (${fmtShort(hc.per.s)} to ${fmtShort(hc.per.e)}). Adjust to match your pay stub.`; }
+};
+
+/* ---------- run on open and when coming back ---------- */
+const _afterInit11 = afterInit;
+afterInit = function () {
+  _afterInit11();
+  autoPayNow(true);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) autoPayNow(true); });
+};
+/* ================= Google Sheets prices (GOOGLEFINANCE) for mutual funds and ETFs ================= */
+const isMutualFund = t => /^[A-Z]{4}X$/.test(String(t || '').toUpperCase());
+const cleanTicker = t => String(t || '').trim().toUpperCase().replace(/^(MUTF|NASDAQ|NYSEARCA|NYSE|BATS|AMEX|NYSEAMERICAN|INDEXSP):/, '');
+/* Turn whatever link was pasted into one Compound can read as CSV */
+function sheetCsvUrl(u) {
+  u = String(u || '').trim(); if (!u) return '';
+  if (/\/spreadsheets\/d\/e\/2PACX-/.test(u)) { const base = u.split('?')[0].replace(/\/pub(html)?$/, '/pub'); const gid = (u.match(/[?&#]gid=(\d+)/) || [])[1]; return base + '?output=csv' + (gid ? `&gid=${gid}&single=true` : ''); }
+  const id = (u.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]{20,})/) || [])[1]; if (!id) return '';
+  const gid = (u.match(/[?&#]gid=(\d+)/) || [])[1];
+  return `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv${gid ? '&gid=' + gid : ''}`;
+}
+/* Every ticker listed in the sheet is kept away from Finnhub, even with no price (plan-only funds can share a ticker with an unrelated public fund) */
+let SHEET_LISTED = new Set();
+function parseSheetPrices(text) {
+  const out = {}; SHEET_LISTED = new Set();
+  parseCsv(text).forEach(r => {
+    const t = cleanTicker(r[0]); if (!/^[A-Z][A-Z0-9.\-]{0,9}$/.test(t) || /^(TICKER|SYMBOL)$/.test(t)) return;
+    SHEET_LISTED.add(t);
+    const p = num(String(r[1] || '').replace(/[^0-9.\-]/g, '')); if (!(p > 0)) return;
+    const pctRaw = String(r[2] || '').replace(/[^0-9.\-]/g, ''), pctv = pctRaw === '' ? null : num(pctRaw);
+    out[t] = { c: p, dp: pctv };
+  });
+  return out;
+}
+/* Read a public sheet the way Google's own chart widgets do: as a script, which browsers allow across sites */
+let sheetCbN = 0;
+function sheetViaScript(id, gid, variant) {
+  return new Promise((resolve, reject) => {
+    const cb = '__cmpSheet' + (++sheetCbN), el = document.createElement('script');
+    const done = (fn, v) => { clearTimeout(t); try { delete window[cb]; } catch (e) { window[cb] = undefined; } el.remove(); fn(v); };
+    const t = setTimeout(() => done(reject, Object.assign(new Error('timeout'), { code: 'network' })), 12000);
+    window[cb] = resp => {
+      if (resp && resp.status === 'error') { const r = ((resp.errors || [])[0] || {}); return done(reject, Object.assign(new Error(r.detailed_message || r.message || r.reason || 'error'), { code: /access|denied|auth/i.test(r.reason + ' ' + r.message) ? 'share' : 'google', detail: r.reason || r.message })); }
+      if (!resp || !resp.table) return done(reject, Object.assign(new Error('empty'), { code: 'google', detail: 'no table' }));
+      const cols = resp.table.cols || [], rows = [cols.map(c => c.label || '')];
+      (resp.table.rows || []).forEach(r => rows.push((r.c || []).map(c => c == null ? '' : (c.v != null ? String(c.v) : (c.f != null ? String(c.f) : '')))));
+      done(resolve, rows.map(r => r.map(x => '"' + String(x).replace(/"/g, '""') + '"').join(',')).join('\n'));
+    };
+    el.onerror = () => done(reject, Object.assign(new Error('script'), { code: 'script' }));
+    el.src = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=${variant === 2 ? 'out:json;' : ''}responseHandler:${cb}${gid ? '&gid=' + gid : ''}&headers=1&_=${Date.now()}`;
+    document.head.appendChild(el);
+  });
+}
+async function fetchSheetPrices() {
+  const url = sheetCsvUrl(S.settings.sheetUrl); if (!url) throw Object.assign(new Error('link'), { code: 'link' });
+  const id = (String(S.settings.sheetUrl).match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]{20,})/) || [])[1], gid = (String(S.settings.sheetUrl).match(/[?&#]gid=(\d+)/) || [])[1];
+  const tried = [];
+  /* 1. opensheet: reads public sheets through Google's official API and allows web apps to read the result */
+  if (id) {
+    try {
+      const r = await fetch(`https://opensheet.elk.sh/${id}/1?_=${Date.now()}`, { cache: 'no-store' });
+      const j = await r.json();
+      if (Array.isArray(j)) {
+        const keys = j.length ? Object.keys(j[0]) : [], pick = re => keys.find(k => re.test(k)) || '';
+        const kt = pick(/ticker|symbol/i) || keys[0], kp = pick(/price/i) || keys[1], kc = pick(/change/i);
+        const csv = j.map(o => [o[kt], o[kp], kc ? o[kc] : ''].map(x => '"' + String(x == null ? '' : x).replace(/"/g, '""') + '"').join(',')).join('\n');
+        return parseSheetPrices(csv);
+      }
+      if (j && j.error && /permission|access|not found|private|forbidden/i.test(j.error)) throw Object.assign(new Error(j.error), { code: 'share', detail: j.error });
+      tried.push('opensheet: ' + ((j && j.error) || 'unexpected reply'));
+    } catch (e) { if (e.code === 'share') throw e; tried.push('opensheet: ' + (e.message || 'failed')); }
+  }
+  if (id && !/\/d\/e\//.test(S.settings.sheetUrl)) {
+    for (const v of [1, 2]) {
+      try { return parseSheetPrices(await sheetViaScript(id, gid, v)); }
+      catch (e) { if (e.code === 'share') throw e; tried.push(`script ${v}: ${e.detail || e.message}`); }
+    }
+  }
+  UI.sheetTried = tried;
+  let r; try { r = await fetch(url + (url.includes('?') ? '&' : '?') + '_=' + Date.now(), { cache: 'no-store' }); } catch (e) { throw Object.assign(new Error('network'), { code: navigator.onLine === false ? 'network' : 'blocked', detail: [...tried, 'direct: blocked'].join('; ') }); }
+  if (!r.ok) throw Object.assign(new Error('http ' + r.status), { code: 'blocked', detail: [...tried, 'direct: HTTP ' + r.status].join('; ') });
+  const text = await r.text();
+  if (/^\s*<(!doctype|html)/i.test(text)) throw Object.assign(new Error('share'), { code: 'share' });
+  return parseSheetPrices(text);
+}
+const sheetErrText = e => e.code === 'blocked' ? `Couldn\u2019t read the sheet any way (${e.detail || 'no detail'}). Check your connection, then send this message to Claude if it keeps happening.` : e.code === 'google' ? `Google Sheets returned an error: ${e.detail || e.message}.` : e.code === 'share' ? 'Compound couldn\u2019t open your Google Sheet. In the sheet, tap Share and set General access to \u201cAnyone with the link\u201d as Viewer.' : e.code === 'link' ? 'That doesn\u2019t look like a Google Sheets link. Copy it from the sheet\u2019s Share button.' : e.code === 'network' ? 'Couldn\u2019t reach Google Sheets. Check your connection.' : 'Google Sheets didn\u2019t send prices back. Check the link and try again.';
+/* Apply sheet prices; returns which tickers came from the sheet */
+async function refreshSheet(silent) {
+  if (!S.settings.sheetUrl) { UI.sheetTickers = new Set(); return { ok: 0 }; }
+  let prices;
+  try { prices = await fetchSheetPrices(); } catch (e) { UI.sheetTickers = new Set(); if (!silent) toast(sheetErrText(e)); S.settings.sheetErr = sheetErrText(e); save(); return { ok: 0, err: e }; }
+  UI.sheetTickers = new Set([...Object.keys(prices), ...SHEET_LISTED]); S.settings.sheetErr = ''; let ok = 0; const miss = new Set();
+  S.accounts.forEach(a => (a.holdings || []).forEach(h => {
+    if (h.manualPrice) return; const t = cleanTicker(h.ticker), p = prices[t];
+    if (!p) { if (isMutualFund(t)) miss.add(t); return; }
+    const old = num(h.price); h.price = p.c; h.src = 'sheet'; h.quoteAt = Date.now();
+    if (p.dp != null) { h.dayPct = p.dp; h.dayChg = p.c - p.c / (1 + p.dp / 100); } else { h.dayPct = 0; h.dayChg = 0; }
+    if (Math.abs(old - p.c) > .0001) a.updated = todayISO(); ok++;
+  }));
+  S.settings.sheetAt = Date.now(); S.settings.sheetMiss = [...miss];
+  return { ok, miss: [...miss] };
+}
+/* Refresh: the sheet first (mutual funds and ETFs), then Finnhub for everything the sheet doesn't list */
+const _refreshQuotes12 = refreshQuotes;
+refreshQuotes = async function (opts = {}) {
+  if (!S.settings.sheetUrl) { UI.sheetTickers = new Set(); return _refreshQuotes12(opts); }
+  const sh = await refreshSheet(true);
+  const rest = S.accounts.some(a => (a.holdings || []).some(h => !h.manualPrice && quoteSymbol(h, a) && !UI.sheetTickers.has(cleanTicker(h.ticker))));
+  if (rest && S.settings.quoteKey) await _refreshQuotes12(Object.assign({}, opts, { silent: true })); else commit();
+  if (!opts.silent) toast(sh.err ? sheetErrText(sh.err) : `Updated ${sh.ok} price${sh.ok === 1 ? '' : 's'} from your Google Sheet${rest ? (S.settings.quoteKey ? ' and stocks from Finnhub' : '. Add a Finnhub key for stock prices') : ''}${sh.miss && sh.miss.length ? `. Not in the sheet yet: ${sh.miss.slice(0, 3).join(', ')}` : ''}`);
+};
+/* Automatic refresh on open also runs when only a sheet is set up */
+const _afterInit12 = afterInit;
+afterInit = function () { _afterInit12(); if (S.settings.sheetUrl && !S.settings.quoteKey && S.settings.autoQuotes) setTimeout(() => refreshQuotes({ silent: true }), 1200); };
+
+/* ---------- setup help: copy a ready-made sheet ---------- */
+function sheetBlock() {
+  const tks = [...new Set(S.accounts.flatMap(a => (a.holdings || []).map(h => cleanTicker(h.ticker))).filter(Boolean))];
+  const funds = tks.filter(isMutualFund), list = [...funds, ...tks.filter(t => !isMutualFund(t))];
+  const rows = (list.length ? list : ['VFIAX', 'VOO']).map((t, i) => [isMutualFund(t) ? 'MUTF:' + t : t, `=GOOGLEFINANCE(A${i + 2},"price")`, `=IFERROR(GOOGLEFINANCE(A${i + 2},"changepct"),"")`]);
+  return { text: [['Ticker', 'Price', 'Change %'], ...rows].map(r => r.join('\t')).join('\n'), rows, funds };
+}
+function sheetSetup() {
+  const b = sheetBlock();
+  openSheet(sheetHead('Prices from Google Sheets', 'Done') + `<p class="sm mute" style="margin:-4px 0 12px">Google Sheets\u2019 GOOGLEFINANCE function has mutual fund prices like VFIAX, plus ETFs. Compound reads the sheet when it refreshes. Tickers in the sheet use Google\u2019s price, and everything else keeps using Finnhub.</p>
+  <ol class="steps"><li>Open <b>sheets.new</b> in Safari to make a new Google Sheet.</li><li>Tap <b>Copy sheet contents</b> below, then tap cell <b>A1</b> in the sheet and paste.</li><li>Tap <b>Share</b>, change General access to <b>Anyone with the link</b>, set it to <b>Viewer</b>, and copy the link.</li><li>Paste the link into Settings, Live prices, <b>Google Sheet link</b>.</li></ol>
+  <section class="card" style="margin:12px 0"><div class="sheetprev">${[['Ticker', 'Price', 'Change %'], ...b.rows].map((r, i) => `<div class="${i ? '' : 'hd'}"><span>${esc(r[0])}</span><span>${esc(i ? r[1].replace(/A\d+/, 'A' + (i + 1)) : r[1])}</span></div>`).join('')}</div></section>
+  <button class="btn block" data-act="sheetCopy">Copy sheet contents</button>
+  <div class="xs mute" style="margin-top:10px">Mutual funds are written as MUTF:VFIAX so Google finds the fund. Delete the rows for individual stocks (like AAPL) so Finnhub keeps pricing them; keep your mutual funds and ETFs. Add or remove rows any time. Mutual fund prices update once a day after the market closes, and ETFs update throughout the day with a short delay. GOOGLEFINANCE data is for personal use.</div>`);
+}
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch (e) { }
+  const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (e) { } ta.remove(); return ok;
+}
+Object.assign(ACT, {
+  sheetSetup: () => { closeAll(); sheetSetup(); },
+  sheetCopy: async () => { const ok = await copyText(sheetBlock().text); toast(ok ? 'Copied. Paste it into cell A1 of your Google Sheet.' : 'Couldn\u2019t copy. Type the tickers and formulas shown above instead.'); },
+  sheetTest: async () => { const r = await refreshSheet(false); if (!r.err) { commit(); toast(r.ok ? `Connected: ${r.ok} price${r.ok === 1 ? '' : 's'} updated from your sheet` : 'Connected, but none of your holdings\u2019 tickers are in the sheet yet'); } openSettingsFresh(); }
+});
+/* Settings: Google Sheet link lives with Live prices */
+const _openSettings12 = openSettings;
+openSettings = function () {
+  _openSettings12();
+  const sec = $('#liveprices', topSheet()); if (!sec) return;
+  const at = S.settings.sheetAt ? new Date(S.settings.sheetAt) : null;
+  sec.insertAdjacentHTML('beforeend', `<div style="border-top:1px solid var(--line);margin-top:14px;padding-top:14px"><div class="b" style="margin-bottom:4px">Mutual funds and ETFs from Google Sheets</div><div class="sm mute" style="margin-bottom:10px">Finnhub\u2019s free plan doesn\u2019t price mutual funds like VFIAX. A Google Sheet with GOOGLEFINANCE does, and it covers ETFs too. Finnhub stays in charge of stocks.</div><div class="fld"><label for="s-sheet">Google Sheet link</label><input id="s-sheet" type="text" data-bind="settings.sheetUrl" data-t="str" data-inp="sheetUrl" value="${esc(S.settings.sheetUrl || '')}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://docs.google.com/spreadsheets/d/..."></div>${S.settings.sheetErr ? `<div class="xs neg" style="margin:-4px 0 8px">${esc(S.settings.sheetErr)}</div>` : at ? `<div class="xs pos" style="margin:-4px 0 8px">Last read ${fmtShort(at)}, ${at.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}${S.settings.sheetMiss && S.settings.sheetMiss.length ? `. Not in the sheet: ${esc(S.settings.sheetMiss.join(', '))}` : ''}</div>` : ''}<div class="grid2"><button class="btn ghost" data-act="sheetSetup">How to set it up</button><button class="btn ghost" data-act="sheetTest" ${S.settings.sheetUrl ? '' : 'disabled'}>Test the link</button></div></div>`);
+};
+Object.assign(INP, { sheetUrl: t => { S.settings.sheetUrl = t.value.trim(); const b = $('[data-act=sheetTest]', topSheet()); if (b) b.disabled = !S.settings.sheetUrl; } });
+/* ================= price file on your own site (GitHub Actions writes prices.json) ================= */
+/* Compound reads prices.json from the same site it's hosted on, so no browser setting or blocker can stop it */
+function repoInfo() {
+  const h = location.hostname, m = h.match(/^([a-z0-9-]+)\.github\.io$/i), seg = location.pathname.split('/').filter(Boolean)[0];
+  return m ? { owner: m[1], repo: seg && !/\.html?$/i.test(seg) ? seg : m[1] + '.github.io' } : null;
+}
+async function fetchPriceFile() {
+  const tries = [new URL('prices.json', location.href).href + '?_=' + Date.now()], ri = repoInfo();
+  if (ri) tries.push(`https://raw.githubusercontent.com/${ri.owner}/${ri.repo}/main/prices.json?_=${Date.now()}`);
+  for (const u of tries) {
+    try { const r = await fetch(u, { cache: 'no-store' }); if (!r.ok) continue; const j = await r.json(); if (j && j.prices && typeof j.prices === 'object') return j; } catch (e) { }
+  }
+  return null;
+}
+async function applyPriceFile(silent) {
+  const f = await fetchPriceFile();
+  S.settings.priceFile = f ? { updated: f.updated || '', checked: f.checked || f.updated || '', n: Object.keys(f.prices).length, tickers: Object.keys(f.prices) } : null;
+  if (!f) return null;
+  UI.sheetTickers = new Set(Object.keys(f.prices).map(cleanTicker)); let ok = 0;
+  S.accounts.forEach(a => (a.holdings || []).forEach(h => {
+    if (h.manualPrice) return; const p = f.prices[cleanTicker(h.ticker)]; if (!p || !(num(p.price) > 0)) return;
+    h.price = num(p.price); h.src = 'file'; h.quoteAt = f.updated ? Date.parse(f.updated) || Date.now() : Date.now();
+    if (p.changePct != null && p.changePct !== '') { const dp = num(p.changePct); h.dayPct = dp; h.dayChg = h.price - h.price / (1 + dp / 100); } else { h.dayPct = 0; h.dayChg = 0; }
+    a.updated = todayISO(); ok++;
+  }));
+  S.settings.sheetErr = ''; S.settings.sheetAt = Date.now();
+  return { ok, file: f };
+}
+/* Price file first. If it's there, the sheet isn't read from the phone at all */
+const _refreshSheet13 = refreshSheet;
+refreshSheet = async function (silent) {
+  const r = await applyPriceFile(silent);
+  if (r) return { ok: r.ok, miss: [], viaFile: true };
+  return _refreshSheet13(silent);
+};
+const _refreshQuotes13 = refreshQuotes;
+refreshQuotes = async function (opts = {}) {
+  if (!S.settings.sheetUrl) { const r = await applyPriceFile(true); if (r) { const rest = S.accounts.some(a => (a.holdings || []).some(h => !h.manualPrice && quoteSymbol(h, a) && !UI.sheetTickers.has(cleanTicker(h.ticker)))); if (rest && S.settings.quoteKey) await _refreshQuotes12(Object.assign({}, opts, { silent: true })); else commit(); if (!opts.silent) toast(`Updated ${r.ok} price${r.ok === 1 ? '' : 's'} from your price file`); return; } }
+  return _refreshQuotes13(opts);
+};
+
+/* ---------- the GitHub Actions workflow, filled in with this sheet ---------- */
+function workflowYaml() {
+  const id = ((String(S.settings.sheetUrl || '').match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]{20,})/) || [])[1]) || 'PASTE_YOUR_SHEET_ID_HERE';
+  return `name: Update prices
+
+on:
+  schedule:
+    - cron: "*/30 13-23 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  prices:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read the Google Sheet and write prices.json
+        env:
+          SHEET_ID: ${id}
+        run: |
+          python3 - <<'PY'
+          import csv, io, json, os, urllib.request, datetime
+          url = "https://docs.google.com/spreadsheets/d/%s/gviz/tq?tqx=out:csv" % os.environ["SHEET_ID"]
+          req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+          text = urllib.request.urlopen(req, timeout=30).read().decode("utf-8")
+          prices = {}
+          for row in list(csv.reader(io.StringIO(text)))[1:]:
+              if len(row) < 2 or not row[0].strip():
+                  continue
+              ticker = row[0].strip().upper().split(":")[-1]
+              try:
+                  price = float(row[1].replace("$", "").replace(",", ""))
+              except ValueError:
+                  continue
+              if price <= 0:
+                  continue
+              change = None
+              if len(row) > 2 and row[2].strip():
+                  try:
+                      change = float(row[2].replace("%", "").replace(",", ""))
+                  except ValueError:
+                      pass
+              prices[ticker] = {"price": price, "changePct": change}
+          now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+          old = {}
+          if os.path.exists("prices.json"):
+              try:
+                  old = json.load(open("prices.json"))
+              except Exception:
+                  old = {}
+          updated = now if old.get("prices") != prices else old.get("updated", now)
+          json.dump({"updated": updated, "checked": now, "source": "Google Sheet (GOOGLEFINANCE)", "prices": prices}, open("prices.json", "w"), indent=1)
+          print(prices)
+          PY
+      - name: Save prices.json
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add prices.json
+          if git diff --cached --quiet; then echo "No change"; exit 0; fi
+          git commit -m "Update prices"
+          git push
+      - name: Publish the site
+        continue-on-error: true
+        env:
+          GH_TOKEN: \${{ github.token }}
+        run: gh api -X POST "repos/\${{ github.repository }}/pages/builds" || true
+`;
+}
+function priceFileSetup() {
+  const ri = repoInfo(), repoUrl = ri ? `https://github.com/${ri.owner}/${ri.repo}` : 'your CompoundApp repository on github.com';
+  openSheet(sheetHead('Automatic price file', 'Done') + `<p class="sm mute" style="margin:-4px 0 12px">GitHub reads your Google Sheet every 30 minutes on weekdays and saves the prices to a file on your own site. Compound reads that file, so nothing on your phone can block it. It\u2019s free.</p>
+  <ol class="steps">
+  <li>Tap <b>Copy the setup file</b> below.</li>
+  <li>In Safari, open <b>${ri ? `<a href="${repoUrl}" target="_blank" rel="noopener" style="color:var(--acc)">${esc(ri.owner + '/' + ri.repo)}</a>` : 'your CompoundApp repository'}</b> on github.com and sign in. Tap <b>Add file</b>, then <b>Create new file</b>.</li>
+  <li>For the file name, type exactly <b>.github/workflows/update-prices.yml</b></li>
+  <li>Paste into the big text box, then tap <b>Commit changes</b> twice.</li>
+  <li>Open the <b>Actions</b> tab, tap <b>Update prices</b>, then <b>Run workflow</b>. Wait about 2 minutes for the green check.</li>
+  <li>Come back to Compound and tap <b>Check price file</b> in Settings.</li></ol>
+  <button class="btn block" style="margin-top:12px" data-act="pfCopy">Copy the setup file</button>
+  <div class="xs mute" style="margin-top:10px">Your sheet ID is already filled in. The file updates only when prices change, from about 9 AM to 7 PM Eastern on weekdays. Mutual fund prices change once a day after the close. To add a fund later, just add it to your Google Sheet.</div>`);
+}
+Object.assign(ACT, {
+  pfSetup: () => { closeAll(); priceFileSetup(); },
+  pfCopy: async () => { const ok = await copyText(workflowYaml()); toast(ok ? 'Copied. Paste it into the new file on GitHub.' : 'Couldn\u2019t copy. Try again.'); },
+  pfCheck: async () => { const r = await applyPriceFile(false); if (r) { commit(); toast(`Price file found: ${r.ok} price${r.ok === 1 ? '' : 's'} updated`); } else { save(); toast('No price file yet. Run the workflow on GitHub, wait 2 minutes, then check again.'); } openSettingsFresh(); }
+});
+const _openSettings13 = openSettings;
+openSettings = function () {
+  _openSettings13();
+  const sec = $('#liveprices', topSheet()); if (!sec) return;
+  const pf = S.settings.priceFile, when = pf && pf.checked ? new Date(pf.checked) : null;
+  sec.insertAdjacentHTML('beforeend', `<div style="border-top:1px solid var(--line);margin-top:14px;padding-top:14px"><div class="b" style="margin-bottom:4px">Automatic price file <span class="tag" style="color:var(--pos)">most reliable</span></div><div class="sm mute" style="margin-bottom:10px">If Compound can\u2019t read the sheet from your phone, GitHub can read it for you and save the prices to your own site.</div>${pf ? `<div class="xs pos" style="margin-bottom:8px">Found: ${esc(pf.tickers.join(', '))}${when && !isNaN(when) ? `. Checked ${fmtShort(when)}, ${when.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : ''}</div>` : ''}<div class="grid2"><button class="btn ghost" data-act="pfSetup">Set it up</button><button class="btn ghost" data-act="pfCheck">Check price file</button></div></div>`);
+};
 
 </script>
 </body>
