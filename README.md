@@ -88,7 +88,9 @@ Settings → Help and planning lets you take the tour, build your money plan, or
 Open any investment account in Investing and tap **Set up automatic investing**.
 
 1. **How new money is invested:** set a percentage for each holding (for example VTI 70%, VXUS 20%, BND 10%). Every deposit buys fractional shares at the current price and updates your cost basis. Anything under 100% stays as cash.
-1. **Automatic deposits:** each payday, twice a month, or monthly. For a 401(k), use your paycheck contribution and add the employer match. Deposits are recorded on schedule, and Log paycheck won’t double-count them.
+1. **Automatic deposits:** each payday, twice a month, monthly, or a custom schedule: every few weeks from a start date, specific days of the month (like 1, 10, 20), or a list of specific dates. For a 401(k), use your paycheck contribution and add the employer match. Deposits are recorded on schedule, and Log paycheck won’t double-count them.
+
+Use **Deposit now** on the account for a one-time deposit that’s invested by your split right away.
 
 ## Pay schedules
 
@@ -98,3 +100,16 @@ Plan → Tools → Paycheck → **Paid**:
 - **Twice a month, dates vary:** add dates from your employer’s pay calendar. Each paycheck you log is added automatically, and future paydays are estimated from your pattern (shown as “est.”).
 
 Your calendar, payday checklist, automatic deposits, and paycheck-based budgets all follow this schedule.
+
+## Import CSV or PDF (as many files as you want)
+
+Spending → Transactions → **Import CSV or PDF** (also in Settings and on each investment account).
+
+1. **Where should these go?** Choose *Spending transactions* (then pick the card or bank account and whether it’s a credit card or checking/savings), or *Investments: [account]*.
+1. **Choose files.** Pick any number of PDFs and CSVs at once.
+1. **Review.** Everything found is listed before anything is saved:
+- Spending: tap a row to skip it, tap its tag to flip charge/credit, and choose whether positive amounts mean money spent or received. Running-balance statements are checked line by line.
+- Investments: set each line as Contribution, Employer match, Buy or Skip. Contributions count toward your yearly IRS limit (including prior-year IRA contributions).
+- Vanguard statements are recognized automatically: contributions, holdings, cost basis and cash update, and the year-to-date total fills any gap.
+
+PDFs are read on your phone; nothing is uploaded. Duplicates (already imported, or the same statement uploaded twice) are skipped. Scanned-image PDFs without text can’t be read yet.

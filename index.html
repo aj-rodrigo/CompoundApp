@@ -287,6 +287,13 @@ body.practicing #fab{bottom:calc(112px + env(safe-area-inset-bottom))}
 .pdchip{display:inline-flex;align-items:center;gap:6px;background:var(--surf2);border-radius:999px;padding:5px 6px 5px 12px;font-size:13px;font-weight:600}
 .pdchip.past{opacity:.55}
 .pdchip button{width:22px;height:22px;border-radius:50%;background:var(--line);font-size:11px;display:grid;place-items:center}
+.imrow{gap:10px}
+.imrow.off .t,.imrow.off .amt>span{opacity:.4;text-decoration:line-through}
+.imchk{width:26px;height:26px;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;flex:none;font-weight:800;color:var(--acc-ink);background:var(--pos);border-color:var(--pos)}
+.imrow.off .imchk{background:none;border-color:var(--line)}
+.imflip{display:block;margin:4px 0 0 auto;border:0;cursor:pointer}
+.imas{display:block;margin:4px 0 0 auto;font-size:13px;padding:5px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surf2);color:var(--text)}
+.impl .li .main{cursor:pointer}
 </style>
 </head>
 <body>
@@ -583,7 +590,7 @@ const billMonthly = b => num(b.amount) * ({ weekly: 52 / 12, biweekly: 26 / 12, 
 /* limits */
 function limitsInfo() {
   const age = num(S.profile.age), now = new Date(), y = now.getFullYear();
-  const cs = S.contribs.filter(c => c.date >= y + '-01-01' && c.date <= y + '-12-31' && (c.lim === true || (c.lim == null && c.kind === 'you')));
+  const cs = S.contribs.filter(c => (c.ty ? +c.ty === y : c.date >= y + '-01-01' && c.date <= y + '-12-31') && (c.lim === true || (c.lim == null && c.kind === 'you')));
   const byType = t => sum(cs.filter(c => { const a = S.accounts.find(x => x.id === c.acct); return a && t.includes(a.type); }).map(c => num(c.amount)));
   const cu = age >= 60 && age <= 63 ? LIMITS.k401c60 : age >= 50 ? LIMITS.k401c50 : 0;
   const frac = ((stripTime(now) - new Date(y, 0, 1)) / 864e5 + 1) / (isLeap(y) ? 366 : 365);
@@ -1400,7 +1407,7 @@ function budTx() {
     ? `<div class="grid3" style="margin-bottom:10px">${stat('Charged', money(charged))}${stat('Payments', money(paid), 'pos')}${stat('Balance change', money(charged - paid, { sign: true }))}</div>`
     : `<div class="grid3" style="margin-bottom:10px">${stat('In', money(inc), 'pos')}${stat('Charged', money(charged))}${stat('Net', money(inc - charged, { sign: true }), inc - charged < 0 ? 'neg' : '')}</div>`;
   h += `<div class="xs mute" style="margin:-2px 2px 10px">${cardView ? 'Balance adds each charge and subtracts credits and payments, oldest first.' : 'Charged so far is a running total of spending this period. Credits reduce it; card payments and income don\u2019t count as spending.'}</div>`;
-  h += card('', txList(list, run) + `<div class="btns" style="margin-top:12px"><button class="btn" data-act="addTx">Add transaction</button><button class="btn ghost" data-act="importCsv">Import CSV</button><button class="btn danger" data-act="delTx">Delete…</button></div>`);
+  h += card('', txList(list, run) + `<div class="btns" style="margin-top:12px"><button class="btn" data-act="addTx">Add transaction</button><button class="btn ghost" data-act="importCsv">Import CSV or PDF</button><button class="btn danger" data-act="delTx">Delete…</button></div>`);
   return h;
 }
 function budBills() {
@@ -1650,7 +1657,7 @@ function openSettings() {
   <section class="card" style="margin-top:12px"><h2><span>Storage</span></h2><div id="storeInfo" class="sm mute">Checking\u2026</div></section>
   <section class="card" style="margin-top:12px"><h2><span>Automation</span></h2><button class="btn ghost block" data-act="rules">Auto-categorize rules (${rules().length})</button><div class="tgl" style="margin-top:8px"><label for="s-qo">Open quick expense when the app starts<div class="xs mute">Log a purchase in two taps: amount, then category.</div></label><input type="checkbox" class="sw" id="s-qo" data-bind="settings.quickOnOpen" ${S.settings.quickOnOpen ? 'checked' : ''}></div><div class="xs mute" style="margin-top:8px">Compound version ${APP_VERSION}</div></section>
   <section class="card" style="margin-top:12px"><h2><span>Security</span></h2><div class="sm mute" style="margin-bottom:10px">${s.pin ? 'A passcode protects the app.' : 'No passcode set. Anyone with your unlocked phone can open the app.'}</div>${s.pin ? tg('settings.autolock', 'Lock after 1 minute in the background') : ''}<div class="btns"><button class="btn ghost" data-act="setPin">${s.pin ? 'Change passcode' : 'Set passcode'}</button>${s.pin ? '<button class="btn danger" data-act="removePin">Turn off passcode</button>' : ''}</div></section>
-  <section class="card" style="margin-top:12px"><h2><span>Your data</span></h2><div class="sm mute" style="margin-bottom:10px">Everything is stored only on this phone.${s.lastBackup ? ' Last backup ' + fmtDate(s.lastBackup) + '.' : ' You haven\u2019t made a backup yet.'}</div><div class="stack" style="gap:8px"><button class="btn block" data-act="backup">Back up all data</button><button class="btn ghost block" data-act="restore">Restore from backup</button><button class="btn ghost block" data-act="expTx">Export transactions (CSV for Excel)</button><button class="btn ghost block" data-act="expAcct">Export accounts and debts (CSV)</button><button class="btn ghost block" data-act="pdf">Save a PDF report</button><button class="btn ghost block" data-act="importCsv">Import transactions (CSV)</button><button class="btn ghost block" data-act="delTx">Delete transactions</button></div></section>
+  <section class="card" style="margin-top:12px"><h2><span>Your data</span></h2><div class="sm mute" style="margin-bottom:10px">Everything is stored only on this phone.${s.lastBackup ? ' Last backup ' + fmtDate(s.lastBackup) + '.' : ' You haven\u2019t made a backup yet.'}</div><div class="stack" style="gap:8px"><button class="btn block" data-act="backup">Back up all data</button><button class="btn ghost block" data-act="restore">Restore from backup</button><button class="btn ghost block" data-act="expTx">Export transactions (CSV for Excel)</button><button class="btn ghost block" data-act="expAcct">Export accounts and debts (CSV)</button><button class="btn ghost block" data-act="pdf">Save a PDF report</button><button class="btn ghost block" data-act="importCsv">Import transactions (CSV or PDF)</button><button class="btn ghost block" data-act="delTx">Delete transactions</button></div></section>
   <section class="card" style="margin-top:12px"><h2><span>Start over</span></h2><div class="btns"><button class="btn ghost" data-act="rerunSetup">Run setup again</button><button class="btn danger" data-act="reset">Erase all data</button></div></section>
   <p class="xs mute" style="text-align:center;margin-top:16px">Compound. Estimates only, not financial or tax advice.</p>`;
   const ov = openSheet(html); ov._settings = true; fillStorageInfo();
@@ -1748,10 +1755,14 @@ function importCsvForm() {
       { k: 'acct', label: 'Card or account', type: 'select', opts: [['', 'Detect from the file'], ...[...new Set(S.txns.map(t => t.acct).filter(Boolean))].map(a => [a, a])], other: true, otherPh: 'e.g. American Express', v: (S.txns.slice().reverse().find(t => t.acct && t.type !== 'income') || {}).acct || '', hint: 'Pick the same card each time so its running balance in Plan \u2192 Debt keeps adding up.' }
     ],
     saveLabel: 'Import',
-    onSave: async v => {
-      if (!v.file) { toast('Choose a CSV file'); return; }
+    onSave: v => runCsvImport(v)
+  });
+}
+async function runCsvImport(v) {
+  {
+      if (!v.file && !v.rows) { toast('Choose a CSV file'); return; }
       let rows;
-      try { rows = parseCsv(await readText(v.file)); } catch (e) { toast('Couldn\u2019t read that file'); return; }
+      try { rows = v.rows || parseCsv(await readText(v.file)); } catch (e) { toast('Couldn\u2019t read that file'); return; }
       checkpoint();
       const hi = rows.findIndex(r => r.some(c => /date/i.test(c)) && r.some(c => /amount|debit|credit/i.test(c)));
       if (hi < 0) { toast('Couldn\u2019t find date and amount columns in that file'); return; }
@@ -1770,7 +1781,7 @@ function importCsvForm() {
       }
       if (v.kind === 'bank') isCard = false;
       const amexHdr = hd.some(x => /card member|appears on your statement|extended details/.test(x)) || body.some(r => /american express|amex/i.test((r[ni] || '') + (r[ci] || '')));
-      const fname = (v.file.name || 'Imported').replace(/\.csv$/i, '');
+      const fname = ((v.file && v.file.name) || v.name || 'Imported').replace(/\.(csv|pdf)$/i, '');
       const acct = v.acct || ((amexHdr || /amex|american|^activity/i.test(fname)) && isCard ? 'American Express' : (ti >= 0 && isCard ? 'Chase card' : fname));
       if (ai >= 0 && ni >= 0) { const th = body.filter(r => CARD_THANKS_RE.test(r[ni] || '')).map(r => parseAmt(r[ai])).filter(Boolean); if (th.length) { isCard = true; sign = th.filter(x => x < 0).length >= th.length / 2 ? 'pos' : 'neg'; } }
       const known = {}; S.txns.forEach(t => { if (t.note && t.cat && t.type === 'expense') known[merchKey(t.note)] = t.cat; });
@@ -1816,8 +1827,7 @@ function importCsvForm() {
       }
       UI.tab = 'budget'; UI.bsub = 'tx'; UI.txAcct = acct; UI.txFilter = ''; render();
       offerUndo($('#toast').textContent);
-    }
-  });
+  }
 }
 function printReport() {
   const c = calcPay(), p = period(0), t = (h, rows) => `<table><tr>${h.map(x => `<th>${x}</th>`).join('')}</tr>${rows.map(r => `<tr>${r.map(x => `<td>${x}</td>`).join('')}</tr>`).join('')}</table>`, f = v => money(v, { force: true });
@@ -2053,7 +2063,7 @@ async function init() {
 }
 init();
 /* ================= v2 features ================= */
-const APP_VERSION = '2026.09.26-7';
+const APP_VERSION = '2026.09.26-9';
 const rules = () => S.rules || (S.rules = []);
 
 /* ---------- undo ---------- */
@@ -3199,7 +3209,7 @@ render = function () {
   updateBadge();
 };
 const _commit = commit;
-commit = function () { _commit(); if (!S.onboarded) return; if (!S.msInit) { checkMilestones(true); S.msInit = true; save(); return; } setTimeout(() => checkMilestones(false), 60); };
+commit = function () { _commit(); if (!S.onboarded) return; if (!S.msInit) { checkMilestones(true); S.msInit = true; save(); return; } setTimeout(() => checkMilestones(!!(UI.quietUntil && Date.now() < UI.quietUntil)), 60); };
 const _openFab = openFab;
 openFab = function () { _openFab(); const l = $('.list', topSheet()); if (l) l.insertAdjacentHTML('afterbegin', `<button class="li" data-act="scan" data-close="1"><span class="ic">${I('doc')}</span><span class="main"><span class="t">Scan a receipt</span></span></button>`); };
 const _quickAdd = quickAdd;
@@ -3284,13 +3294,25 @@ function recurAmounts(a) {
 function recurDates(r, s, e) {
   if (r.freq === 'payday') return paydaysBetween(s, e);
   const out = [];
+  if (r.freq === 'weeks') {
+    const step = Math.max(1, num(r.every) || 2) * 7, a = pd(r.startDate || todayISO());
+    let d = a; if (d < s) d = addDays(a, Math.ceil((s - a) / 864e5 / step) * step);
+    for (; d <= e; d = addDays(d, step)) if (d >= s) out.push(new Date(d));
+    return out;
+  }
+  if (r.freq === 'dates') return (r.dates || []).map(pd).filter(d => d >= s && d <= e).sort((x, y) => x - y);
+  if (r.freq === 'days') {
+    const dom = (r.dom || []).map(num).filter(x => x >= 1 && x <= 31);
+    for (let d = new Date(s); d <= e; d = addDays(d, 1)) if (dom.some(x => d.getDate() === Math.min(x, daysIn(d)))) out.push(new Date(d));
+    return out;
+  }
   for (let d = new Date(s); d <= e; d = addDays(d, 1)) {
     if (r.freq === 'monthly' && d.getDate() === Math.min(num(r.day) || 1, daysIn(d))) out.push(new Date(d));
     if (r.freq === 'semimonthly' && (d.getDate() === 15 || d.getDate() === daysIn(d))) out.push(new Date(d));
   }
   return out;
 }
-function nextRecur(a) { const r = a.recur; if (!r || !r.on) return null; const t = addDays(stripTime(new Date()), 1); return recurDates(r, t, addDays(t, 45))[0] || null; }
+function nextRecur(a) { const r = a.recur; if (!r || !r.on) return null; const t = addDays(stripTime(new Date()), 1); return recurDates(r, t, addDays(t, 400))[0] || null; }
 
 function runAutoDeposits() {
   const today = stripTime(new Date()); let n = 0, total = 0; const matched = new Set();
@@ -3314,11 +3336,11 @@ function autoSummaryHtml(a) {
   const split = al ? hs.filter(h => num(al[h.id]) > 0).map(h => `${esc(h.ticker)} ${num(al[h.id])}%`) : [];
   const cashPct = al ? 100 - sum(hs.map(h => num(al[h.id]))) : 0;
   const r = a.recur, nx = nextRecur(a), amt = r && r.on ? recurAmounts(a) : null;
-  const freqTxt = r ? { payday: 'each payday', monthly: `on the ${ordinal(num(r.day) || 1)} of each month`, semimonthly: 'on the 15th and last day of each month' }[r.freq] : '';
+  const freqTxt = r ? ({ payday: 'each payday', monthly: `on the ${ordinal(num(r.day) || 1)} of each month`, semimonthly: 'on the 15th and last day of each month', weeks: `every ${num(r.every) === 1 ? 'week' : (num(r.every) || 2) + ' weeks'}`, days: `on the ${(r.dom || []).map(x => ordinal(num(x))).join(', ').replace(/, ([^,]*)$/, ' and $1')} of each month`, dates: `on ${(r.dates || []).filter(x => x >= todayISO()).length} upcoming date${(r.dates || []).filter(x => x >= todayISO()).length === 1 ? '' : 's'}` }[r.freq] || '') : '';
   return `<section class="card" style="margin-top:14px"><h2><span>Automatic investing</span>${al || (r && r.on) ? '<span class="tag" style="color:var(--pos)">On</span>' : ''}</h2>
   <div class="row sm" style="align-items:flex-start"><span class="mute">New money buys</span><span style="text-align:right">${split.length ? split.join(', ') + (cashPct > 0 ? `, cash ${cashPct}%` : '') : 'Nothing, it stays as cash'}</span></div>
   <div class="row sm" style="margin-top:6px;align-items:flex-start"><span class="mute">Deposits</span><span style="text-align:right">${r && r.on ? `${money(amt.you)}${amt.match ? ` + ${money(amt.match)} match` : ''} ${freqTxt}${nx ? `<br><span class="mute">Next: ${fmtShort(nx)}</span>` : ''}` : 'Added by hand'}</span></div>
-  <button class="btn ghost block" style="margin-top:12px" data-act="aiOpen" data-a="${a.id}">${al || (r && r.on) ? 'Change' : 'Set up automatic investing'}</button></section>`;
+  <div class="grid2" style="margin-top:12px"><button class="btn ghost" data-act="aiOpen" data-a="${a.id}">${al || (r && r.on) ? 'Change' : 'Set up'}</button><button class="btn ghost" data-act="aiNow" data-a="${a.id}">Deposit now</button></div></section>`;
 }
 const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
 const _acctSheetHtml = acctSheetHtml;
@@ -3340,17 +3362,24 @@ function autoSheet(a) {
   ${hs.length ? tg('ai-on', 'Invest deposits automatically', a.auto ? a.auto.on : true, 'Each deposit buys shares at the current price, split like this.') + `<div id="aiRows">${hs.map(h => `<div class="row ai-row" style="margin:8px 0"><span><b>${esc(h.ticker)}</b> <span class="xs mute">${money(h.price)}</span></span><span class="pctin"><input class="ai-p" data-h="${h.id}" type="text" inputmode="decimal" value="${def(h)}" data-inp="aiPct" aria-label="${esc(h.ticker)} percent"><span>%</span></span></div>`).join('')}</div><div class="row sm" style="margin-top:6px"><span class="mute">Total</span><b id="aiTot"></b></div><div class="xs mute" style="margin-top:4px">Anything under 100% stays as cash in the account.</div>` : '<div class="sm mute">Add your holdings first (like VTI or FXAIX), then come back to choose how new money is split.</div>'}</section>
   <section class="card" style="margin-top:12px"><h2><span>2. Automatic deposits</span></h2>
   ${tg('rc-on', 'Add deposits automatically', r.on, 'Recorded on schedule, so you don\u2019t have to log them.')}
-  <div class="fld"><label for="rc-freq">How often</label><select id="rc-freq">${[['payday', 'Each payday'], ['semimonthly', 'Twice a month (15th and last day)'], ['monthly', 'Once a month']].map(([v, l]) => `<option value="${v}" ${r.freq === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+  <div class="fld"><label for="rc-freq">How often</label><select id="rc-freq">${[['payday', 'Each payday'], ['semimonthly', 'Twice a month (15th and last day)'], ['monthly', 'Once a month'], ['weeks', 'Custom: every few weeks'], ['days', 'Custom: specific days of the month'], ['dates', 'Custom: specific dates']].map(([v, l]) => `<option value="${v}" ${r.freq === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+  <div id="rc-weeksf"><div><div class="fld"><label for="rc-every">Repeat</label><select id="rc-every">${[1, 2, 3, 4, 6, 8].map(n => `<option value="${n}" ${(num(r.every) || 2) === n ? 'selected' : ''}>${n === 1 ? 'Every week' : 'Every ' + n + ' weeks'}</option>`).join('')}</select></div><div class="fld"><label for="rc-start">Starting</label><input id="rc-start" type="date" value="${esc(r.startDate || todayISO())}"></div></div></div>
+  <div class="fld" id="rc-domf"><label for="rc-dom">Days of the month</label><input id="rc-dom" type="text" inputmode="numeric" value="${esc((r.dom || [1, 15]).join(', '))}" placeholder="e.g. 1, 10, 20"><div class="hint">Separate days with commas. 31 means the last day of shorter months.</div></div>
+  <div id="rc-datesf"><div class="xs mute" style="margin-bottom:6px">Deposit dates</div><div class="paydates" id="rc-dlist"></div><div class="row" style="gap:8px;margin:8px 0 12px"><input id="rc-dadd" type="date" aria-label="Add a deposit date" style="flex:1;padding:10px 12px;border-radius:11px;border:1px solid var(--line);background:var(--surf2);font-size:16px;min-height:44px"><button class="btn" data-act="rcDateAdd">Add</button></div></div>
   <div class="fld" id="rc-dayf"><label for="rc-day">Day of the month</label><input id="rc-day" type="text" inputmode="numeric" value="${num(r.day) || 5}"></div>
   ${payroll ? tg('rc-pay', `Use my paycheck contribution (${money(payAmt, { force: true })})`, r.fromPay, 'Follows your Paycheck settings, so raises and % changes carry over.') : ''}
   <div class="fld" id="rc-amtf"><label for="rc-amt">Amount each time ($)</label><input id="rc-amt" type="text" inputmode="decimal" value="${r.amount === '' ? '' : num(r.amount)}" placeholder="e.g. 300"></div>
   ${['k401', 'roth401k'].includes(a.type) && c.match > 0 ? tg('rc-match', `Add the employer match too (${money(per(c.match), { force: true })})`, r.match, S.accounts.some(x => x.type === 'match') ? 'Goes into your Employer match account.' : 'Goes into this account.') : ''}
   <div class="xs mute">Deposits start with the next scheduled date. If you also tap Log paycheck, Compound won\u2019t double-count contributions that are automatic here.</div></section>
   <button class="btn block" style="margin-top:12px" data-act="aiSave" data-a="${a.id}">Save</button>`;
-  const ov = openSheet(html); ov._ai = a.id;
+  const ov = openSheet(html); ov._ai = a.id; ov._dates = (r.dates || []).slice().sort();
   const sync = () => {
     const f = $('#rc-freq', ov).value, pay = $('#rc-pay', ov);
     $('#rc-dayf', ov).style.display = f === 'monthly' ? '' : 'none';
+    $('#rc-weeksf', ov).style.display = f === 'weeks' ? '' : 'none';
+    $('#rc-domf', ov).style.display = f === 'days' ? '' : 'none';
+    $('#rc-datesf', ov).style.display = f === 'dates' ? '' : 'none';
+    rcDatesRender(ov);
     $('#rc-amtf', ov).style.display = pay && pay.checked ? 'none' : '';
     aiTotal();
   };
@@ -3368,13 +3397,15 @@ function aiSave(id) {
   const onEl = $('#ai-on', ov), alloc = {};
   $$('.ai-p', ov).forEach(i => { const v = clamp(num(i.value), 0, 100); if (v > 0) alloc[i.dataset.h] = v; });
   const rcOn = $('#rc-on', ov).checked, pay = $('#rc-pay', ov), match = $('#rc-match', ov);
-  const rec = { on: rcOn, freq: $('#rc-freq', ov).value, day: clamp(Math.round(num($('#rc-day', ov).value)) || 1, 1, 31), amount: num($('#rc-amt', ov).value), fromPay: !!(pay && pay.checked), match: !!(match && match.checked) };
+  const rec = { on: rcOn, freq: $('#rc-freq', ov).value, day: clamp(Math.round(num($('#rc-day', ov).value)) || 1, 1, 31), amount: num($('#rc-amt', ov).value), fromPay: !!(pay && pay.checked), match: !!(match && match.checked) , every: num($('#rc-every', ov).value) || 2, startDate: $('#rc-start', ov).value || todayISO(), dom: [...new Set($('#rc-dom', ov).value.split(/[^0-9]+/).map(Number).filter(x => x >= 1 && x <= 31))].sort((x, y) => x - y), dates: (ov._dates || []).slice() };
   if (rcOn && !rec.fromPay && !(rec.amount > 0)) { toast('Enter the deposit amount'); return; }
+  if (rcOn && rec.freq === 'days' && !rec.dom.length) { toast('Enter at least one day of the month'); return; }
+  if (rcOn && rec.freq === 'dates' && !rec.dates.some(x => x >= todayISO())) { toast('Add at least one upcoming date'); return; }
   if (rcOn && rec.freq === 'payday' && !num(S.pay.salary)) { toast('Add your salary and a recent payday under Plan, Tools, Paycheck first'); return; }
   checkpoint();
   a.auto = onEl ? { on: onEl.checked && Object.keys(alloc).length > 0, alloc } : a.auto;
   const was = a.recur && a.recur.on;
-  a.recur = Object.assign({}, rec, { last: was && a.recur.last ? a.recur.last : todayISO(), start: todayISO() });
+  a.recur = Object.assign({}, rec, { last: was && a.recur.last ? (rec.freq === 'weeks' && rec.startDate < a.recur.last ? a.recur.last : iso(addDays(pd(rec.freq === 'weeks' ? (rec.startDate < todayISO() ? todayISO() : rec.startDate) : a.recur.last), rec.freq === 'weeks' ? -1 : 0))) : iso(addDays(pd(rec.freq === 'weeks' && rec.startDate > todayISO() ? rec.startDate : todayISO()), rec.freq === 'weeks' && rec.startDate > todayISO() ? -1 : 0)), start: todayISO() });
   if (rec.match) S.accounts.forEach(x => { if (x !== a && x.recur) x.recur.match = false; });
   closeSheet(); commit();
   const nx = nextRecur(a);
@@ -3396,6 +3427,32 @@ afterInit = function () {
   if (S.onboarded && !S.practice) { const r = runAutoDeposits(); if (r.n) { commit(); setTimeout(() => autoDepositToast(r), 900); } }
   document.addEventListener('visibilitychange', () => { if (!document.hidden && S.onboarded && !S.practice) { const r = runAutoDeposits(); if (r.n) { commit(); autoDepositToast(r); } } });
 };
+
+function rcDatesRender(ov) {
+  const el = $('#rc-dlist', ov); if (!el) return; const t = todayISO();
+  el.innerHTML = (ov._dates || []).length ? ov._dates.map(x => `<span class="pdchip${x < t ? ' past' : ''}">${fmtShort(x)}${pd(x).getFullYear() !== new Date().getFullYear() ? ' ' + pd(x).getFullYear() : ''}<button data-act="rcDateDel" data-d="${x}" aria-label="Remove ${fmtDate(x)}">\u2715</button></span>`).join('') : '<span class="xs mute">No dates yet.</span>';
+}
+function depositNowForm(a) {
+  const al = a.auto && a.auto.on ? a.auto.alloc || {} : null, split = al ? (a.holdings || []).filter(h => num(al[h.id]) > 0).map(h => `${h.ticker} ${num(al[h.id])}%`).join(', ') : '';
+  openForm({
+    title: 'Deposit and invest', intro: split ? `Buys ${esc(split)} at today\u2019s prices.` : 'No split is set, so this stays as cash. Set one up under Automatic investing.', focus: true, fields: [
+      { k: 'amt', label: 'Amount', type: 'money', v: '' },
+      { k: 'date', label: 'Date', type: 'date', v: todayISO() },
+      { k: 'kind', label: 'From', type: 'select', opts: [['you', 'You'], ['employer', 'Employer']], v: 'you' }
+    ], saveLabel: 'Deposit',
+    onSave: v => {
+      if (!(v.amt > 0)) { toast('Enter an amount'); depositNowForm(a); return; }
+      checkpoint(); S.contribs.push({ id: uid(), date: v.date || todayISO(), acct: a.id, amount: v.amt, kind: v.kind });
+      const bought = investDeposit(a, v.amt); commit();
+      offerUndo(bought ? `Deposited ${money(v.amt, { force: true })}: bought ${bought}` : `Deposited ${money(v.amt, { force: true })} as cash`);
+    }
+  });
+}
+Object.assign(ACT, {
+  rcDateAdd: () => { const ov = topSheet(), i = ov && $('#rc-dadd', ov); if (!i || !i.value) { toast('Pick a date first'); return; } ov._dates = [...new Set([...(ov._dates || []), i.value])].sort(); i.value = ''; rcDatesRender(ov); },
+  rcDateDel: d => { const ov = topSheet(); if (!ov) return; ov._dates = (ov._dates || []).filter(x => x !== d.d); rcDatesRender(ov); },
+  aiNow: d => { const a = S.accounts.find(x => x.id === d.a); if (a) depositNowForm(a); }
+});
 /* ================= flexible pay schedules ================= */
 /* S.pay.mode (only when freq is 24): 'standard' = 15th and last day, 'days' = two set days, 'custom' = your own dates */
 const payMode = () => +S.pay.freq === 24 ? (S.pay.mode || 'standard') : 'standard';
@@ -3497,6 +3554,400 @@ function payNextHtml() {
 }
 const _renderPayRes = renderPayRes;
 renderPayRes = function () { _renderPayRes(); const el = $('#payNext'); if (el) el.innerHTML = payNextHtml(); };
+/* ================= statement import (PDF) ================= */
+const PDFJS_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.6.205/build/pdf.min.mjs';
+const PDFJS_WORKER = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.6.205/build/pdf.worker.min.mjs';
+let pdfjsLib = null;
+async function loadPdfJs() {
+  if (pdfjsLib) return pdfjsLib;
+  pdfjsLib = await import(PDFJS_URL);
+  pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
+  return pdfjsLib;
+}
+/* Read a PDF into text lines, rebuilding rows by their vertical position */
+async function pdfLines(file) {
+  const lib = await loadPdfJs(), data = new Uint8Array(await file.arrayBuffer());
+  const doc = await lib.getDocument({ data }).promise, lines = [];
+  for (let p = 1; p <= doc.numPages; p++) {
+    const tc = await (await doc.getPage(p)).getTextContent(), rows = [];
+    tc.items.forEach(it => {
+      if (!it.str || !it.str.trim()) return;
+      const x = it.transform[4], y = it.transform[5];
+      let r = rows.find(r => Math.abs(r.y - y) < 3);
+      if (!r) { r = { y, parts: [] }; rows.push(r); }
+      r.parts.push({ x, s: it.str.trim() });
+    });
+    rows.sort((a, b) => b.y - a.y).forEach(r => lines.push(r.parts.sort((a, b) => a.x - b.x).map(q => q.s).join(' ').replace(/\s+/g, ' ').trim()));
+  }
+  return lines;
+}
+const money2 = s => num(String(s).replace(/[$,]/g, ''));
+
+/* ---------- Vanguard brokerage statement ---------- */
+function parseVanguard(lines) {
+  const all = lines.join('\n');
+  const dm = all.match(/(January|February|March|April|May|June|July|August|September|October|November|December) (\d{1,2}), (\d{4}),? (?:monthly|quarterly|annual|year-end)? ?(?:transaction )?statement/i);
+  if (!dm) return null;
+  const end = new Date(+dm[3], MONTHS_FULL.indexOf(dm[1].toLowerCase()), +dm[2]), year = end.getFullYear();
+  const acctM = all.match(/(Roth IRA|Traditional IRA|Rollover IRA|SEP-IRA|SIMPLE IRA|Individual|Joint|Brokerage)[^\n]*?account\s*[—-]\s*X+(\d{3,4})/i);
+  const kind = acctM ? acctM[1] : 'Brokerage', last4 = acctM ? acctM[2] : '';
+  const ytd = (all.match(new RegExp(year + ' contributions \\$?([\\d,]+\\.\\d{2})')) || [])[1];
+  const prevYtd = (all.match(new RegExp((year - 1) + ' contributions \\$?([\\d,]+\\.\\d{2})')) || [])[1];
+  const value = (all.match(/Total account value as of [^$\n]*\$([\d,]+\.\d{2})/) || all.match(/\$([\d,]+\.\d{2})\s*\n?\s*Total account value/) || [])[1];
+  const holdings = [], seen = new Set();
+  lines.forEach(l => {
+    const m = l.match(/^([A-Z]{2,6})\s+.*?\$?(-?[\d,]+\.\d{2})\s+\$?([\d,]+\.\d{2})\s+([\d,]+\.\d{3,4})\s+\$?([\d,]+\.\d{2,4})\s+\$?([\d,]+\.\d{2})\s+\$?([\d,]+\.\d{2})$/);
+    if (m && !seen.has(m[1]) && !/^(TOTAL|NAME)$/.test(m[1])) { seen.add(m[1]); holdings.push({ ticker: m[1], cost: money2(m[3]), shares: money2(m[4]), price: money2(m[5]), value: money2(m[7]) }); }
+  });
+  let cash = 0;
+  const sw = all.match(/Total Sweep Balance \$?[\d,]+\.\d{2} \$?([\d,]+\.\d{2})/); if (sw) cash = money2(sw[1]);
+  const TYPES_RE = 'Buy|Sell|Contribution|Dividend|Reinvestment|Distribution|Withdrawal|Transfer|Conversion|Interest|Capital gain \\(LT\\)|Capital gain \\(ST\\)|Fee';
+  const txRe = new RegExp(`^(\\d{2}/\\d{2})\\s+(\\d{2}/\\d{2})\\s+(\\S+)\\s+(.+?)\\s+(${TYPES_RE})\\b(.*)$`);
+  const txns = [];
+  lines.forEach(l => {
+    const m = l.match(txRe); if (!m) return;
+    const tail = m[6].trim().split(/\s+/), amt = money2(tail[tail.length - 1]);
+    const dt = (md) => { const [mo, d] = md.split('/').map(Number); let y = year; if (mo > end.getMonth() + 1 + 1) y = year - 1; return iso(new Date(y, mo - 1, d)); };
+    const nums = tail.map(x => x.replace(/[$,]/g, '')).filter(x => /^-?\d+(\.\d+)?$/.test(x));
+    const t = { settle: dt(m[1]), trade: dt(m[2]), symbol: m[3] === '-' ? '' : m[3], name: m[4].trim(), type: m[5], amount: amt };
+    if (m[5] === 'Buy' || m[5] === 'Sell') { t.shares = num(nums[0]); t.price = num(nums[1]); }
+    const ty = t.name.match(/^(\d{4}) IRA CONTRIBUTION/i); if (ty) t.taxYear = +ty[1];
+    txns.push(t);
+  });
+  return { provider: 'Vanguard', kind, last4, end: iso(end), year, ytd: ytd != null ? money2(ytd) : null, prevYtd: prevYtd != null ? money2(prevYtd) : null, value: value ? money2(value) : null, holdings, cash, txns };
+}
+const STATEMENT_PARSERS = [lines => /vanguard/i.test(lines.slice(0, 40).join(' ')) ? parseVanguard(lines) : null];
+
+/* ---------- review & apply ---------- */
+function acctForStatement(st) {
+  const want = /roth/i.test(st.kind) ? 'roth_ira' : /ira/i.test(st.kind) ? 'roth_ira' : 'brokerage';
+  return S.accounts.find(a => a.stmtLast4 && a.stmtLast4 === st.last4) || S.accounts.find(a => a.type === want) || S.accounts.find(a => TYPES[a.type] && TYPES[a.type].inv);
+}
+function statementPlan(st, a) {
+  const contribs = st.txns.filter(t => t.type === 'Contribution' && t.amount > 0).map(t => {
+    const date = t.settle, dup = S.contribs.find(c => c.acct === a.id && Math.abs(num(c.amount) - t.amount) < .005 && Math.abs((pd(c.date) - pd(date)) / 864e5) <= 4);
+    return { date, amount: t.amount, taxYear: t.taxYear || +date.slice(0, 4), dup: !!dup, note: t.name.replace(/\s+ACH.*$/i, '') };
+  });
+  const known = sum(S.contribs.filter(c => c.acct === a.id && (c.ty || +c.date.slice(0, 4)) === st.year && (c.lim === true || (c.lim == null && c.kind === 'you'))).map(c => num(c.amount)));
+  const adding = sum(contribs.filter(c => !c.dup && c.taxYear === st.year).map(c => c.amount));
+  const gap = st.ytd != null ? Math.round((st.ytd - known - adding) * 100) / 100 : 0;
+  const newer = !a.stmtDate || st.end >= a.stmtDate;
+  return { contribs, gap, known, adding, newer };
+}
+function statementReview(st) {
+  const accts = S.accounts.filter(x => TYPES[x.type] && TYPES[x.type].inv);
+  if (!accts.length) { toast('Add the investment account in Investing first'); return; }
+  const a = S.accounts.find(x => x.id === UI.stmtAcct) || acctForStatement(st); UI.stmtAcct = a.id; UI.stmt = st;
+  const pl = statementPlan(st, a), buys = st.txns.filter(t => t.type === 'Buy'), divs = st.txns.filter(t => t.type === 'Dividend');
+  const hv = sum(st.holdings.map(h => h.value)) + st.cash;
+  const html = sheetHead('Statement found', 'Cancel') + `<section class="card hero"><div class="sm mute">${esc(st.provider)} ${esc(st.kind)}${st.last4 ? ' \u2022\u2022' + esc(st.last4) : ''}</div><div class="big">${money(st.value || hv, { force: true })}</div><div class="sm mute">as of ${fmtDate(st.end)}</div></section>
+  <div class="fld" style="margin-top:12px"><label for="stAcct">Add to this Compound account</label><select id="stAcct" data-chg="stmtAcct">${accts.map(x => `<option value="${x.id}" ${x.id === a.id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></div>
+  <section class="card"><h2><span>Contributions</span><small>${pl.contribs.filter(c => !c.dup).length} new</small></h2>${pl.contribs.length ? `<div class="list">${pl.contribs.map(c => `<div class="li"><span class="ic">${I('plus')}</span><span class="main"><span class="t">${money(c.amount, { force: true })}${c.taxYear !== +c.date.slice(0, 4) ? ` <span class="tag">for ${c.taxYear}</span>` : ''}</span><span class="s">${fmtDate(c.date)}</span></span><span class="${c.dup ? 'mute' : 'pos'} sm">${c.dup ? 'Already logged' : 'New'}</span></div>`).join('')}</div>` : '<div class="sm mute">No contributions this period.</div>'}
+  ${st.ytd != null ? `<div class="row sm" style="margin-top:10px"><span class="mute">${esc(st.provider)}\u2019s ${st.year} total</span><b>${money(st.ytd, { force: true })}</b></div><div class="row sm"><span class="mute">Compound after import</span><b>${money(pl.known + pl.adding, { force: true })}</b></div>${pl.gap > .005 ? `<div class="tgl" style="margin-top:6px"><label for="stGap">Fill in the missing ${money(pl.gap, { force: true })} from earlier in ${st.year}<div class="xs mute">Adds one entry so your ${st.year} limit progress matches ${esc(st.provider)}. Import older statements to see the individual dates.</div></label><input type="checkbox" class="sw" id="stGap" checked></div>` : pl.gap < -.005 ? `<div class="xs neg" style="margin-top:6px">Compound shows ${money(-pl.gap, { force: true })} more than ${esc(st.provider)}. Check Recent contributions for extras.</div>` : '<div class="xs pos" style="margin-top:6px">Matches exactly.</div>'}` : ''}</section>
+  <section class="card" style="margin-top:12px"><h2><span>Holdings on ${fmtShort(st.end)}</span></h2>${st.holdings.map(h => `<div class="row sm" style="padding:6px 0;border-top:1px solid var(--line)"><span><b>${esc(h.ticker)}</b> <span class="mute">${h.shares} sh at ${money(h.price, { force: true })}</span></span><span>${money(h.value, { force: true })}<div class="xs mute">cost ${money(h.cost, { force: true })}</div></span></div>`).join('')}<div class="row sm" style="padding:6px 0;border-top:1px solid var(--line)"><span>Cash and money market</span><span>${money(st.cash, { force: true })}</span></div>
+  ${pl.newer ? `<div class="tgl" style="margin-top:6px"><label for="stHold">Update holdings to match<div class="xs mute">Sets shares, cost basis and cash. Live prices take over after.</div></label><input type="checkbox" class="sw" id="stHold" checked></div>` : `<div class="xs mute" style="margin-top:8px">This statement is older than one you already imported (${fmtShort(a.stmtDate)}), so holdings won\u2019t be changed.</div>`}</section>
+  ${buys.length || divs.length ? `<section class="card" style="margin-top:12px"><h2><span>Also on this statement</span></h2>${buys.map(t => `<div class="row sm" style="padding:5px 0"><span>${fmtShort(t.trade)} bought ${esc(t.symbol)}</span><span>${t.shares} sh at ${money(t.price, { force: true })}</span></div>`).join('')}${divs.map(t => `<div class="row sm" style="padding:5px 0"><span>${fmtShort(t.settle)} dividend, reinvested</span><span>${money(t.amount, { force: true })}</span></div>`).join('')}<div class="xs mute" style="margin-top:4px">Buys and dividends are reflected in the holdings above.</div></section>` : ''}
+  <button class="btn block" style="margin-top:12px" data-act="stmtApply">Add to Compound</button>`;
+  const top = topSheet(); if (top && top._stmt) top.remove();
+  const ov = openSheet(html); ov._stmt = true;
+}
+function statementApply() {
+  const st = UI.stmt, ov = topSheet(); if (!st || !ov) return;
+  const a = S.accounts.find(x => x.id === UI.stmtAcct); if (!a) return;
+  const pl = statementPlan(st, a), gapOn = $('#stGap', ov) && $('#stGap', ov).checked, holdOn = $('#stHold', ov) && $('#stHold', ov).checked;
+  checkpoint(); let n = 0;
+  pl.contribs.filter(c => !c.dup).forEach(c => { S.contribs.push({ id: uid(), date: c.date, acct: a.id, amount: c.amount, kind: 'you', lim: true, ty: c.taxYear, src: 'statement' }); n++; });
+  if (gapOn && pl.gap > .005) S.contribs.push({ id: uid(), date: st.year + '-01-01', acct: a.id, amount: pl.gap, kind: 'you', lim: true, ty: st.year, src: 'statement', note: `Earlier ${st.year} contributions (from statement)` });
+  if (holdOn && pl.newer) {
+    a.holdings = a.holdings || [];
+    st.holdings.forEach(h => {
+      const x = a.holdings.find(y => String(y.ticker).toUpperCase() === h.ticker);
+      const o = { shares: h.shares, cost: h.shares ? Math.round(h.cost / h.shares * 1e4) / 1e4 : '', price: h.price };
+      if (x) Object.assign(x, o); else a.holdings.push({ id: uid(), ticker: h.ticker, cls: 'stock', ...o });
+    });
+    a.cash = st.cash; a.stmtDate = st.end; a.updated = todayISO();
+  }
+  if (st.last4) a.stmtLast4 = st.last4;
+  closeAll(); commit();
+  offerUndo(`Added ${n} contribution${n === 1 ? '' : 's'}${gapOn && pl.gap > .005 ? ` plus ${money(pl.gap, { force: true })} from earlier in ${st.year}` : ''}${holdOn && pl.newer ? ', holdings updated' : ''}`);
+}
+function statementSheet(acctId) {
+  if (acctId) UI.stmtAcct = acctId;
+  const ov = openSheet(sheetHead('Import a statement') + `<p class="sm mute" style="margin:-4px 0 14px">Choose a PDF statement. Compound reads it on your phone and shows you what it found before adding anything. You can import several months, oldest first, to fill in every contribution.</p><div class="sm" style="margin-bottom:12px"><b>Works with:</b> Vanguard brokerage and IRA statements. More banks and brokerages coming.</div><label class="btn block" style="cursor:pointer">${I('doc')} Choose PDF statements<input type="file" accept="application/pdf,.pdf" id="stFile" multiple hidden></label><div id="stProg" class="sm mute" style="margin-top:12px"></div>`);
+  $('#stFile', ov).addEventListener('change', e => { const fs = [...(e.target.files || [])]; if (fs.length) readStatements(fs, ov); });
+}
+async function readStatements(files, ov) {
+  const pr = $('#stProg', ov), set = t => { if (pr) pr.innerHTML = t; };
+  const found = [];
+  try { set('Loading the PDF reader\u2026'); await loadPdfJs(); }
+  catch (e) { set('<span class="neg">Couldn\u2019t load the PDF reader. Check your connection and try again.</span>'); return; }
+  for (const f of files) {
+    set(`Reading ${esc(f.name)}\u2026`);
+    try {
+      const lines = await pdfLines(f); let st = null;
+      for (const p of STATEMENT_PARSERS) { st = p(lines); if (st) break; }
+      if (st) found.push(st); else set(`<span class="neg">${esc(f.name)} isn\u2019t a statement Compound recognizes yet.</span> Send it to Claude so it can be added.`);
+    } catch (e) { set(`<span class="neg">Couldn\u2019t read ${esc(f.name)}. It may be password-protected or a scanned image.</span>`); }
+  }
+  if (!found.length) return;
+  found.sort((x, y) => x.end < y.end ? -1 : 1);
+  if (found.length === 1) { ov.remove(); statementReview(found[0]); return; }
+  UI.stmtQueue = found.slice(1); ov.remove(); statementReview(found[0]);
+  toast(`${found.length} statements found. Review each one, oldest first.`);
+}
+Object.assign(ACT, {
+  stmtImport: d => { closeAll(); statementSheet(d.a); },
+  stmtApply: () => { statementApply(); const q = UI.stmtQueue || []; if (q.length) { const next = q.shift(); UI.stmtQueue = q; setTimeout(() => statementReview(next), 500); } }
+});
+Object.assign(CHG, { stmtAcct: t => { UI.stmtAcct = t.value; statementReview(UI.stmt); } });
+
+/* entry points: account sheet, Investing screen, Settings */
+const _acctSheetHtml8 = acctSheetHtml;
+acctSheetHtml = function (a) {
+  const h = _acctSheetHtml8(a); if (!TYPES[a.type] || !TYPES[a.type].inv) return h;
+  const btn = `<button class="btn ghost block" style="margin-top:8px" data-act="stmtImport" data-a="${a.id}">${I('doc')} Import statements (CSV or PDF)</button>${a.stmtDate ? `<div class="xs mute" style="margin-top:4px;text-align:center">Last statement: ${fmtDate(a.stmtDate)}</div>` : ''}`;
+  const mark = 'data-act="markUpdated"'; const i = h.indexOf(mark); if (i < 0) return h + btn;
+  const j = h.lastIndexOf('<button', i); return h.slice(0, j) + btn.replace('margin-top:8px', 'margin:0 0 8px') + h.slice(j);
+};
+const _openSettings8 = openSettings;
+openSettings = function () { _openSettings8(); const b = $('[data-act=importCsv]', topSheet()); if (b) b.insertAdjacentHTML('afterend', '<button class="btn ghost block" data-act="stmtImport">Import investment statements (CSV or PDF)</button>'); };
+/* ================= import any CSV or PDF, pointed where you choose ================= */
+const MON3 = MONTHS.map(m => m.toLowerCase());
+const DATE_START = /^(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?|\d{1,2}-\d{1,2}(?:-\d{2,4})?|20\d\d-\d{2}-\d{2}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\.? \d{1,2}(?:,? \d{4})?)(?=\s|$)/i;
+const MONEY_RE = /(?:^|\s)(\(?[-\u2212]?\$?\s?\d{1,3}(?:,\d{3})*\.\d{2}\)?(?:\s?(?:CR|DR)\b|-)?)(?=\s|$)/g;
+const TICKER_STOP = new Set(['ACH', 'IRA', 'USD', 'CR', 'DR', 'LLC', 'INC', 'CO', 'NA', 'THE', 'AND', 'FOR', 'POS', 'ATM', 'DEP', 'PMT', 'ID', 'REF', 'TX', 'CA', 'NY', 'US', 'FUND', 'ROTH', 'CL', 'ADM']);
+
+function stmtEndDate(lines) {
+  const txt = lines.slice(0, 160).join(' '), c = [];
+  for (const m of txt.matchAll(/\b(\d{1,2})\/(\d{1,2})\/(\d{2,4})\b/g)) { let y = +m[3]; if (y < 100) y += 2000; c.push(new Date(y, +m[1] - 1, +m[2])); }
+  for (const m of txt.matchAll(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.? (\d{1,2}),? (\d{4})\b/gi)) c.push(new Date(+m[3], MON3.indexOf(m[1].slice(0, 3).toLowerCase()), +m[2]));
+  for (const m of txt.matchAll(/\b(20\d\d)-(\d{2})-(\d{2})\b/g)) c.push(new Date(+m[1], +m[2] - 1, +m[3]));
+  const ok = c.filter(d => !isNaN(d) && d.getFullYear() > 2000 && d <= addDays(new Date(), 45));
+  return ok.length ? new Date(Math.max(...ok)) : new Date();
+}
+function tokDate(tok, end) {
+  tok = tok.trim(); let m, y, mo, d;
+  if ((m = tok.match(/^(20\d\d)-(\d{2})-(\d{2})$/))) { y = +m[1]; mo = +m[2]; d = +m[3]; }
+  else if ((m = tok.match(/^(\d{1,2})[\/-](\d{1,2})(?:[\/-](\d{2,4}))?$/))) { mo = +m[1]; d = +m[2]; y = m[3] ? (+m[3] < 100 ? 2000 + +m[3] : +m[3]) : null; }
+  else if ((m = tok.match(/^([a-z]{3})[a-z]*\.? (\d{1,2})(?:,? (\d{4}))?$/i))) { mo = MON3.indexOf(m[1].toLowerCase()) + 1; d = +m[2]; y = m[3] ? +m[3] : null; }
+  if (!mo || mo > 12 || !d || d > 31) return null;
+  if (!y) { y = end.getFullYear(); if (mo > end.getMonth() + 2) y -= 1; }
+  return iso(new Date(y, mo - 1, d));
+}
+function moneyTok(t) {
+  const neg = /^\(.*\)$/.test(t) || /^[-\u2212]/.test(t) || /-$/.test(t) || /\bCR$/i.test(t);
+  return { v: num(t.replace(/[()$,\s\u2212-]|CR|DR/gi, '')), neg };
+}
+/* Turn PDF text lines into rows: a date at the start, a description, and one or more amounts */
+function genericRows(lines, end, src) {
+  const rows = []; let last = null;
+  for (const l of lines) {
+    const dm = l.match(DATE_START);
+    MONEY_RE.lastIndex = 0;
+    if (!dm) {
+      const hasMoney = MONEY_RE.test(l); MONEY_RE.lastIndex = 0;
+      if (last && !hasMoney && l.length < 70 && !/page \d|continued|statement|account (number|ending)|^(date|description|amount)\b/i.test(l)) last.desc = (last.desc + ' ' + l).replace(/\s+/g, ' ').slice(0, 100);
+      else last = null;
+      continue;
+    }
+    const date = tokDate(dm[1], end); if (!date) { last = null; continue; }
+    let rest = l.slice(dm[0].length).trim();
+    const d2 = rest.match(DATE_START); if (d2 && tokDate(d2[1], end)) rest = rest.slice(d2[0].length).trim();
+    const ms = [...rest.matchAll(MONEY_RE)]; if (!ms.length) { last = null; continue; }
+    const desc = rest.slice(0, ms[0].index).replace(/\s+/g, ' ').trim();
+    if (/^(beginning|previous|opening|starting)\b.*balance|balance forward/i.test(desc)) { const b = ms[ms.length - 1]; rows.push({ marker: true, date, src, monies: [moneyTok(b[1].trim())], desc: '', on: false }); last = null; continue; }
+    if (!desc || /^(ending|new|closing|daily|average)\b.*balance|^balance\b|^total|^subtotal|minimum payment|payment due|^fees? charged|^interest charged/i.test(desc)) { last = null; continue; }
+    const nums = rest.slice(0, ms[0].index).match(/\b\d+\.\d{3,6}\b/g) || rest.match(/\b\d+\.\d{3,6}\b/g) || [];
+    const tk = (rest.match(/\b[A-Z]{2,5}\b/g) || []).find(x => !TICKER_STOP.has(x));
+    const r = { date, desc, monies: ms.map(m => moneyTok(m[1].trim())), raw: rest, src, ticker: tk || '', shares: nums[0] ? num(nums[0]) : 0, on: true };
+    const pm = rest.match(/\$?(\d{1,5}\.\d{2,4})\s+[-\u2212]?\$?[\d,]+\.\d{2}\s*$/); if (pm && r.shares && Math.abs(num(pm[1]) - r.shares) > 1e-6) r.price = num(pm[1]);
+    rows.push(r); last = r;
+  }
+  return rows;
+}
+/* Rows from a CSV, for pointing a CSV at an investment account */
+function csvInvRows(text, src) {
+  const rows = parseCsv(text), hi = rows.findIndex(r => r.some(c => /date/i.test(c)) && r.some(c => /amount/i.test(c)));
+  if (hi < 0) return [];
+  const hd = rows[hi].map(x => x.toLowerCase().trim()), f = re => hd.findIndex(x => re.test(x));
+  const di = f(/date/), ai = f(/amount/), acti = f(/^action$|transaction type|^type$|activity/), dsi = f(/description|name|security/), syi = f(/symbol|ticker/), qi = f(/quantity|shares/), pi = f(/price/);
+  return rows.slice(hi + 1).map(r => {
+    const date = parseDateLoose(r[di] || ''); if (!date) return null;
+    const a = parseAmt(r[ai]); if (!a) return null;
+    return { date, desc: [r[acti], r[dsi]].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim(), monies: [{ v: Math.abs(a), neg: a < 0 }], raw: r.join(' '), src, ticker: syi >= 0 ? (r[syi] || '').trim().toUpperCase() : '', shares: qi >= 0 ? Math.abs(num(r[qi])) : 0, price: pi >= 0 ? num(r[pi]) : 0, on: true };
+  }).filter(Boolean);
+}
+
+/* ---------- the import screen ---------- */
+function importSheet(pre = {}) {
+  closeAll();
+  const invs = S.accounts.filter(a => TYPES[a.type] && TYPES[a.type].inv), names = [...new Set(S.txns.map(t => t.acct).filter(Boolean))];
+  const dest = pre.dest || UI.impDest || 'spend';
+  const ov = openSheet(sheetHead('Import CSV or PDF') + `<p class="sm mute" style="margin:-4px 0 12px">Choose as many files as you like. Compound reads them on your phone and shows you everything it found before adding anything.</p>
+  <div class="fld"><label for="imDest">Where should these go?</label><select id="imDest"><option value="spend" ${dest === 'spend' ? 'selected' : ''}>Spending transactions (a card or bank account)</option>${invs.map(a => `<option value="inv:${a.id}" ${dest === 'inv:' + a.id ? 'selected' : ''}>Investments: ${esc(a.name)}</option>`).join('')}</select></div>
+  <div id="imSpend"><div class="fld"><label for="imAcct">Card or account</label><select id="imAcct"><option value="">Detect from the file</option>${names.map(n => `<option value="${esc(n)}" ${n === UI.impAcct ? 'selected' : ''}>${esc(n)}</option>`).join('')}<option value="__new">New card or account\u2026</option></select></div><div class="fld" id="imNewF" style="display:none"><label for="imNew">Name</label><input id="imNew" type="text" placeholder="e.g. Mission Federal checking"></div>
+  <div class="fld"><label for="imKind">It\u2019s a</label><select id="imKind"><option value="card" ${UI.impKind === 'card' ? 'selected' : ''}>Credit card</option><option value="bank" ${UI.impKind === 'bank' ? 'selected' : ''}>Checking or savings account</option></select></div></div>
+  <div id="imInv" class="sm mute" style="margin-bottom:12px">Contributions, employer match and buys are added to this account\u2019s history, so your yearly limit progress is complete. Vanguard statements also update your holdings.</div>
+  <label class="btn block" style="cursor:pointer">${I('doc')} Choose CSV or PDF files<input type="file" accept=".pdf,.csv,application/pdf,text/csv" id="imFiles" multiple hidden></label><div id="imProg" class="sm mute" style="margin-top:12px"></div>`);
+  const sync = () => { const d = $('#imDest', ov).value, a = $('#imAcct', ov).value; $('#imSpend', ov).style.display = d === 'spend' ? '' : 'none'; $('#imInv', ov).style.display = d === 'spend' ? 'none' : ''; $('#imNewF', ov).style.display = a === '__new' ? '' : 'none'; if (a && a !== '__new' && S.debts.some(x => x.link === a)) $('#imKind', ov).value = 'card'; };
+  ov.addEventListener('change', sync); sync();
+  $('#imFiles', ov).addEventListener('change', e => {
+    const files = [...(e.target.files || [])]; if (!files.length) return;
+    const d = $('#imDest', ov).value, a = $('#imAcct', ov).value;
+    const cfg = { dest: d, acct: a === '__new' ? $('#imNew', ov).value.trim() : a, kind: $('#imKind', ov).value };
+    if (a === '__new' && !cfg.acct) { toast('Enter a name for the new account'); return; }
+    UI.impDest = d; UI.impAcct = cfg.acct; UI.impKind = cfg.kind;
+    processImport(files, cfg, ov);
+  });
+}
+async function processImport(files, cfg, ov) {
+  const pr = $('#imProg', ov), set = t => { if (pr) pr.innerHTML = t; }, isPdf = f => /\.pdf$/i.test(f.name) || f.type === 'application/pdf';
+  const pdfs = files.filter(isPdf), csvs = files.filter(f => !isPdf(f)), problems = [];
+  if (pdfs.length) { try { set('Loading the PDF reader\u2026'); await loadPdfJs(); } catch (e) { set('<span class="neg">Couldn\u2019t load the PDF reader. Check your connection and try again.</span>'); return; } }
+  const rows = [], statements = [];
+  for (const f of pdfs) {
+    set(`Reading ${esc(f.name)} (${pdfs.indexOf(f) + 1} of ${pdfs.length})\u2026`);
+    try {
+      const lines = await pdfLines(f);
+      if (cfg.dest !== 'spend') { let st = null; for (const p of STATEMENT_PARSERS) { st = p(lines); if (st) break; } if (st) { st.src = f.name; statements.push(st); continue; } }
+      const got = genericRows(lines, stmtEndDate(lines), f.name);
+      if (got.length) rows.push(...got); else problems.push(`${f.name}: no transaction lines found${lines.length < 5 ? ' (it may be a scanned image)' : ''}`);
+    } catch (e) { problems.push(`${f.name}: couldn\u2019t be opened. It may be password-protected.`); }
+  }
+  const seenRow = new Map(); let crossDup = 0;
+  const keep = []; rows.forEach(r => { if (r.marker) { keep.push(r); return; } const k = r.date + '|' + r.desc + '|' + r.monies.map(m => m.v).join(','); const s0 = seenRow.get(k); if (s0 && s0 !== r.src) { crossDup++; return; } if (!s0) seenRow.set(k, r.src); keep.push(r); });
+  rows.length = 0; rows.push(...keep);
+  if (crossDup) problems.push(`${crossDup} line${crossDup === 1 ? '' : 's'} appeared in more than one file and ${crossDup === 1 ? 'was' : 'were'} counted once.`);
+  if (cfg.dest === 'spend') {
+    for (const f of csvs) { set(`Importing ${esc(f.name)}\u2026`); await runCsvImport({ file: f, kind: cfg.kind, acct: cfg.acct }); }
+    if (rows.some(r => !r.marker)) { if (ov.isConnected) ov.remove(); spendReview(rows, cfg, problems); }
+    else if (pdfs.length) set(`<span class="neg">No transactions found.</span> ${esc(problems.join(' '))}`);
+    else if (ov.isConnected) ov.remove();
+    return;
+  }
+  for (const f of csvs) { try { const got = csvInvRows(await readText(f), f.name); if (got.length) rows.push(...got); else problems.push(`${f.name}: couldn\u2019t find date and amount columns`); } catch (e) { problems.push(`${f.name}: couldn\u2019t be read`); } }
+  const acctId = cfg.dest.slice(4);
+  if (!rows.length && !statements.length) { set(`<span class="neg">Nothing to import.</span> ${esc(problems.join(' '))}`); return; }
+  if (ov.isConnected) ov.remove();
+  statements.sort((x, y) => x.end < y.end ? -1 : 1);
+  UI.stmtAcct = acctId;
+  const queue = statements.map(st => () => statementReview(st));
+  if (rows.length) queue.push(() => invReview(rows, acctId, problems));
+  UI.stmtQueue = queue.slice(1); queue[0]();
+  if (queue.length > 1) toast(`${queue.length} reviews to go through, oldest first`);
+}
+
+/* ---------- spending review ---------- */
+function resolveSpend(rows, opt) {
+  const real = rows.filter(r => !r.marker), multi = real.filter(r => r.monies.length >= 2).length >= real.length * .6, col = opt.col === 'auto' ? (multi ? 'first' : 'last') : opt.col;
+  let prevBal = null, prevSrc = null;
+  rows.forEach(r => {
+    if (r.src !== prevSrc) { prevBal = null; prevSrc = r.src; }
+    if (r.marker) { const b = r.monies[0]; prevBal = b.neg ? -b.v : b.v; return; }
+    const m = col === 'first' ? r.monies[0] : r.monies[r.monies.length - 1]; r.amount = m.v;
+    let dir = null;
+    if (multi && r.monies.length >= 2) { const b = r.monies[r.monies.length - 1], bal = b.neg ? -b.v : b.v; if (prevBal != null && Math.abs(Math.abs(bal - prevBal) - m.v) < .011) dir = bal < prevBal ? 'out' : 'in'; prevBal = bal; }
+    if (!dir) dir = m.neg ? (opt.pos === 'out' ? 'in' : 'out') : opt.pos;
+    if (!m.neg && opt.pos === 'out' && /payment.*(thank|received)|thank you|autopay|refund|return|credit adj/i.test(r.desc)) dir = 'in';
+    if (!dir || !multi) { if (!m.neg && opt.pos === 'in' && /withdrawal|purchase|\bdebit\b|pos |atm|check \d|bill pay|payment to|transfer to|\bpmt\b|zelle to/i.test(r.desc)) dir = 'out'; }
+    r.dir = r.flip ? (dir === 'out' ? 'in' : 'out') : dir;
+  });
+  return { multi, col };
+}
+function spendReview(rows, cfg, problems = []) {
+  UI.imp = { rows, cfg, problems, opt: UI.imp && UI.imp.rows === rows ? UI.imp.opt : { col: 'auto', pos: cfg.kind === 'bank' ? 'in' : 'out' } };
+  renderSpendReview();
+}
+function renderSpendReview() {
+  const { cfg, problems, opt } = UI.imp, rs = resolveSpend(UI.imp.rows, opt), rows = UI.imp.rows, on = rows.filter(r => r.on && !r.marker), outs = on.filter(r => r.dir === 'out'), ins = on.filter(r => r.dir === 'in');
+  const files = [...new Set(rows.map(r => r.src))], sorted = rows.map((r, i) => [r, i]).sort((a, b) => a[0].date < b[0].date ? -1 : a[0].date > b[0].date ? 1 : a[1] - b[1]);
+  const html = sheetHead('Review transactions', 'Cancel') + `<div class="sm mute" style="margin:-4px 0 10px">${rows.filter(r => !r.marker).length} found in ${files.length} file${files.length === 1 ? '' : 's'}, going to <b>${esc(cfg.acct || 'the account detected from each file')}</b>.${problems.length ? `<div class="neg" style="margin-top:4px">${problems.map(esc).join('<br>')}</div>` : ''}</div>
+  <div class="grid2" style="margin-bottom:10px">${stat(cfg.kind === 'card' ? 'Charges' : 'Money out', `${outs.length} \u00b7 ${money(sum(outs.map(r => r.amount)), { force: true })}`)}${stat(cfg.kind === 'card' ? 'Payments and credits' : 'Money in', `${ins.length} \u00b7 ${money(sum(ins.map(r => r.amount)), { force: true })}`, 'pos')}</div>
+  <div class="sm mute" style="margin-bottom:6px">Positive amounts in these statements are</div>${seg('impPos', [['out', 'Money spent'], ['in', 'Money received']], opt.pos)}
+  ${rs.multi ? `<div class="sm mute" style="margin:12px 0 6px">These statements show a running balance. The transaction amount is the</div>${seg('impCol', [['first', 'First amount'], ['last', 'Last amount']], rs.col)}` : ''}
+  <div class="row" style="margin:14px 0 4px"><span class="xs mute">Tap a row to include or skip it. Tap the tag to flip it.</span><button class="chip" data-act="impAll">${on.length === rows.filter(r => !r.marker).length ? 'Skip all' : 'Include all'}</button></div>
+  <div class="list impl">${sorted.filter(([r]) => !r.marker).map(([r, i]) => `<div class="li imrow${r.on ? '' : ' off'}"><button class="imchk" data-act="impTog" data-i="${i}" role="checkbox" aria-checked="${r.on}" aria-label="Include ${esc(r.desc)}">${r.on ? '\u2713' : ''}</button><span class="main" data-act="impTog" data-i="${i}"><span class="t">${esc(r.desc)}</span><span class="s">${fmtDate(r.date)}${files.length > 1 ? ' \u00b7 ' + esc(r.src.replace(/\.pdf$/i, '')) : ''}</span></span><span class="amt"><span class="${r.dir === 'in' ? 'pos' : ''}">${r.dir === 'in' ? '+' : ''}${money(r.amount, { force: true })}</span><button class="tag imflip" data-act="impFlip" data-i="${i}">${r.dir === 'in' ? (cfg.kind === 'card' ? 'Credit' : 'In') : (cfg.kind === 'card' ? 'Charge' : 'Out')} \u21c4</button></span></div>`).join('')}</div>
+  <button class="btn block" style="margin-top:12px;position:sticky;bottom:8px" data-act="impGo" ${on.length ? '' : 'disabled'}>Import ${on.length} transaction${on.length === 1 ? '' : 's'}</button>`;
+  const top = topSheet(); let scroll = 0; if (top && top._impS) { scroll = top.querySelector('.sheet').scrollTop; top.remove(); }
+  const ov = openSheet(html); ov._impS = true; ov.querySelector('.sheet').scrollTop = scroll;
+}
+async function spendImportGo() {
+  const { rows, cfg } = UI.imp, on = rows.filter(r => r.on && !r.marker).sort((a, b) => a.date < b.date ? -1 : 1);
+  const table = [['Date', 'Description', 'Debit', 'Credit'], ...on.map(r => [r.date, r.desc, r.dir === 'out' ? r.amount.toFixed(2) : '', r.dir === 'in' ? r.amount.toFixed(2) : ''])];
+  closeAll(); UI.imp = null;
+  await runCsvImport({ rows: table, kind: cfg.kind, acct: cfg.acct, name: on[0] ? on[0].src : 'Imported' });
+}
+
+/* ---------- investment review ---------- */
+function classifyInv(r) {
+  const d = r.desc + ' ' + r.raw;
+  if (/employer|company match|match(ing)? contrib|safe harbor|profit sharing/i.test(d)) return 'match';
+  if (/contribution|contrib\b|deposit|ach (credit|in)|electronic funds|eft|payroll|salary deferral|elective|employee|transfer in/i.test(d) && !/withdraw/i.test(d)) return 'you';
+  if (/\bbuy\b|bought|purchase/i.test(d)) return 'buy';
+  return 'skip';
+}
+function invReview(rows, acctId, problems = []) {
+  rows = rows.filter(r => !r.marker);
+  rows.forEach(r => { if (r.as == null) { r.as = classifyInv(r); r.amount = r.monies[r.monies.length - 1].v; const ty = r.desc.match(/\b(20\d\d)\b.*contribution|contribution.*\b(?:for|tax year)\s*(20\d\d)/i); r.taxYear = ty ? +(ty[1] || ty[2]) : +r.date.slice(0, 4); } });
+  UI.impInv = { rows, acctId, problems, holdings: UI.impInv && UI.impInv.rows === rows ? UI.impInv.holdings : false };
+  renderInvReview();
+}
+function renderInvReview() {
+  const { rows, acctId, problems, holdings } = UI.impInv, a = S.accounts.find(x => x.id === acctId); if (!a) return;
+  rows.forEach(r => { r.dup = (r.as === 'you' || r.as === 'match') && S.contribs.some(c => c.acct === a.id && Math.abs(num(c.amount) - r.amount) < .005 && Math.abs((pd(c.date) - pd(r.date)) / 864e5) <= 4); });
+  const add = rows.filter(r => (r.as === 'you' || r.as === 'match') && !r.dup), buys = rows.filter(r => r.as === 'buy');
+  const sorted = rows.map((r, i) => [r, i]).sort((x, y) => x[0].date < y[0].date ? -1 : 1), opts = [['you', 'Contribution'], ['match', 'Employer match'], ['buy', 'Buy'], ['skip', 'Skip']];
+  const html = sheetHead('Review investment activity', 'Cancel') + `<div class="sm mute" style="margin:-4px 0 10px">${rows.length} lines found, going to <b>${esc(a.name)}</b>. Check what each line is. Contributions count toward your yearly limit.${problems.length ? `<div class="neg" style="margin-top:4px">${problems.map(esc).join('<br>')}</div>` : ''}</div>
+  <div class="grid2" style="margin-bottom:10px">${stat('Contributions to add', `${add.filter(r => r.as === 'you').length} \u00b7 ${money(sum(add.filter(r => r.as === 'you').map(r => r.amount)), { force: true })}`, 'pos')}${stat('Employer match', `${add.filter(r => r.as === 'match').length} \u00b7 ${money(sum(add.filter(r => r.as === 'match').map(r => r.amount)), { force: true })}`)}</div>
+  ${buys.some(r => r.ticker && r.shares) ? `<div class="tgl"><label for="imHold">Add bought shares to holdings<div class="xs mute">Leave off if your holdings are already up to date.</div></label><input type="checkbox" class="sw" id="imHold" data-chg="impHold" ${holdings ? 'checked' : ''}></div>` : ''}
+  <div class="list impl">${sorted.map(([r, i]) => `<div class="li imrow${r.as === 'skip' || r.dup ? ' off' : ''}"><span class="main"><span class="t">${esc(r.desc || 'Activity')}</span><span class="s">${fmtDate(r.date)}${r.as === 'buy' && r.shares ? ` \u00b7 ${r.shares} ${esc(r.ticker)}${r.price ? ' at ' + money(r.price, { force: true }) : ''}` : ''}${r.dup ? ' \u00b7 already logged' : ''}${(r.as === 'you') && r.taxYear !== +r.date.slice(0, 4) ? ` \u00b7 for ${r.taxYear}` : ''}</span></span><span class="amt">${money(r.amount, { force: true })}<select class="imas" data-chg="impAs" data-i="${i}" aria-label="Treat as">${opts.map(([v, l]) => `<option value="${v}" ${r.as === v ? 'selected' : ''}>${l}</option>`).join('')}</select></span></div>`).join('')}</div>
+  <button class="btn block" style="margin-top:12px;position:sticky;bottom:8px" data-act="impInvGo">Add to ${esc(a.name)}</button>`;
+  const top = topSheet(); let scroll = 0; if (top && top._impI) { scroll = top.querySelector('.sheet').scrollTop; top.remove(); }
+  const ov = openSheet(html); ov._impI = true; ov.querySelector('.sheet').scrollTop = scroll;
+}
+function invImportGo() {
+  const { rows, acctId, holdings } = UI.impInv, a = S.accounts.find(x => x.id === acctId); if (!a) return;
+  checkpoint(); let nc = 0, nm = 0, nb = 0;
+  rows.forEach(r => {
+    if ((r.as === 'you' || r.as === 'match') && !r.dup) { S.contribs.push({ id: uid(), date: r.date, acct: a.id, amount: r.amount, kind: r.as === 'you' ? 'you' : 'employer', lim: r.as === 'you', ty: r.as === 'you' ? r.taxYear : undefined, src: 'import' }); r.as === 'you' ? nc++ : nm++; }
+    if (r.as === 'buy' && holdings && r.ticker && r.shares > 0) {
+      a.holdings = a.holdings || []; let h = a.holdings.find(x => String(x.ticker).toUpperCase() === r.ticker);
+      const px = r.price || (r.amount / r.shares);
+      if (!h) { h = { id: uid(), ticker: r.ticker, shares: 0, price: px, cost: px, cls: 'stock' }; a.holdings.push(h); }
+      const old = num(h.shares), oc = h.cost === '' || h.cost == null ? num(h.price) : num(h.cost);
+      h.shares = Math.round((old + r.shares) * 1e6) / 1e6; h.cost = Math.round((old * oc + r.amount) / h.shares * 1e4) / 1e4; nb++;
+    }
+  });
+  a.updated = todayISO(); closeAll(); UI.impInv = null; commit();
+  offerUndo(`Added ${nc} contribution${nc === 1 ? '' : 's'}${nm ? `, ${nm} match` : ''}${nb ? `, ${nb} buy${nb === 1 ? '' : 's'}` : ''} to ${a.name}`);
+  nextImportReview();
+}
+function nextImportReview() { const q = UI.stmtQueue || []; if (q.length) { const n = q.shift(); UI.stmtQueue = q; setTimeout(() => typeof n === 'function' ? n() : statementReview(n), 500); } }
+
+Object.assign(ACT, {
+  importCsv: () => importSheet(),
+  stmtImport: d => importSheet(d.a ? { dest: 'inv:' + d.a } : {}),
+  stmtApply: () => { statementApply(); nextImportReview(); },
+  impTog: d => { const r = UI.imp.rows[+d.i]; r.on = !r.on; renderSpendReview(); },
+  impFlip: d => { const r = UI.imp.rows[+d.i]; r.flip = !r.flip; renderSpendReview(); },
+  impAll: () => { const real = UI.imp.rows.filter(r => !r.marker), all = real.every(r => r.on); real.forEach(r => r.on = !all); renderSpendReview(); },
+  impPos: d => { UI.imp.opt.pos = d.v; UI.imp.rows.forEach(r => r.flip = false); renderSpendReview(); },
+  impCol: d => { UI.imp.opt.col = d.v; renderSpendReview(); },
+  impGo: () => spendImportGo(),
+  impInvGo: () => invImportGo()
+});
+Object.assign(CHG, {
+  impAs: t => { UI.impInv.rows[+t.dataset.i].as = t.value; renderInvReview(); },
+  impHold: t => { UI.impInv.holdings = t.checked; }
+});
+
+/* imports backfill history, so milestones they cross are recorded quietly instead of celebrated */
+const _runCsvImport9 = runCsvImport;
+runCsvImport = async function (v) { UI.quietUntil = Date.now() + 6000; return _runCsvImport9(v); };
+const _statementApply9 = statementApply;
+statementApply = function () { UI.quietUntil = Date.now() + 6000; return _statementApply9(); };
+const _invImportGo9 = invImportGo;
+invImportGo = function () { UI.quietUntil = Date.now() + 6000; return _invImportGo9(); };
 
 </script>
 </body>
