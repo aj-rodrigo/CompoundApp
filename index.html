@@ -2063,7 +2063,7 @@ async function init() {
 }
 init();
 /* ================= v2 features ================= */
-const APP_VERSION = '2026.09.26-9';
+const APP_VERSION = '2026.09.26-10';
 const rules = () => S.rules || (S.rules = []);
 
 /* ---------- undo ---------- */
@@ -3555,14 +3555,16 @@ function payNextHtml() {
 const _renderPayRes = renderPayRes;
 renderPayRes = function () { _renderPayRes(); const el = $('#payNext'); if (el) el.innerHTML = payNextHtml(); };
 /* ================= statement import (PDF) ================= */
-const PDFJS_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.6.205/build/pdf.min.mjs';
-const PDFJS_WORKER = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.6.205/build/pdf.worker.min.mjs';
+/* The legacy build includes fallbacks for JavaScript features Safari on iPhone doesn't have yet */
+const PDFJS_URL = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.6.205/legacy/build/pdf.min.mjs';
+const PDFJS_WORKER = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.6.205/legacy/build/pdf.worker.min.mjs';
+const pdfErr = (name, e) => e && e.name === 'PasswordException' ? `${name} is password-protected. Open it, save a copy without a password, and try again.` : `${name} couldn\u2019t be read${e && (e.message || e.name) ? ' (' + String(e.message || e.name).slice(0, 120) + ')' : ''}. Send it to Claude so the reader can be fixed.`;
 let pdfjsLib = null;
 async function loadPdfJs() {
   if (pdfjsLib) return pdfjsLib;
-  pdfjsLib = await import(PDFJS_URL);
-  pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
-  return pdfjsLib;
+  const lib = await import(PDFJS_URL);
+  lib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
+  pdfjsLib = lib; return lib;
 }
 /* Read a PDF into text lines, rebuilding rows by their vertical position */
 async function pdfLines(file) {
@@ -3687,7 +3689,7 @@ async function readStatements(files, ov) {
       const lines = await pdfLines(f); let st = null;
       for (const p of STATEMENT_PARSERS) { st = p(lines); if (st) break; }
       if (st) found.push(st); else set(`<span class="neg">${esc(f.name)} isn\u2019t a statement Compound recognizes yet.</span> Send it to Claude so it can be added.`);
-    } catch (e) { set(`<span class="neg">Couldn\u2019t read ${esc(f.name)}. It may be password-protected or a scanned image.</span>`); }
+    } catch (e) { set(`<span class="neg">${esc(pdfErr(f.name, e))}</span>`); }
   }
   if (!found.length) return;
   found.sort((x, y) => x.end < y.end ? -1 : 1);
@@ -3803,7 +3805,7 @@ function importSheet(pre = {}) {
 async function processImport(files, cfg, ov) {
   const pr = $('#imProg', ov), set = t => { if (pr) pr.innerHTML = t; }, isPdf = f => /\.pdf$/i.test(f.name) || f.type === 'application/pdf';
   const pdfs = files.filter(isPdf), csvs = files.filter(f => !isPdf(f)), problems = [];
-  if (pdfs.length) { try { set('Loading the PDF reader\u2026'); await loadPdfJs(); } catch (e) { set('<span class="neg">Couldn\u2019t load the PDF reader. Check your connection and try again.</span>'); return; } }
+  if (pdfs.length) { try { set('Loading the PDF reader\u2026'); await loadPdfJs(); } catch (e) { set(`<span class="neg">Couldn\u2019t load the PDF reader (${esc(String((e && e.message) || e).slice(0, 100))}). Check your connection and try again.</span>`); return; } }
   const rows = [], statements = [];
   for (const f of pdfs) {
     set(`Reading ${esc(f.name)} (${pdfs.indexOf(f) + 1} of ${pdfs.length})\u2026`);
@@ -3812,7 +3814,7 @@ async function processImport(files, cfg, ov) {
       if (cfg.dest !== 'spend') { let st = null; for (const p of STATEMENT_PARSERS) { st = p(lines); if (st) break; } if (st) { st.src = f.name; statements.push(st); continue; } }
       const got = genericRows(lines, stmtEndDate(lines), f.name);
       if (got.length) rows.push(...got); else problems.push(`${f.name}: no transaction lines found${lines.length < 5 ? ' (it may be a scanned image)' : ''}`);
-    } catch (e) { problems.push(`${f.name}: couldn\u2019t be opened. It may be password-protected.`); }
+    } catch (e) { problems.push(pdfErr(f.name, e)); }
   }
   const seenRow = new Map(); let crossDup = 0;
   const keep = []; rows.forEach(r => { if (r.marker) { keep.push(r); return; } const k = r.date + '|' + r.desc + '|' + r.monies.map(m => m.v).join(','); const s0 = seenRow.get(k); if (s0 && s0 !== r.src) { crossDup++; return; } if (!s0) seenRow.set(k, r.src); keep.push(r); });
