@@ -16,13 +16,28 @@ jobs:
       - uses: actions/checkout@v4
       - name: Read the Google Sheet and write prices.json
         env:
-          SHEET_ID: PASTE_YOUR_SHEET_ID_HERE
+          SHEET_ID: 1-a-wIqWa2VBCkEAOKMRyBY1Xi3mhn7Z3Ile6y_MwBD4
         run: |
           python3 - <<'PY'
           import csv, io, json, os, urllib.request, datetime
-          url = "https://docs.google.com/spreadsheets/d/%s/gviz/tq?tqx=out:csv" % os.environ["SHEET_ID"]
-          req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-          text = urllib.request.urlopen(req, timeout=30).read().decode("utf-8")
+          sid = os.environ["SHEET_ID"].strip()
+          if len(sid) < 20 or "PASTE" in sid:
+              raise SystemExit("SHEET_ID is missing. Edit this file and put your Google Sheet ID after SHEET_ID:")
+          text = ""
+          for url in ["https://docs.google.com/spreadsheets/d/%s/gviz/tq?tqx=out:csv" % sid,
+                      "https://docs.google.com/spreadsheets/d/%s/export?format=csv" % sid]:
+              try:
+                  req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+                  body = urllib.request.urlopen(req, timeout=30).read().decode("utf-8")
+                  if body.lstrip().startswith("<"):
+                      print("Got a sign-in page from", url)
+                      continue
+                  text = body
+                  break
+              except Exception as e:
+                  print("Could not read", url, "->", e)
+          if not text:
+              raise SystemExit("Could not read the sheet. Check that SHEET_ID is right and sharing is 'Anyone with the link' as Viewer.")
           prices = {}
           for row in list(csv.reader(io.StringIO(text)))[1:]:
               if len(row) < 2 or not row[0].strip():
