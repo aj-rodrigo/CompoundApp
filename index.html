@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Compound">
-<meta name="theme-color" content="#0C1522">
+<meta name="theme-color" content="#0A1224">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <link rel="manifest" href="manifest.json">
@@ -378,6 +378,53 @@ body.on-today #fab{display:none}
 .sheetprev div{display:grid;grid-template-columns:110px 1fr;gap:8px;padding:5px 6px;border-radius:6px;background:var(--surf2)}
 .sheetprev div.hd{background:transparent;color:var(--mute);font-weight:700}
 .sheetprev span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ===== v8 look: Midnight Glass (dark) + Native Wallet (light), pill shapes, playful motion ===== */
+[data-theme=dark]{--bg:#0A1224;--surf:rgba(255,255,255,.075);--surf2:rgba(255,255,255,.11);--line:rgba(255,255,255,.12);--text:#EAF0FA;--mute:#98A6BF;--acc:#7FB2FF;--acc-ink:#07162E;--pos:#5FD8C2;--neg:#F5B45C;--shadow:0 10px 30px rgba(3,8,24,.35);--c1:#7FB2FF;--c2:#5FD8C2;--c3:#A99BFF;--c4:#F5B45C;--c5:#6FD3FF;--c6:#F08FB4;--c7:#8E9BB5}
+[data-theme=light]{--bg:#F2F2F7;--surf:#FFFFFF;--surf2:#F2F2F7;--line:#E5E5EA;--text:#000000;--mute:#8E8E93;--acc:#007AFF;--acc-ink:#FFFFFF;--pos:#34C759;--neg:#FF9500;--shadow:none;--c1:#007AFF;--c2:#34C759;--c3:#AF52DE;--c4:#FF9500;--c5:#5AC8FA;--c6:#FF2D55;--c7:#8E8E93}
+[data-theme=dark] body{background:transparent}
+[data-theme=dark] body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(90% 55% at 100% 0%,rgba(122,92,255,.42) 0%,transparent 60%),radial-gradient(80% 50% at 0% 22%,rgba(40,110,255,.34) 0%,transparent 65%),radial-gradient(70% 40% at 60% 100%,rgba(30,170,190,.16) 0%,transparent 70%),#0A1224}
+[data-theme=dark] .card,[data-theme=dark] .gl,[data-theme=dark] .qa-row button span,[data-theme=dark] .ib,[data-theme=dark] .home-top .avatar{-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);border:1px solid rgba(255,255,255,.1)}
+[data-theme=dark] .hero2{background:linear-gradient(150deg,rgba(127,178,255,.30),rgba(169,155,255,.20) 58%,rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.16);-webkit-backdrop-filter:blur(22px) saturate(1.5);backdrop-filter:blur(22px) saturate(1.5);box-shadow:0 22px 50px rgba(20,40,120,.35)}
+[data-theme=dark] .sheet{background:rgba(12,20,40,.9);-webkit-backdrop-filter:blur(26px) saturate(1.3);backdrop-filter:blur(26px) saturate(1.3);border-top:1px solid rgba(255,255,255,.12)}
+[data-theme=dark] #tabs{background:rgba(10,18,36,.62);-webkit-backdrop-filter:blur(22px) saturate(1.5);backdrop-filter:blur(22px) saturate(1.5);border-top:1px solid rgba(255,255,255,.1)}
+[data-theme=dark] .fld input,[data-theme=dark] .fld select,[data-theme=dark] .fld textarea,[data-theme=dark] .bcrow input,[data-theme=dark] .cfbar select{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.14)}
+[data-theme=dark] .fld select option{background:#14203A;color:#EAF0FA}
+[data-theme=dark] #fab{box-shadow:0 12px 30px rgba(80,120,255,.45),inset 0 1px 0 rgba(255,255,255,.4);background:linear-gradient(145deg,#8FBDFF,#6E8BFF)}
+[data-theme=dark] .avatar{background:linear-gradient(145deg,#7FB2FF,#A99BFF)}
+[data-theme=light] .bar,[data-theme=light] .seg{background:#E5E5EA}
+[data-theme=light] .card,[data-theme=light] .gl,[data-theme=light] .qa-row button span,[data-theme=light] .ib{box-shadow:none}
+[data-theme=light] #tabs{background:rgba(249,249,249,.94);border-top:1px solid #D1D1D6}
+[data-theme=light] .hero2{background:#FFFFFF;color:#000;box-shadow:none}
+[data-theme=light] .h2seg{background:#EEEEF2}[data-theme=light] .h2seg button{color:#8E8E93}[data-theme=light] .h2seg button.on{background:#fff;color:#000;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+[data-theme=light] .h2eye{background:#EEEEF2;color:#007AFF}[data-theme=light] .h2lbl,[data-theme=light] .h2row span{color:#8E8E93}
+[data-theme=light] .h2pill{background:#E9F8EE;color:#248A3D}[data-theme=light] .h2row>div{background:#F2F2F7}
+[data-theme=light] .h2spark path[fill="none"]{stroke:#34C759}[data-theme=light] .h2spark stop{stop-color:#34C759}
+[data-theme=light] .avatar{background:linear-gradient(145deg,#5AC8FA,#007AFF)}
+[data-theme=light] #fab{box-shadow:0 10px 24px rgba(0,122,255,.35)}
+/* pill shapes */
+.btn,.chip,.seg,.seg button,.h2seg,.h2seg button,.tag,.pill,#fab,.qa-row button span,.li .ic,.av,.imchk,.domgrid button,.wdgrid button,.pdchip,.fld input:not([type=file]),.fld select,.bcrow input,.cfbar select,.imas,.sw1{border-radius:999px}
+.fld input:not([type=file]),.fld select{padding-left:16px;padding-right:16px}
+.fld select{padding-right:34px}
+.fld textarea{border-radius:20px}
+.card{border-radius:26px}.card.hero{border-radius:30px}.hero2{border-radius:32px}
+.gl{border-radius:24px}.stat{border-radius:18px}.sheet{border-radius:30px 30px 0 0}
+.qa-cats button,.stcard,.cmp>div{border-radius:22px}.cd{border-radius:14px}
+.li .ic,.av{border-radius:999px}
+#fab{width:58px;height:58px}
+/* playful motion */
+.btn,.chip,.qa-row button span,.gl,.ib,.avatar,#fab,.seg button,.h2seg button,.stcard,.imchk,.domgrid button,.wdgrid button,.qa-cats button,.li{transition:transform .42s cubic-bezier(.34,1.56,.64,1),background-color .2s,color .2s,box-shadow .2s}
+.btn:active,.chip:active,.ib:active,.avatar:active,#fab:active,.seg button:active,.h2seg button:active,.imchk:active,.domgrid button:active,.wdgrid button:active,.qa-cats button:active{transform:scale(.92);transition-duration:.12s}
+.qa-row button:active span{transform:scale(.88);transition-duration:.12s}
+.gl:active,.stcard:active{transform:scale(.96);transition-duration:.12s}
+.li:active{transform:scale(.985);transition-duration:.12s}
+#tabs button.pop svg{animation:tabpop .5s cubic-bezier(.34,1.56,.64,1)}
+/* swipe rows follow the finger directly */
+.swrow .li{transition:none}
+@keyframes tabpop{0%{transform:scale(.7) translateY(2px)}55%{transform:scale(1.18) translateY(-2px)}100%{transform:none}}
+.sheet{animation:up2 .48s cubic-bezier(.2,1.2,.3,1)}
+@keyframes up2{from{transform:translateY(60%);opacity:.4}}
+@media (prefers-reduced-motion:reduce){#tabs button.pop svg,.sheet{animation:none!important}.btn,.chip,.gl,.li{transition:none!important}}
 </style>
 </head>
 <body>
@@ -837,6 +884,18 @@ function niceTicks(lo, hi, n = 4) {
   return t;
 }
 const legendHtml = items => `<div class="legend">${items.map(i => `<span><i style="background:${i.color}"></i>${esc(i.label)}</span>`).join('')}</div>`;
+/* Smooth curve through points (Catmull-Rom as Bezier), kept from overshooting between points */
+function smoothPath(pts) {
+  if (pts.length < 3) return 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L');
+  let d = 'M' + pts[0][0].toFixed(1) + ' ' + pts[0][1].toFixed(1);
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2, t = .18;
+    let c1y = p1[1] + (p2[1] - p0[1]) * t, c2y = p2[1] - (p3[1] - p1[1]) * t;
+    const lo = Math.min(p1[1], p2[1]), hi = Math.max(p1[1], p2[1]); c1y = Math.min(hi, Math.max(lo, c1y)); c2y = Math.min(hi, Math.max(lo, c2y));
+    d += ` C${(p1[0] + (p2[0] - p0[0]) * t).toFixed(1)} ${c1y.toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) * t).toFixed(1)} ${c2y.toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+  }
+  return d;
+}
 function lineChart(el, o) {
   if (!el) return;
   const xs = o.x, n = xs.length;
@@ -858,8 +917,8 @@ function lineChart(el, o) {
   (o.bands || []).forEach(b => { const d = 'M' + xs.map((x, i) => X(x).toFixed(1) + ' ' + Y(b.hi[i]).toFixed(1)).join(' L') + ' L' + xs.map((x, i) => X(x).toFixed(1) + ' ' + Y(b.lo[i]).toFixed(1)).reverse().join(' L') + 'Z'; s += `<path d="${d}" fill="${b.color}" opacity=".18" ${UI.anim ? 'class="fadein"' : ''}/>`; });
   o.series.forEach((se, si) => {
     const pts = se.data.map((v, i) => v == null ? null : [X(xs[i]), Y(v)]).filter(Boolean); if (!pts.length) return;
-    const d = 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L');
-    if (o.area && si === 0) { const base = Y(Math.max(lo, 0)); s += `<path d="${d} L${pts[pts.length - 1][0].toFixed(1)} ${base} L${pts[0][0].toFixed(1)} ${base}Z" fill="${se.color}" opacity=".12"/>`; }
+    const d = smoothPath(pts);
+    if (si === 0 && o.area !== false && !(o.bands || []).length) { const base = Y(Math.max(lo, 0)), gid = 'ag' + Math.random().toString(36).slice(2, 8); s += `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${se.color}" stop-opacity=".32"/><stop offset="1" stop-color="${se.color}" stop-opacity="0"/></linearGradient></defs><path d="${d} L${pts[pts.length - 1][0].toFixed(1)} ${base} L${pts[0][0].toFixed(1)} ${base}Z" fill="url(#${gid})"${UI.anim ? ' class="fadein"' : ''}/>`; }
     const anim = UI.anim && !se.dash ? 'pathLength="1" class="draw"' : '';
     s += `<path d="${d}" fill="none" stroke="${se.color}" stroke-width="${se.w || 2.2}" stroke-linejoin="round" stroke-linecap="round" ${se.dash ? `stroke-dasharray="${se.dash}"` : ''} ${anim}/>`;
   });
@@ -1228,7 +1287,7 @@ function scrInvest() {
   const total = sum(inv.map(acctValue)), cost = sum(inv.map(acctCost)), gain = total - cost;
   const tags = {}; inv.forEach(a => { const t = typeOf(a).tax; tags[t] = (tags[t] || 0) + acctValue(a); });
   let h = header('Investing') + '<div class="stack">';
-  h += card('', `<div class="mute sm">Invested</div><div class="big">${money(total)}</div><div class="sm ${gain < 0 ? 'neg' : 'pos'}" style="margin-top:4px">${money(gain, { sign: true })} (${cost ? (gain >= 0 ? '+' : '') + pct(gain / cost) : '0%'}) all-time gain on holdings</div>${(() => { const dc = dayChange(inv); return S.settings.quoteKey ? `<div class="row sm" style="margin-top:10px"><div>${dc ? dayLine(dc, 'today') : '<span class="mute">No live prices yet</span>'}<div class="xs mute">${quoteAsOf() || 'Tap Refresh to get prices'}</div></div><button class="chip" data-act="refreshQuotes">Refresh</button></div>` : `<div class="row sm" style="margin-top:10px"><span class="mute">Prices are entered by hand</span><button class="chip" data-act="quoteSetup">Get live prices</button></div>`; })()}${Object.keys(tags).length ? `<div class="grid3" style="margin-top:12px">${Object.entries(tags).map(([t, v]) => stat(t, compact(v))).join('')}</div>` : ''}<div class="grid2" style="margin-top:14px"><button class="btn" data-act="logPay">Log paycheck</button><button class="btn ghost" data-act="addContrib">Add contribution</button></div>`, '', 'hero');
+  h += card('', `<div class="mute sm">Invested</div><div class="big">${money(total)}</div><div class="sm ${gain < 0 ? 'neg' : 'pos'}" style="margin-top:4px">${money(gain, { sign: true })} (${cost ? (gain >= 0 ? '+' : '') + pct(gain / cost) : '0%'}) all-time gain on holdings</div>${(() => { const dc = dayChange(inv); return hasPriceSource() ? `<div class="row sm" style="margin-top:10px"><div>${dc ? dayLine(dc, 'today') : '<span class="mute">No live prices yet</span>'}<div class="xs mute">${quoteAsOf() || 'Tap Refresh to get prices'}</div></div><button class="chip" data-act="refreshQuotes">Refresh</button></div>` : `<div class="row sm" style="margin-top:10px"><span class="mute">Prices are entered by hand</span><button class="chip" data-act="quoteSetup">Get live prices</button></div>`; })()}${Object.keys(tags).length ? `<div class="grid3" style="margin-top:12px">${Object.entries(tags).map(([t, v]) => stat(t, compact(v))).join('')}</div>` : ''}<div class="grid2" style="margin-top:14px"><button class="btn" data-act="logPay">Log paycheck</button><button class="btn ghost" data-act="addContrib">Add contribution</button></div>`, '', 'hero');
   h += card('Contribution limits', limitsHtml(), `<small>${new Date().getFullYear()}</small>`);
   // allocation
   const cls = {};
@@ -2148,7 +2207,7 @@ async function init() {
 }
 init();
 /* ================= v2 features ================= */
-const APP_VERSION = '2026.09.27-20';
+const APP_VERSION = '2026.09.27-21';
 const rules = () => S.rules || (S.rules = []);
 
 /* ---------- undo ---------- */
@@ -2945,9 +3004,9 @@ runSearch = function (q) {
 /* ---------- pull to refresh ---------- */
 async function pullRefresh() {
   runBills(); syncDebts();
-  if (S.settings.quoteKey) await refreshQuotes({ silent: true });
+  if (hasPriceSource()) await refreshQuotes({ silent: true });
   lastUpdCheck = 0; await checkUpdate(); commit();
-  toast(S.settings.quoteKey ? 'Prices and bills are up to date' : 'Up to date');
+  toast(hasPriceSource() ? 'Prices and bills are up to date' : 'Up to date');
 }
 function ptrInitOld() {
   const ind = document.createElement('div'); ind.id = 'ptr'; ind.setAttribute('aria-hidden', 'true'); ind.innerHTML = '<svg viewBox="0 0 24 24" class="i"><path d="M12 5v14 M6 13l6 6 6-6"/></svg>'; document.body.appendChild(ind);
@@ -4631,6 +4690,34 @@ openSettings = function () {
   const pf = S.settings.priceFile, when = pf && pf.checked ? new Date(pf.checked) : null;
   sec.insertAdjacentHTML('beforeend', `<div style="border-top:1px solid var(--line);margin-top:14px;padding-top:14px"><div class="b" style="margin-bottom:4px">Automatic price file <span class="tag" style="color:var(--pos)">most reliable</span></div><div class="sm mute" style="margin-bottom:10px">If Compound can\u2019t read the sheet from your phone, GitHub can read it for you and save the prices to your own site.</div>${pf ? `<div class="xs pos" style="margin-bottom:8px">Found: ${esc(pf.tickers.join(', '))}${when && !isNaN(when) ? `. Checked ${fmtShort(when)}, ${when.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : ''}</div>` : ''}<div class="grid2"><button class="btn ghost" data-act="pfSetup">Set it up</button><button class="btn ghost" data-act="pfCheck">Check price file</button></div></div>`);
 };
+
+function hasPriceSource() { return !!(S.settings.quoteKey || S.settings.sheetUrl || S.settings.priceFile); }
+/* opening the app reads the price file too, even without a Finnhub key */
+const _afterInit13 = afterInit;
+afterInit = function () { _afterInit13(); if (!S.settings.quoteKey && !S.settings.sheetUrl && S.settings.autoQuotes !== false) setTimeout(() => refreshQuotes({ silent: true }), 1200); };
+/* ================= v8: count-up numbers, tab bounce ================= */
+function countUp(el) {
+  const txt = el.textContent, m = txt.match(/-?[\d,]+(\.\d+)?/); if (!m) return;
+  const target = parseFloat(m[0].replace(/,/g, '')); if (!isFinite(target) || Math.abs(target) < 10) return;
+  const dec = m[1] ? m[1].length - 1 : 0, pre = txt.slice(0, m.index), post = txt.slice(m.index + m[0].length), t0 = performance.now(), dur = 800;
+  const fmt = v => v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  const step = now => { const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3); el.textContent = k < 1 ? pre + fmt(target * e) + post : txt; if (k < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+let countNext = true;
+const _render14 = render;
+render = function () {
+  _render14();
+  if (countNext && !matchMedia('(prefers-reduced-motion: reduce)').matches && !S.settings.hide) $$('#main .h2big, #main .card.hero .big, #main .gl-b').forEach(countUp);
+  countNext = false;
+};
+const _tab14 = ACT.tab;
+ACT.tab = d => {
+  const changed = d.tab !== UI.tab; countNext = changed || countNext; _tab14(d);
+  if (changed) { const b = $(`#tabs button[data-tab="${d.tab}"]`); if (b) { b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); setTimeout(() => b.classList.remove('pop'), 600); } }
+};
+const _applyTheme14 = applyTheme;
+applyTheme = function () { _applyTheme14(); const m = $('meta[name=theme-color]'); if (m) m.content = document.documentElement.dataset.theme === 'dark' ? '#0A1224' : '#F2F2F7'; };
 
 </script>
 </body>
