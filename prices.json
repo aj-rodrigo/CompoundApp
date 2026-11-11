@@ -1,11 +1,11 @@
 {
- "updated": "2026-11-10T20:17:18Z",
- "checked": "2026-11-11T00:47:16Z",
+ "updated": "2026-11-11T20:01:36Z",
+ "checked": "2026-11-11T20:01:36Z",
  "source": "Google Sheet (GOOGLEFINANCE)",
  "prices": {
   "VFIAX": {
-   "price": 697.19,
-   "changePct": 2.35
+   "price": 694.58,
+   "changePct": -0.37
   }
  }
 }
